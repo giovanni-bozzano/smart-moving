@@ -1,0 +1,10 @@
+{
+	"package": "net.smart.moving.asm.mixins",
+	"compatibilityLevel": "JAVA_8",
+	"refmap": "mixins.edencraft.refmap.json",
+	"minVersion": "0.8",
+	"mixins": [
+		"net.minecraft.block.MixinBlockWall",
+		"net.minecraft.entity.ai.MixinModifiableAttributeInstance"
+	]
+}

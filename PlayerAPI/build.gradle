@@ -1,0 +1,90 @@
+buildscript {
+    repositories {
+        maven { url = 'https://files.minecraftforge.net/maven' }
+        maven { url = 'https://repo.spongepowered.org/maven' }
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.4'
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+version = "${minecraft_version}-${mod_version}"
+group = 'api.player'
+
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+
+minecraft {
+    mappings channel: 'stable', version: '39-1.12'
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2854'
+    implementation 'org.spongepowered:mixin:0.8'
+}
+
+jar {
+    manifest {
+        attributes([
+                'Specification-Title'        : 'Player API',
+                'Specification-Vendor'       : 'GioBozza',
+                'Specification-Version'      : '1', // We are version 1 of ourselves
+                'Implementation-Title'       : project.name,
+                'Implementation-Version'     : project.version,
+                'Implementation-Vendor'      : 'GioBozza',
+                'Implementation-Timestamp'   : new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                'FMLCorePluginContainsFMLMod': true,
+                'FMLCorePlugin'              : 'api.player.PlayerAPIPlugin',
+                'ForceLoadAsMod'             : true,
+                'TweakClass'                 : 'org.spongepowered.asm.launch.MixinTweaker'
+        ])
+    }
+}
+
+jar.finalizedBy('reobfJar')
+
+mixin {
+    add sourceSets.main, 'mixins.playerapi.refmap.json'
+}
+
+reobf {
+    shadowJar {
+        classpath = sourceSets.main.compileClasspath
+    }
+}
+
+shadowJar {
+    dependencies {
+        include dependency('org.spongepowered:mixin:0.8')
+    }
+    exclude '**/lang/*.json'
+    exclude '**/lang/*.go'
+    exclude '**/lang/*.exe'
+}
+
+build.dependsOn(shadowJar)
+
+sourceSets {
+    main {
+        output.resourcesDir = output.classesDir
+    }
+}
+
+processResources {
+    inputs.property 'version', mod_version
+    inputs.property 'mcversion', minecraft_version
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version': mod_version, 'mcversion': minecraft_version
+    }
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}

@@ -78,12 +78,6 @@ public abstract class Controller extends ContextBase
     {
         this.entityPlayer = player;
         this.playerBase = playerBase;
-        if (this.entityPlayer instanceof EntityPlayerSP) {
-            if (Minecraft.getMinecraft().player == null) {
-                Options.resetForNewGame();
-                Config = Options;
-            }
-        }
     }
 
     public Block getBlock(int x, int y, int z)
@@ -191,12 +185,12 @@ public abstract class Controller extends ContextBase
             return this.getNormalWaterBorder(i, j, k);
         }
         if (block == Block.getBlockFromName("lava") || block == Block.getBlockFromName("flowing_lava")) {
-            return Config._lavaLikeWater.getValue() ? this.getNormalWaterBorder(i, j, k) : 0F;
+            return SmartMovingConfig.lava.likeWater ? this.getNormalWaterBorder(i, j, k) : 0F;
         }
 
         Material material = this.getMaterial(i, j, k);
         if (material == null || material == Material.LAVA) {
-            return Config._lavaLikeWater.getValue() ? 1F : 0F;
+            return SmartMovingConfig.lava.likeWater ? 1F : 0F;
         }
         if (material == Material.WATER) {
             return this.getNormalWaterBorder(i, j, k);
@@ -270,7 +264,7 @@ public abstract class Controller extends ContextBase
         int minj = MathHelper.floor(this.getBoundingBox().minY);
         int k = MathHelper.floor(this.entityPlayer.posZ);
 
-        if (Config.isStandardBaseClimb()) {
+        if (ConfigHelper.isStandardBaseClimb()) {
             Block block = getBlock(this.entityPlayer.world, i, minj, k);
             if (ladder) {
                 if (vine) {
@@ -892,7 +886,7 @@ public abstract class Controller extends ContextBase
 
             this.spawnSlidingParticle += horizontalSpeedSquare;
 
-            float maxSpawnSlidingParticle = Config._slideParticlePeriodFactor.getValue() * 0.1F;
+            float maxSpawnSlidingParticle = SmartMovingConfig.sliding.particlePeriodFactor * 0.1F;
             while (this.spawnSlidingParticle > maxSpawnSlidingParticle) {
                 double posX = this.entityPlayer.posX + this.getSpawnOffset();
                 double posZ = this.entityPlayer.posZ + this.getSpawnOffset();
@@ -913,7 +907,7 @@ public abstract class Controller extends ContextBase
             boolean isLava = this.isLava(this.entityPlayer.world.getBlockState(new BlockPos(x, y, z)));
             this.spawnSwimmingParticle += horizontalSpeedSquare;
 
-            float maxSpawnSwimmingParticle = (isLava ? Config._lavaSwimParticlePeriodFactor.getValue() : Config._swimParticlePeriodFactor.getValue()) * 0.01F;
+            float maxSpawnSwimmingParticle = (isLava ? SmartMovingConfig.lava.particlePeriodFactor :SmartMovingConfig.swimming.particlePeriodFactor) * 0.01F;
             while (this.spawnSwimmingParticle > maxSpawnSwimmingParticle) {
                 double posX = this.entityPlayer.posX + this.getSpawnOffset();
                 double posZ = this.entityPlayer.posZ + this.getSpawnOffset();

@@ -22,8 +22,8 @@ import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.inventory.GuiInventory;
-import net.smart.moving.ContextBase;
 import net.smart.moving.Controller;
+import net.smart.moving.SmartMovingConfig;
 import net.smart.moving.playerapi.Factory;
 import net.smart.moving.render.playerapi.CustomRenderPlayerBase;
 import net.smart.render.statistics.SmartStatistics;
@@ -168,9 +168,9 @@ public class CustomRender extends ContextRender
                 originalIsSneaking = player.isSneaking();
                 boolean temporaryIsSneaking = originalIsSneaking;
                 if (moving.isCrawling && !moving.isClimbing) {
-                    temporaryIsSneaking = !ContextBase.Config._crawlNameTag.getValue();
+                    temporaryIsSneaking = !SmartMovingConfig.crawling.name;
                 } else if (originalIsSneaking) {
-                    temporaryIsSneaking = !ContextBase.Config._sneakNameTag.getValue();
+                    temporaryIsSneaking = !SmartMovingConfig.genericSneaking.name;
                 }
 
                 changedIsSneaking = temporaryIsSneaking != originalIsSneaking;

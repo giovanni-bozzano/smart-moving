@@ -24,17 +24,10 @@ import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.GameType;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.smart.moving.config.ClientConfig;
-import net.smart.moving.config.Options;
-import net.smart.moving.config.ServerConfig;
 import net.smart.moving.playerapi.Factory;
 import net.smart.moving.render.ContextRender;
 
@@ -56,9 +49,6 @@ public abstract class ContextBase extends ContextRender
     public static final float HorizontalAerodynamicDamping = 0.999F;
     public static final float SwimSoundDistance = 1F / 0.7F;
     public static final float SlideToHeadJumpingFallDistance = 0.05F;
-    public static final net.smart.moving.config.Options Options = new Options();
-    public static final net.smart.moving.config.ServerConfig ServerConfig = new ServerConfig();
-    public static ClientConfig Config = Options;
     private static boolean wasInitialized;
 
     public static void onTickInGame()
@@ -68,10 +58,6 @@ public abstract class ContextBase extends ContextRender
         if (minecraft.world != null && minecraft.world.isRemote) {
             Factory.getInstance().handleMultiPlayerTick(minecraft);
         }
-
-        Options.initializeForGameIfNeccessary();
-
-        initializeServerIfNecessary();
     }
 
     public static void initialize()
@@ -80,31 +66,11 @@ public abstract class ContextBase extends ContextRender
             net.smart.render.statistics.SmartStatisticsContext.setCalculateHorizontalStats(true);
         }
 
-        ClientRegistry.registerKeyBinding(Options.keyBindGrab);
-        ClientRegistry.registerKeyBinding(Options.keyBindConfigToggle);
-        ClientRegistry.registerKeyBinding(Options.keyBindSpeedIncrease);
-        ClientRegistry.registerKeyBinding(Options.keyBindSpeedDecrease);
-
         if (wasInitialized) {
             return;
         }
 
         wasInitialized = true;
-    }
-
-    public static void initializeServerIfNecessary()
-    {
-        MinecraftServer currentMinecraftServer = FMLCommonHandler.instance().getMinecraftServerInstance();
-        if (currentMinecraftServer != null && currentMinecraftServer != lastMinecraftServer) {
-            GameType gameType;
-            try {
-                gameType = currentMinecraftServer.getGameType();
-            } catch (Throwable t) {
-                return;
-            }
-            SmartMovingServer.initialize(net.smart.moving.config.Options.optionsPath, gameType.getID(), Options);
-        }
-        lastMinecraftServer = currentMinecraftServer;
     }
 
     public static Block getBlock(World world, int x, int y, int z)
@@ -147,6 +113,4 @@ public abstract class ContextBase extends ContextRender
     {
         return state.getValue(property);
     }
-
-    private static MinecraftServer lastMinecraftServer = null;
 }

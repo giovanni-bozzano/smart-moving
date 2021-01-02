@@ -16,7 +16,6 @@
 // ==================================================================
 package net.smart.moving;
 
-import net.smart.moving.asm.interfaces.IModifiableAttributeInstance;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.client.Minecraft;
@@ -40,14 +39,15 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.smart.moving.asm.interfaces.IModifiableAttributeInstance;
 import net.smart.moving.climbing.ClimbGap;
 import net.smart.moving.climbing.FeetClimbing;
 import net.smart.moving.climbing.HandsClimbing;
-import net.smart.moving.config.ClientConfig;
 import net.smart.moving.network.MessageHandler;
-import net.smart.moving.network.packets.*;
+import net.smart.moving.network.packets.MessageHungerChangeServer;
+import net.smart.moving.network.packets.MessageSoundServer;
+import net.smart.moving.network.packets.MessageStateServer;
 import net.smart.moving.playerapi.CustomClientPlayerEntityBase;
-import net.smart.utilities.SoundUtil;
 
 import java.util.HashSet;
 import java.util.Random;
@@ -91,7 +91,7 @@ public class ControllerSelf extends Controller
             this.player.motionZ = this.prevMotionZ;
         }
 
-        if (this.player.capabilities.isFlying && !Config.isFlyingEnabled()) {
+        if (this.player.capabilities.isFlying && !SmartMovingConfig.smartFlying.enable) {
             double d3 = this.player.motionY;
             float f2 = this.player.jumpMovementFactor;
             this.player.jumpMovementFactor = 0.05F;
@@ -105,7 +105,7 @@ public class ControllerSelf extends Controller
 
     private void superMoveEntityWithHeading(float strage, float forward)
     {
-        if (this.isRunning() && !Config.isRunningEnabled()) {
+        if (this.isRunning() && !SmartMovingConfig.standardSprinting.enable) {
             this.player.setSprinting(false);
         }
 
@@ -129,7 +129,7 @@ public class ControllerSelf extends Controller
 
         float speedFactor = this.getSpeedFactor(forward, strage);
 
-        boolean isLiquidClimbing = Config.isFreeClimbingEnabled() && this.player.fallDistance <= 3.0 && this.wantClimbUp && this.player.collidedHorizontally && !this.isDiving;
+        boolean isLiquidClimbing = SmartMovingConfig.climb.enable && this.player.fallDistance <= 3.0 && this.wantClimbUp && this.player.collidedHorizontally && !this.isDiving;
         boolean handledSwimming = this.handleSwimming(forward, strage, speedFactor, wasSwimming, wasDiving, isLiquidClimbing, wasJumpingOutOfWater);
         boolean handledLava = this.handleLava(forward, strage, handledSwimming, isLiquidClimbing);
         boolean handledAlternativeFlying = this.handleAlternativeFlying(forward, strage, speedFactor, handledSwimming, handledLava);
@@ -148,7 +148,7 @@ public class ControllerSelf extends Controller
 
     private float getSpeedFactor()
     {
-        return Config.enabled ? Config._speedFactor.getValue() * Config.getUserSpeedFactor() * this.getLandMovementFactor() * 10F / (this.player.isSprinting() ? 1.3F : 1F) : 1F;
+        return this.player.isSprinting() ? 1.3F : 1F;
     }
 
     private float getSpeedFactor(float moveForward, float moveStrafing)
@@ -156,40 +156,38 @@ public class ControllerSelf extends Controller
         float speedFactor = this.getSpeedFactor();
 
         if (this.player.getItemInUseCount() > 0) {
-            float itemFactor = 0.2F;
-            if (Config.enabled) {
-                Item item = this.player.getActiveItemStack().getItem();
-                if (item instanceof ItemSword) {
-                    itemFactor = Config._usageSwordSpeedFactor.getValue();
-                } else if (item instanceof ItemBow) {
-                    itemFactor = Config._usageBowSpeedFactor.getValue();
-                } else if (item instanceof ItemFood) {
-                    itemFactor = Config._usageFoodSpeedFactor.getValue();
-                } else {
-                    itemFactor = Config._usageSpeedFactor.getValue();
-                }
+            float itemFactor;
+            Item item = this.player.getActiveItemStack().getItem();
+            if (item instanceof ItemSword) {
+                itemFactor = SmartMovingConfig.itemUsage.swordSpeedFactor;
+            } else if (item instanceof ItemBow) {
+                itemFactor = SmartMovingConfig.itemUsage.bowSpeedFactor;
+            } else if (item instanceof ItemFood) {
+                itemFactor = SmartMovingConfig.itemUsage.foodSpeedFactor;
+            } else {
+                itemFactor = SmartMovingConfig.itemUsage.speedFactor;
             }
             speedFactor *= itemFactor;
         }
 
         if (this.isCrawling || (this.isCrawlClimbing && !this.isClimbCrawling)) {
-            speedFactor *= Config._crawlFactor.getValue();
+            speedFactor *= SmartMovingConfig.crawling.factor;
         } else if (this.isSlow) {
-            speedFactor *= Config._sneakFactor.getValue();
+            speedFactor *= SmartMovingConfig.genericSneaking.factor;
         }
 
         if (this.isFast) {
-            speedFactor *= Config._sprintFactor.getValue();
+            speedFactor *= SmartMovingConfig.genericSprinting.factor;
         }
 
         if (this.isClimbing) {
             if (moveStrafing != 0F || moveForward != 0F) {
-                speedFactor *= Config._freeClimbingHorizontalSpeedFactor.getValue();
+                speedFactor *= SmartMovingConfig.climb.freeHorizontalSpeedFactor;
             }
         }
 
         if (this.isCeilingClimbing) {
-            speedFactor *= Config._ceilingClimbingSpeedFactor.getValue();
+            speedFactor *= SmartMovingConfig.climb.ceilingSpeedFactor;
         }
 
         return speedFactor;
@@ -198,13 +196,13 @@ public class ControllerSelf extends Controller
     private boolean handleSwimming(float moveForward, float moveStrafing, float speedFactor, boolean wasSwimming, boolean wasDiving, boolean isLiquidClimbing, boolean wasJumpingOutOfWater)
     {
         boolean handleSwimmingRejected = false;
-        boolean handleSwimming = !this.isFlying && !isLiquidClimbing && (this.player.isInWater() || (wasSwimming && this.isInLiquid()) || (Config.isLavaLikeWaterEnabled() && this.player.isInLava()));
+        boolean handleSwimming = !this.isFlying && !isLiquidClimbing && (this.player.isInWater() || (wasSwimming && this.isInLiquid()) || (SmartMovingConfig.lava.likeWater && this.player.isInLava()));
         if (handleSwimming) {
             this.resetClimbing();
 
             float wasHeightOffset = this.heightOffset;
 
-            boolean useStandard = !Config.isSwimmingEnabled() && !Config.isDivingEnabled();
+            boolean useStandard = !SmartMovingConfig.swimming.enable && !SmartMovingConfig.diving.enable;
             if (this.player.isRiding()) {
                 this.resetSwimming();
                 useStandard = true;
@@ -244,8 +242,8 @@ public class ControllerSelf extends Controller
                 boolean couldStandUp = playerSwimWaterBorder >= 0 && minPlayerSwimWaterDepth <= 1.5;
 
                 boolean diveUp = this.playerBase.getIsJumpingField();
-                boolean diveDown = ((EntityPlayerSP) this.entityPlayer).movementInput.sneak && Config._diveDownOnSneak.getValue();
-                boolean swimDown = ((EntityPlayerSP) this.entityPlayer).movementInput.sneak && Config._swimDownOnSneak.getValue();
+                boolean diveDown = ((EntityPlayerSP) this.entityPlayer).movementInput.sneak && SmartMovingConfig.diving.downSneak;
+                boolean swimDown = ((EntityPlayerSP) this.entityPlayer).movementInput.sneak && SmartMovingConfig.swimming.downSneak;
 
                 boolean wantShallowSwim = couldStandUp && (wasSwimming || wasDiving);
                 if (wantShallowSwim) {
@@ -309,7 +307,7 @@ public class ControllerSelf extends Controller
                         } else {
                             diving = true;
                             if (diveUp) {
-                                motionYDiff = 0.05D * (this.isFast ? Config._sprintFactor.getValue() : 1F);
+                                motionYDiff = 0.05D * (this.isFast ? SmartMovingConfig.genericSprinting.factor : 1F);
                             } else if (diveDown) {
                                 motionYDiff = 0.01 - 0.1 * speedFactor;
                             } else {
@@ -353,7 +351,7 @@ public class ControllerSelf extends Controller
                     diving = true;
                     if (diveUp) {
                         if (this.isFast && playerSwimWaterBorder < 2.5 && this.isAirBlock(i, j + 3, k)) {
-                            motionYDiff = 0.11D / Config._sprintFactor.getValue();
+                            motionYDiff = 0.11D / SmartMovingConfig.genericSprinting.factor;
                         } else {
                             motionYDiff = 0.01 + 0.1 * speedFactor;
                         }
@@ -386,14 +384,14 @@ public class ControllerSelf extends Controller
                 }
 
                 if (!handleSwimmingRejected) {
-                    swimming = !useStandard && swimming && Config.isSwimmingEnabled();
-                    diving = !useStandard && diving && Config.isDivingEnabled();
-                    dipping = !useStandard && dipping && Config.isSwimmingEnabled();
+                    swimming = swimming && SmartMovingConfig.swimming.enable;
+                    diving = diving && SmartMovingConfig.diving.enable;
+                    dipping = dipping && SmartMovingConfig.swimming.enable;
                     useStandard = !swimming && !diving && !dipping;
 
                     if (!useStandard) {
                         if (diveUp) {
-                            this.player.motionY -= 0.039999999105930328D;
+                            this.player.motionY -= 0.04D;
                         }
 
                         if (swimming) {
@@ -418,10 +416,10 @@ public class ControllerSelf extends Controller
                         boolean levitating = diving && !diveUp && !diveDown && moveStrafing == 0F && moveForward == 0F;
 
                         if (diving) {
-                            speedFactor *= Config._diveSpeedFactor.getValue();
+                            speedFactor *= SmartMovingConfig.diving.speedFactor;
                         }
                         if (swimming) {
-                            speedFactor *= Config._swimSpeedFactor.getValue();
+                            speedFactor *= SmartMovingConfig.swimming.speedFactor;
                         }
 
                         if (swimming || diving) {
@@ -437,13 +435,13 @@ public class ControllerSelf extends Controller
                             if (diveUp || diveDown || levitating) {
                                 this.player.motionY = (this.player.motionY + motionYDiff) * 0.6;
                             } else {
-                                this.moveFlying((float) motionYDiff, moveStrafing, moveForward, 0.02F * speedFactor, Options._diveControlVertical.getValue());
+                                this.moveFlying((float) motionYDiff, moveStrafing, moveForward, 0.02F * speedFactor, SmartMovingConfig.userInterface.diveControlVertical);
                             }
                             moveFlying = false;
                         } else if (swimming && swimDown) {
                             this.player.motionY = (this.player.motionY + motionYDiff) * 0.6;
                         } else if (this.isJumpingOutOfWater) {
-                            this.player.motionY = 0.30000001192092896D;
+                            this.player.motionY = 0.3D;
                         } else {
                             this.player.motionY += motionYDiff;
                         }
@@ -537,7 +535,7 @@ public class ControllerSelf extends Controller
 
     private boolean handleAlternativeFlying(float moveForward, float moveStrafing, float speedFactor, boolean handledSwimming, boolean handledLava)
     {
-        boolean handleAlternativeFlying = !handledSwimming && !handledLava && this.player.capabilities.isFlying && Config.isFlyingEnabled();
+        boolean handleAlternativeFlying = !handledSwimming && !handledLava && this.player.capabilities.isFlying && SmartMovingConfig.smartFlying.enable;
         if (handleAlternativeFlying) {
             this.resetSwimming();
             this.resetClimbing();
@@ -552,7 +550,7 @@ public class ControllerSelf extends Controller
                 moveUpward += 0.98F;
             }
 
-            this.moveFlying(moveUpward, moveStrafing, moveForward, speedFactor * 0.05F * Config._flyingSpeedFactor.getValue(), Options._flyControlVertical.getValue());
+            this.moveFlying(moveUpward, moveStrafing, moveForward, speedFactor * 0.05F * SmartMovingConfig.smartFlying.speedFactor, SmartMovingConfig.userInterface.flyControlVertical);
 
             this.player.move(MoverType.SELF, this.player.motionX, this.player.motionY, this.player.motionZ);
 
@@ -611,8 +609,8 @@ public class ControllerSelf extends Controller
                 horizontalDamping = HorizontalGroundDamping;
             }
 
-            if (((EntityPlayerSP) this.entityPlayer).movementInput.jump && this.isFast && Config.isJumpingEnabled(ClientConfig.Sprinting, ClientConfig.Up)) {
-                speedFactor *= Config._sprintJumpVerticalFactor.getValue();
+            if (((EntityPlayerSP) this.entityPlayer).movementInput.jump && this.isFast && ConfigHelper.isJumpingEnabled(ConfigHelper.Sprinting, ConfigHelper.Up)) {
+                speedFactor *= SmartMovingConfig.jumping.sprintVerticalFactor;
             }
         } else {
             horizontalDamping = HorizontalAirDamping;
@@ -626,16 +624,16 @@ public class ControllerSelf extends Controller
             this.moveFlying(0F, moveStrafing, moveForward, 0.07F, true);
         } else if (!this.isSliding) {
             if (this.isHeadJumping) {
-                speedFactor *= Config._headJumpControlFactor.getValue();
-            } else if (Config.enabled && !this.player.onGround && !this.player.capabilities.isFlying && !this.isFlying) {
-                speedFactor *= Config._jumpControlFactor.getValue();
+                speedFactor *= SmartMovingConfig.headJumping.controlFactor;
+            } else if (!this.player.onGround && !this.player.capabilities.isFlying && !this.isFlying) {
+                speedFactor *= SmartMovingConfig.jumping.controlFactor;
             }
 
             float f3 = 0.1627714F / (horizontalDamping * horizontalDamping * horizontalDamping);
             float f4 = this.player.onGround ? this.getLandMovementFactor() * f3 : this.player.jumpMovementFactor;
             float rawSpeed = this.player.isSprinting() ? f4 / 1.3F : f4;
-            if (Config.isRunningEnabled() && this.isRunning() && !this.isFast) {
-                speedFactor *= Config._runFactor.getValue();
+            if (SmartMovingConfig.standardSprinting.enable && this.isRunning() && !this.isFast) {
+                speedFactor *= SmartMovingConfig.standardSprinting.factor;
             }
 
             this.moveFlying(0F, moveStrafing, moveForward, rawSpeed * speedFactor, false);
@@ -646,15 +644,15 @@ public class ControllerSelf extends Controller
             if (block != null) {
                 float slipperiness = block.slipperiness;
                 if (this.isSliding) {
-                    horizontalDamping = 1F / (((1F / slipperiness) - 1F) / 25F * Config._slideSlipperinessFactor.getValue() + 1F) * 0.98F;
-                    if (moveStrafing != 0 && Config._slideControlDegrees.getValue() > 0) {
+                    horizontalDamping = 1F / (((1F / slipperiness) - 1F) / 25F * SmartMovingConfig.sliding.slipperinessFactor + 1F) * 0.98F;
+                    if (moveStrafing != 0 && SmartMovingConfig.sliding.controlAngle > 0) {
                         double angle = -Math.atan(this.player.motionX / this.player.motionZ);
                         if (!Double.isNaN(angle)) {
                             if (this.player.motionZ < 0) {
                                 angle += Math.PI;
                             }
 
-                            angle -= Config._slideControlDegrees.getValue() / RadiantToAngle * Math.signum(moveStrafing);
+                            angle -= SmartMovingConfig.sliding.controlAngle / RadiantToAngle * Math.signum(moveStrafing);
 
                             double hMotion = Math.sqrt(this.player.motionX * this.player.motionX + this.player.motionZ * this.player.motionZ);
                             this.player.motionX = hMotion * -Math.sin(angle);
@@ -687,12 +685,12 @@ public class ControllerSelf extends Controller
             if (this.player.motionZ > f4) {
                 this.player.motionZ = f4;
             }
-            boolean notTotalFreeClimbing = !this.isClimbing && isOnLadder && !Config.isTotalFreeLadderClimb() || isOnVine && !Config.isTotalFreeVineClimb();
+            boolean notTotalFreeClimbing = !this.isClimbing && isOnLadder && !ConfigHelper.isTotalFreeLadderClimb() || isOnVine && !ConfigHelper.isTotalFreeVineClimb();
             if (notTotalFreeClimbing) {
                 this.player.fallDistance = 0.0F;
                 this.player.motionY = Math.max(this.player.motionY, -0.15 * this.getSpeedFactor());
             }
-            if (Config.isFreeBaseClimb()) {
+            if (ConfigHelper.isFreeBaseClimb()) {
                 if (isUsingItem || ((EntityPlayerSP) this.entityPlayer).movementInput.sneak && this.player.motionY < 0.0D && !this.player.onGround && notTotalFreeClimbing) {
                     this.player.motionY = 0.0D;
                 }
@@ -701,7 +699,7 @@ public class ControllerSelf extends Controller
                     this.player.motionY = 0.0D;
                 }
             }
-        } else if (Config.isFreeClimbAutoLaddderEnabled() && moveForward > 0) {
+        } else if (SmartMovingConfig.climb.freeLadderAuto && moveForward > 0) {
             int j = MathHelper.floor(this.getBoundingBox().minY);
             double jGap = this.getBoundingBox().minY - j;
 
@@ -723,11 +721,11 @@ public class ControllerSelf extends Controller
 
         boolean isOnLadderOrVine = isOnLadder || isOnVine;
 
-        if (Config.isStandardBaseClimb() && this.player.collidedHorizontally && isOnLadderOrVine) {
+        if (ConfigHelper.isStandardBaseClimb() && this.player.collidedHorizontally && isOnLadderOrVine) {
             this.player.motionY = 0.2 * this.getSpeedFactor();
         }
 
-        if (Config.isSimpleBaseClimb() && this.player.collidedHorizontally && isOnLadderOrVine) {
+        if (ConfigHelper.isSimpleBaseClimb() && this.player.collidedHorizontally && isOnLadderOrVine) {
             int i = MathHelper.floor(this.player.posX);
             int j = MathHelper.floor(this.getBoundingBox().minY);
             int k = MathHelper.floor(this.player.posZ);
@@ -748,7 +746,7 @@ public class ControllerSelf extends Controller
             this.player.motionY *= this.getSpeedFactor();
         }
 
-        if (Config.isSmartBaseClimb() || Config.isFreeClimbingEnabled()) {
+        if (ConfigHelper.isSmartBaseClimb() || SmartMovingConfig.climb.enable) {
             double id = this.player.posX;
             double jd = this.getBoundingBox().minY;
             double kd = this.player.posZ;
@@ -757,7 +755,7 @@ public class ControllerSelf extends Controller
             int j = MathHelper.floor(jd);
             int k = MathHelper.floor(kd);
 
-            if (Config.isSmartBaseClimb() && isOnLadderOrVine && this.player.collidedHorizontally) {
+            if (ConfigHelper.isSmartBaseClimb() && isOnLadderOrVine && this.player.collidedHorizontally) {
                 boolean feet = Orientation.isClimbable(this.player.world, i, j, k);
                 boolean hands = Orientation.isClimbable(this.player.world, i, j + 1, k);
 
@@ -792,15 +790,15 @@ public class ControllerSelf extends Controller
                 this.player.motionY *= this.getSpeedFactor();
             }
 
-            if (Config.isFreeClimbingEnabled() && this.player.fallDistance <= Config._freeClimbFallMaximumDistance.getValue() && (!isOnLadderOrVine || Config.isFreeBaseClimb())) {
-                boolean exhaustionAllowsClimbing = !Config.isClimbExhaustionEnabled()
-                        || (this.exhaustion <= Config._climbExhaustionStop.getValue() && (wasClimbing || this.exhaustion <= Config._climbExhaustionStart.getValue()));
+            if (SmartMovingConfig.climb.enable && this.player.fallDistance <= SmartMovingConfig.climb.fallMaximumDistance && (!isOnLadderOrVine || ConfigHelper.isFreeBaseClimb())) {
+                boolean exhaustionAllowsClimbing = !SmartMovingConfig.climb.exhaustion
+                        || (this.exhaustion <= SmartMovingConfig.climb.exhaustionStop && (wasClimbing || this.exhaustion <= SmartMovingConfig.climb.exhaustionStart));
 
                 boolean preferClimb = false;
                 if (this.wantClimbUp || this.wantClimbDown) {
-                    if (Config.isClimbExhaustionEnabled()) {
-                        this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, Config._climbExhaustionStop.getValue());
-                        this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, Config._climbExhaustionStart.getValue());
+                    if (SmartMovingConfig.climb.exhaustion) {
+                        this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, SmartMovingConfig.climb.exhaustionStop);
+                        this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, SmartMovingConfig.climb.exhaustionStart);
                     }
                     if (exhaustionAllowsClimbing) {
                         preferClimb = true;
@@ -892,7 +890,7 @@ public class ControllerSelf extends Controller
                                 this.setShouldClimbSpeed(SlowUpMotion);
                             } else if (handsClimbing == HandsClimbing.TopHold || feetClimbing == FeetClimbing.BaseHold || (feetClimbing == FeetClimbing.SlowUpWithHoldWithoutHands && handsClimbing == HandsClimbing.None)) {
                                 // holding at top
-                                if (!this.jumpButton.startPressed || !(this.isClimbJumping = this.tryJump(feetClimbing != FeetClimbing.None ? ClientConfig.ClimbUp : ClientConfig.ClimbUpHandsOnly, null, null, null))) {
+                                if (!this.jumpButton.startPressed || !(this.isClimbJumping = this.tryJump(feetClimbing != FeetClimbing.None ? ConfigHelper.ClimbUp : ConfigHelper.ClimbUpHandsOnly, null, null, null))) {
                                     if (handsClimbing == HandsClimbing.Sink && feetClimbing == FeetClimbing.BaseHold || handsClimbing == HandsClimbing.TopHold && feetClimbing == FeetClimbing.TopWithHands) {
                                         this.setShouldClimbSpeed(HoldMotion, HandsClimbing.MiddleGrab, FeetClimbing.DownStep);
                                     } else {
@@ -935,9 +933,9 @@ public class ControllerSelf extends Controller
                                 if (this.jumpButton.startPressed) {
                                     boolean handsOnly = feetClimbing != FeetClimbing.None;
 
-                                    int type = (Options._climbJumpBackHeadOnGrab.getValue() == this.grabButton.isPressed)
-                                            ? (handsOnly ? ClientConfig.ClimbBackHead : ClientConfig.ClimbBackHeadHandsOnly)
-                                            : (handsOnly ? ClientConfig.ClimbBackUp : ClientConfig.ClimbBackUpHandsOnly);
+                                    int type = (SmartMovingConfig.userInterface.jumpClimbBackHeadOnGrab == this.grabButton.isPressed)
+                                            ? (handsOnly ? ConfigHelper.ClimbBackHead : ConfigHelper.ClimbBackHeadHandsOnly)
+                                            : (handsOnly ? ConfigHelper.ClimbBackUp : ConfigHelper.ClimbBackUpHandsOnly);
 
                                     float jumpAngle = this.player.rotationYaw + 180F;
                                     if (this.tryJump(type, null, null, jumpAngle)) {
@@ -951,7 +949,7 @@ public class ControllerSelf extends Controller
                         }
 
                         if (this.isClimbing) {
-                            this.handleCrash(Config._freeClimbFallDamageStartDistance.getValue(), Config._freeClimbFallDamageFactor.getValue());
+                            this.handleCrash(SmartMovingConfig.climb.fallDamageStartDistance, SmartMovingConfig.climb.fallDamageFactor);
                         }
 
                         if (this.wantClimbUp || this.wantClimbDown) {
@@ -985,15 +983,15 @@ public class ControllerSelf extends Controller
 
     private void handleCeilingClimbing(boolean wasCeilingClimbing)
     {
-        boolean exhaustionAllowsClimbCeiling = !Config.isCeilingClimbExhaustionEnabled()
-                || (this.exhaustion <= Config._ceilingClimbExhaustionStop.getValue()
-                && (wasCeilingClimbing || this.exhaustion <= Config._ceilingClimbExhaustionStart.getValue()));
+        boolean exhaustionAllowsClimbCeiling = !SmartMovingConfig.climb.ceilingExhaustion
+                || (this.exhaustion <= SmartMovingConfig.climb.ceilingExhaustionStop
+                && (wasCeilingClimbing || this.exhaustion <= SmartMovingConfig.climb.ceilingExhaustionStart));
 
-        boolean climbCeilingCrawlingStartConflict = !Config.isFreeClimbingEnabled() && this.isCrawling && !this.wasCrawling;
+        boolean climbCeilingCrawlingStartConflict = !SmartMovingConfig.climb.enable && this.isCrawling && !this.wasCrawling;
         boolean couldClimbCeiling = this.wantClimbCeiling && !this.isClimbing && (!this.isCrawling || climbCeilingCrawlingStartConflict) && !this.isCrawlClimbing;
-        if (couldClimbCeiling && Config.isCeilingClimbExhaustionEnabled()) {
-            this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, Config._ceilingClimbExhaustionStop.getValue());
-            this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, Config._ceilingClimbExhaustionStart.getValue());
+        if (couldClimbCeiling && SmartMovingConfig.climb.ceilingExhaustion) {
+            this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, SmartMovingConfig.climb.ceilingExhaustionStop);
+            this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, SmartMovingConfig.climb.ceilingExhaustionStart);
         }
 
         if (couldClimbCeiling && exhaustionAllowsClimbCeiling) {
@@ -1052,7 +1050,6 @@ public class ControllerSelf extends Controller
     private void handleExhaustion(double diffX, double diffY, double diffZ)
     {
         float hungerIncrease = 0;
-        if (Config.enabled) {
             boolean isRunning = this.isRunning();
             boolean isVerticalStill = Math.abs(diffY) < 0.007;
             boolean isStill = this.isStanding && isVerticalStill;
@@ -1063,30 +1060,30 @@ public class ControllerSelf extends Controller
 
                 int relevantMovementFactor = Math.round(movement * 100F);
 
-                if (Config.isHungerGainEnabled()) {
-                    float hungerGainFactor = Config.getFactor(true, this.player.onGround, this.isStanding, isStill, this.isSlow, isRunning, this.isFast, this.isClimbing, this.isClimbCrawling, this.isCeilingClimbing, this.isDipping, this.isSwimming, this.isDiving, this.isCrawling, this.isCrawlClimbing);
-                    hungerIncrease += Config._alwaysHungerGain.getValue() + relevantMovementFactor * 0.0001F * hungerGainFactor;
+                if (SmartMovingConfig.hunger.enable) {
+                    float hungerGainFactor = ConfigHelper.getFactor(true, this.player.onGround, this.isStanding, isStill, this.isSlow, isRunning, this.isFast, this.isClimbing, this.isClimbCrawling, this.isCeilingClimbing, this.isDipping, this.isSwimming, this.isDiving, this.isCrawling, this.isCrawlClimbing);
+                    hungerIncrease += SmartMovingConfig.hunger.perTickGainFactor + relevantMovementFactor * 0.0001F * hungerGainFactor;
                 }
 
                 float additionalExhaustion = 0F;
-                if (this.isClimbing && !isStill && Config.isClimbExhaustionEnabled()) {
-                    float climbingExhaustion = Config._baseExhautionGainFactor.getValue();
+                if (this.isClimbing && !isStill && SmartMovingConfig.climb.exhaustion) {
+                    float climbingExhaustion = SmartMovingConfig.exhaustion.gainFactor;
                     if (isVerticalStill) {
-                        climbingExhaustion *= Config._climbStrafeExhaustionGain.getValue();
+                        climbingExhaustion *= SmartMovingConfig.climb.strafeExhaustionGain;
                     } else {
                         if (!this.isStanding) {
                             if (this.wantClimbUp) {
-                                climbingExhaustion *= Config._climbStrafeUpExhaustionGain.getValue();
+                                climbingExhaustion *= SmartMovingConfig.climb.strafeUpExhaustionGain;
                             } else if (this.wantClimbDown) {
-                                climbingExhaustion *= Config._climbStrafeDownExhaustionGain.getValue();
+                                climbingExhaustion *= SmartMovingConfig.climb.strafeDownExhaustionGain;
                             } else {
                                 climbingExhaustion *= 0F;
                             }
                         } else {
                             if (this.wantClimbUp) {
-                                climbingExhaustion *= Config._climbUpExhaustionGain.getValue();
+                                climbingExhaustion *= SmartMovingConfig.climb.upExhaustionGain;
                             } else if (this.wantClimbDown) {
-                                climbingExhaustion *= Config._climbDownExhaustionGain.getValue();
+                                climbingExhaustion *= SmartMovingConfig.climb.downExhaustionGain;
                             } else {
                                 climbingExhaustion *= 0F;
                             }
@@ -1095,36 +1092,36 @@ public class ControllerSelf extends Controller
                     additionalExhaustion += climbingExhaustion;
                 }
 
-                if (this.isCeilingClimbing && !this.isStanding && Config.isCeilingClimbExhaustionEnabled()) {
-                    additionalExhaustion += Config._baseExhautionGainFactor.getValue() * Config._ceilingClimbExhaustionGain.getValue();
+                if (this.isCeilingClimbing && !this.isStanding && SmartMovingConfig.climb.ceilingExhaustion) {
+                    additionalExhaustion += SmartMovingConfig.exhaustion.gainFactor * SmartMovingConfig.climb.ceilingExhaustionGain;
                 }
 
-                if (this.isFast && Config.isSprintExhaustionEnabled()) {
+                if (this.isFast && SmartMovingConfig.genericSprinting.exhaustion) {
                     if (additionalExhaustion == 0) {
-                        additionalExhaustion = Config._baseExhautionGainFactor.getValue();
+                        additionalExhaustion = SmartMovingConfig.exhaustion.gainFactor;
                     }
 
-                    additionalExhaustion *= Config._sprintExhaustionGainFactor.getValue();
+                    additionalExhaustion *= SmartMovingConfig.genericSprinting.exhaustionGainFactor;
                 }
 
-                if (this.isRunning() && Config.isRunExhaustionEnabled()) {
+                if (this.isRunning() && SmartMovingConfig.standardSprinting.exhaustion) {
                     if (additionalExhaustion == 0) {
-                        additionalExhaustion = Config._baseExhautionGainFactor.getValue();
+                        additionalExhaustion = SmartMovingConfig.exhaustion.gainFactor;
                     }
 
-                    additionalExhaustion *= Config._runExhaustionGainFactor.getValue();
+                    additionalExhaustion *= SmartMovingConfig.standardSprinting.exhaustionGainFactor;
                 }
 
                 if (this.foreignExhaustionFactor > 0) {
-                    additionalExhaustion += this.foreignExhaustionFactor * Config._baseExhautionGainFactor.getValue();
+                    additionalExhaustion += this.foreignExhaustionFactor * SmartMovingConfig.exhaustion.gainFactor;
 
                     if (this.foreignMaxExhaustionForAction == Float.MAX_VALUE) {
-                        this.foreignMaxExhaustionForAction = Config.getMaxExhaustion();
+                        this.foreignMaxExhaustionForAction = ConfigHelper.getMaxExhaustion();
                     }
                     this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, this.foreignMaxExhaustionForAction);
 
                     if (this.foreignMaxExhaustionToStartAction == Float.MAX_VALUE) {
-                        this.foreignMaxExhaustionToStartAction = Config.getMaxExhaustion();
+                        this.foreignMaxExhaustionToStartAction = ConfigHelper.getMaxExhaustion();
                     }
                     this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, this.foreignMaxExhaustionToStartAction);
                 }
@@ -1133,12 +1130,12 @@ public class ControllerSelf extends Controller
             }
 
             if (this.exhaustion > 0) {
-                boolean exhaustionLossPossible = !Config.isExhaustionLossHungerEnabled() || this.player.getFoodStats().getFoodLevel() > Config._exhaustionLossFoodLevelMinimum.getValue();
+                boolean exhaustionLossPossible = !ConfigHelper.isExhaustionLossHungerEnabled() || this.player.getFoodStats().getFoodLevel() > SmartMovingConfig.exhaustion.foodMinimum;
                 if (exhaustionLossPossible) {
-                    float exhaustionLossFactor = Config.getFactor(false, this.player.onGround, this.isStanding, isStill, this.isSlow, isRunning, this.isFast, this.isClimbing, this.isClimbCrawling, this.isCeilingClimbing, this.isDipping, this.isSwimming, this.isDiving, this.isCrawling, this.isCrawlClimbing);
+                    float exhaustionLossFactor = ConfigHelper.getFactor(false, this.player.onGround, this.isStanding, isStill, this.isSlow, isRunning, this.isFast, this.isClimbing, this.isClimbCrawling, this.isCeilingClimbing, this.isDipping, this.isSwimming, this.isDiving, this.isCrawling, this.isCrawlClimbing);
                     this.exhaustion -= exhaustionLossFactor;
-                    if (Config.isExhaustionLossHungerEnabled()) {
-                        hungerIncrease += Config._exhaustionLossHungerFactor.getValue() * exhaustionLossFactor;
+                    if (ConfigHelper.isExhaustionLossHungerEnabled()) {
+                        hungerIncrease += SmartMovingConfig.exhaustion.hungerFactor * exhaustionLossFactor;
                     }
                 }
             }
@@ -1162,7 +1159,6 @@ public class ControllerSelf extends Controller
             this.foreignExhaustionFactor = 0;
             this.foreignMaxExhaustionForAction = Float.MAX_VALUE;
             this.foreignMaxExhaustionToStartAction = Float.MAX_VALUE;
-        }
 
         this.player.addExhaustion(hungerIncrease);
         MessageHandler.INSTANCE.sendToServer(new MessageHungerChangeServer(hungerIncrease));
@@ -1320,23 +1316,23 @@ public class ControllerSelf extends Controller
         if (value != HoldMotion) {
             float factor = this.getSpeedFactor();
             if (this.isFast) {
-                factor *= Config._sprintFactor.getValue();
+                factor *= SmartMovingConfig.genericSprinting.factor;
             }
-            if (Config.isFreeBaseClimb() && value == MediumUpMotion) {
+            if (ConfigHelper.isFreeBaseClimb() && value == MediumUpMotion) {
                 switch (this.getOnLadder(Integer.MAX_VALUE, false, this.isClimbCrawling)) {
                     case 1:
-                        factor *= Config._freeOneLadderClimbUpSpeedFactor.getValue();
+                        factor *= SmartMovingConfig.climb.freeLadderOneUpSpeedFactor;
                         break;
                     case 2:
-                        factor *= Config._freeBothLadderClimbUpSpeedFactor.getValue();
+                        factor *= SmartMovingConfig.climb.freeLadderTwoUpSpeedFactor;
                         break;
                 }
             }
 
             if (value > HoldMotion) {
-                value = ((value - HoldMotion) * Config._freeClimbingUpSpeedFactor.getValue() * factor + HoldMotion);
+                value = ((value - HoldMotion) * SmartMovingConfig.climb.freeUpSpeedFactor * factor + HoldMotion);
             } else {
-                value = HoldMotion - (HoldMotion - value) * Config._freeClimbingDownSpeedFactor.getValue() * factor;
+                value = HoldMotion - (HoldMotion - value) * SmartMovingConfig.climb.freeDownSpeedFactor * factor;
             }
 
             if (this.hasClimbCrawlGap && this.isClimbCrawling && value > HoldMotion) {
@@ -1450,7 +1446,7 @@ public class ControllerSelf extends Controller
 
     private void playSound(String id, float volume, float pitch)
     {
-        SoundEvent soundEvent = SoundUtil.getSoundEvent(id);
+        SoundEvent soundEvent = SoundEvent.REGISTRY.getObject(new ResourceLocation(id));
         if (soundEvent != null) {
             this.playSound(soundEvent, volume, pitch);
         }
@@ -1544,7 +1540,6 @@ public class ControllerSelf extends Controller
 
         float landMovementFactor = this.getLandMovementFactor();
 
-        if (Config.enabled) {
             float perspectiveFactor = landMovementFactor;
             if (this.isFast || this.isSprintJump || this.isRunning()) {
                 if (this.player.isSprinting()) {
@@ -1552,18 +1547,17 @@ public class ControllerSelf extends Controller
                 }
 
                 if (this.isFast || this.isSprintJump) {
-                    perspectiveFactor *= Options._perspectiveSprintFactor.getValue();
+                    perspectiveFactor *= SmartMovingConfig.viewpointPerspective.sprintFactor;
                 } else if (this.isRunning()) {
-                    perspectiveFactor *= 1.3F * Options._perspectiveRunFactor.getValue();
+                    perspectiveFactor *= 1.3F * SmartMovingConfig.viewpointPerspective.runFactor;
                 }
             }
 
             if (this.fadingPerspectiveFactor != -1) {
-                this.fadingPerspectiveFactor += (perspectiveFactor - this.fadingPerspectiveFactor) * Options._perspectiveFadeFactor.getValue();
+                this.fadingPerspectiveFactor += (perspectiveFactor - this.fadingPerspectiveFactor) * SmartMovingConfig.viewpointPerspective.fadeFactor;
             } else {
                 this.fadingPerspectiveFactor = landMovementFactor;
             }
-        }
 
         if (this.player.capabilities.disableDamage) {
             this.exhaustion = 0;
@@ -1596,7 +1590,7 @@ public class ControllerSelf extends Controller
 
     public void afterOnLivingUpdate()
     {
-        if (Options._flyWhileOnGround.getValue() && !(this.sneakButton.isPressed && this.grabButton.isPressed) && this.wasCapabilitiesIsFlying && !this.player.capabilities.isFlying && this.player.onGround) {
+        if (SmartMovingConfig.userInterface.flyGroundCollide && !(this.sneakButton.isPressed && this.grabButton.isPressed) && this.wasCapabilitiesIsFlying && !this.player.capabilities.isFlying && this.player.onGround) {
             this.player.cameraYaw = 0;
             this.player.prevCameraYaw = 0;
             this.player.capabilities.isFlying = true;
@@ -1630,17 +1624,17 @@ public class ControllerSelf extends Controller
         this.jumpMotionZ = this.player.motionZ;
 
         boolean isJumpCharging = false;
-        if (Config.isJumpChargingEnabled()) {
+        if (SmartMovingConfig.chargedJumping.enable) {
             boolean isJumpChargingPossible = this.player.onGround && this.isStanding;
             isJumpCharging = isJumpChargingPossible && this.wouldIsSneaking;
 
-            boolean actualJumpCharging = isJumpChargingPossible && (!Config._jumpChargeCancelOnSneakRelease.getValue() || this.wouldIsSneaking);
+            boolean actualJumpCharging = isJumpChargingPossible && (!SmartMovingConfig.chargedJumping.sneakReleaseCancel || this.wouldIsSneaking);
             if (actualJumpCharging) {
-                if (((EntityPlayerSP) this.entityPlayer).movementInput.jump && (Config._jumpChargeCancelOnSneakRelease.getValue() || this.wouldIsSneaking)) {
+                if (((EntityPlayerSP) this.entityPlayer).movementInput.jump && (SmartMovingConfig.chargedJumping.sneakReleaseCancel || this.wouldIsSneaking)) {
                     this.jumpCharge++;
                 } else {
                     if (this.jumpCharge > 0) {
-                        this.tryJump(ClientConfig.ChargeUp, null, null, null);
+                        this.tryJump(ConfigHelper.ChargeUp, null, null, null);
                     }
                     this.jumpCharge = 0;
                 }
@@ -1653,14 +1647,14 @@ public class ControllerSelf extends Controller
         }
 
         boolean isHeadJumpCharging = false;
-        if (Config.isHeadJumpingEnabled()) {
+        if (SmartMovingConfig.headJumping.enable) {
             isHeadJumpCharging = this.grabButton.isPressed && (this.isGroundSprinting || this.isSprintJump || (this.isRunning() && this.player.onGround)) && !this.isCrawling;
             if (isHeadJumpCharging) {
                 if (((EntityPlayerSP) this.entityPlayer).movementInput.jump) {
                     this.headJumpCharge++;
                 } else {
                     if (this.headJumpCharge > 0 && this.player.onGround) {
-                        this.tryJump(ClientConfig.HeadUp, null, null, null);
+                        this.tryJump(ConfigHelper.HeadUp, null, null, null);
                     }
                     this.headJumpCharge = 0;
                 }
@@ -1676,7 +1670,7 @@ public class ControllerSelf extends Controller
             if (this.player.posY - MathHelper.floor(this.player.posY) > (this.isSlow ? 0.37 : 0.6)) {
                 this.player.motionY -= 0.04D;
                 if (!this.isStillSwimmingJump && this.player.onGround && this.jumpCharge == 0) {
-                    if (this.tryJump(ClientConfig.Up, true, null, null)) {
+                    if (this.tryJump(ConfigHelper.Up, true, null, null)) {
                         Random rand = this.player.getRNG();
                         this.playSound("random.splash", 0.05F, 1.0F + (rand.nextFloat() - rand.nextFloat()) * 0.4F);
                     }
@@ -1685,7 +1679,7 @@ public class ControllerSelf extends Controller
         }
 
         if (jump && !this.blockJumpTillButtonRelease && !isJumpCharging && !isHeadJumpCharging && !this.isVineAnyClimbing) {
-            this.tryJump(ClientConfig.Up, false, null, null);
+            this.tryJump(ConfigHelper.Up, false, null, null);
         }
 
         int left = 0;
@@ -1710,7 +1704,7 @@ public class ControllerSelf extends Controller
                 angle = 180;
             }
 
-            if (this.tryJump(ClientConfig.Angle, null, null, this.player.rotationYaw + angle)) {
+            if (this.tryJump(ConfigHelper.Angle, null, null, this.player.rotationYaw + angle)) {
                 this.angleJumpType = ((360 - angle) / 45) % 8;
             }
 
@@ -1728,15 +1722,15 @@ public class ControllerSelf extends Controller
 
         int jumpType;
         if (this.grabButton.isPressed) {
-            if (this.player.fallDistance > Config._wallHeadJumpFallMaximumDistance.getValue()) {
+            if (this.player.fallDistance > SmartMovingConfig.wallHeadJumping.fallMaximumDistance) {
                 return;
             }
-            jumpType = this.wasCollidedHorizontally ? ClientConfig.WallHeadSlide : ClientConfig.WallHead;
+            jumpType = this.wasCollidedHorizontally ? ConfigHelper.WallHeadSlide : ConfigHelper.WallHead;
         } else {
-            if (this.player.fallDistance > Config._wallUpJumpFallMaximumDistance.getValue()) {
+            if (this.player.fallDistance > SmartMovingConfig.wallJumping.fallMaximumDistance) {
                 return;
             }
-            jumpType = this.wasCollidedHorizontally ? ClientConfig.WallUpSlide : ClientConfig.WallUp;
+            jumpType = this.wasCollidedHorizontally ? ConfigHelper.WallUpSlide : ConfigHelper.WallUp;
         }
 
         float jumpAngle;
@@ -1755,13 +1749,13 @@ public class ControllerSelf extends Controller
             jumpAngle -= 360F;
         }
 
-        if (Config._wallUpJumpOrthogonalTolerance.getValue() != 0F) {
+        if (SmartMovingConfig.wallJumping.orthogonalTolerance != 0.0F) {
             float aligned = jumpAngle;
             while (aligned > 45F) {
                 aligned -= 90F;
             }
 
-            if (Math.abs(aligned) < Config._wallUpJumpOrthogonalTolerance.getValue()) {
+            if (Math.abs(aligned) < SmartMovingConfig.wallJumping.orthogonalTolerance) {
                 jumpAngle = Math.round(jumpAngle / 90F) * 90F;
             }
         }
@@ -1777,28 +1771,28 @@ public class ControllerSelf extends Controller
     public boolean tryJump(int type, Boolean inWaterOrNull, Boolean isRunningOrNull, Float angle)
     {
         boolean noVertical = false;
-        if (type == ClientConfig.WallUpSlide || type == ClientConfig.WallHeadSlide) {
-            type = type == ClientConfig.WallUpSlide ? ClientConfig.WallUp : ClientConfig.WallHead;
+        if (type == ConfigHelper.WallUpSlide || type == ConfigHelper.WallHeadSlide) {
+            type = type == ConfigHelper.WallUpSlide ? ConfigHelper.WallUp : ConfigHelper.WallHead;
             noVertical = true;
         }
 
         boolean inWater = inWaterOrNull != null ? inWaterOrNull : this.isDipping;
         boolean isRunning = isRunningOrNull != null ? isRunningOrNull : this.isRunning();
-        boolean charged = type == ClientConfig.ChargeUp;
-        boolean up = type == ClientConfig.Up || type == ClientConfig.ChargeUp || type == ClientConfig.HeadUp || type == ClientConfig.ClimbUp || type == ClientConfig.ClimbUpHandsOnly || type == ClientConfig.ClimbBackUp || type == ClientConfig.ClimbBackUpHandsOnly || type == ClientConfig.ClimbBackHead || type == ClientConfig.ClimbBackHeadHandsOnly || type == ClientConfig.Angle || type == ClientConfig.WallUp || type == ClientConfig.WallHead;
-        boolean head = type == ClientConfig.HeadUp || type == ClientConfig.ClimbBackHead || type == ClientConfig.ClimbBackHeadHandsOnly || type == ClientConfig.WallHead;
+        boolean charged = type == ConfigHelper.ChargeUp;
+        boolean up = type == ConfigHelper.Up || type == ConfigHelper.ChargeUp || type == ConfigHelper.HeadUp || type == ConfigHelper.ClimbUp || type == ConfigHelper.ClimbUpHandsOnly || type == ConfigHelper.ClimbBackUp || type == ConfigHelper.ClimbBackUpHandsOnly || type == ConfigHelper.ClimbBackHead || type == ConfigHelper.ClimbBackHeadHandsOnly || type == ConfigHelper.Angle || type == ConfigHelper.WallUp || type == ConfigHelper.WallHead;
+        boolean head = type == ConfigHelper.HeadUp || type == ConfigHelper.ClimbBackHead || type == ConfigHelper.ClimbBackHeadHandsOnly || type == ConfigHelper.WallHead;
 
         int speed = getJumpSpeed(this.isStanding, this.isSlow, isRunning, this.isFast, angle);
-        boolean enabled = Config.isJumpingEnabled(speed, type);
+        boolean enabled = ConfigHelper.isJumpingEnabled(speed, type);
         if (enabled) {
-            boolean exhaustionEnabled = Config.isJumpExhaustionEnabled(speed, type);
+            boolean exhaustionEnabled = ConfigHelper.isJumpExhaustionEnabled(speed, type);
             if (exhaustionEnabled) {
-                float maxExhaustionForJump = Config.getJumpExhaustionStop(speed, type, this.jumpCharge);
+                float maxExhaustionForJump = ConfigHelper.getJumpExhaustionStop(speed, type, this.jumpCharge);
                 if (this.exhaustion > maxExhaustionForJump) {
                     return false;
                 }
                 this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, maxExhaustionForJump);
-                this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, maxExhaustionForJump + Config.getJumpExhaustionGain(speed, type, this.jumpCharge));
+                this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, maxExhaustionForJump + ConfigHelper.getJumpExhaustionGain(speed, type, this.jumpCharge));
             }
 
             float jumpFactor = 1;
@@ -1809,9 +1803,9 @@ public class ControllerSelf extends Controller
                 }
             }
 
-            float horizontalJumpFactor = Config.getJumpHorizontalFactor(speed, type) * jumpFactor;
-            float verticalJumpFactor = Config.getJumpVerticalFactor(speed, type) * jumpFactor;
-            float jumpChargeFactor = charged ? Config.getJumpChargeFactor(this.jumpCharge) : 1F;
+            float horizontalJumpFactor = ConfigHelper.getJumpHorizontalFactor(speed, type) * jumpFactor;
+            float verticalJumpFactor = ConfigHelper.getJumpVerticalFactor(speed, type) * jumpFactor;
+            float jumpChargeFactor = charged ? ConfigHelper.getJumpChargeFactor(this.jumpCharge) : 1F;
 
             if (!up) {
                 horizontalJumpFactor = MathHelper.sqrt(horizontalJumpFactor * horizontalJumpFactor + verticalJumpFactor * verticalJumpFactor);
@@ -1823,14 +1817,14 @@ public class ControllerSelf extends Controller
             double verticalMotion = -0.078 + 0.498 * verticalJumpFactor * jumpChargeFactor;
 
             if (horizontalJumpFactor > 1F && !this.player.collidedHorizontally) {
-                maxHorizontalMotion = (double) Config.getMaxHorizontalMotion(speed, inWater) * this.getSpeedFactor();
+                maxHorizontalMotion = (double) ConfigHelper.getMaxHorizontalMotion(speed, inWater) * this.getSpeedFactor();
             }
 
             if (head) {
                 double normalAngle = Math.atan(verticalMotion / horizontalMotion);
                 double totalMotion = Math.sqrt(verticalMotion * verticalMotion + horizontalMotion * horizontalMotion);
 
-                double newAngle = Config.getHeadJumpFactor(this.headJumpCharge) * normalAngle;
+                double newAngle = ConfigHelper.getHeadJumpFactor(this.headJumpCharge) * normalAngle;
                 double newVerticalMotion = totalMotion * Math.sin(newAngle);
                 double newHorizontalMotion = totalMotion * Math.cos(newAngle);
 
@@ -1844,7 +1838,7 @@ public class ControllerSelf extends Controller
 
             if (angle != null) {
                 float jumpAngle = angle / RadiantToAngle;
-                boolean reset = type == ClientConfig.WallUp || type == ClientConfig.WallHead;
+                boolean reset = type == ConfigHelper.WallUp || type == ConfigHelper.WallHead;
 
                 double horizontal = Math.max(horizontalMotion, horizontalJumpFactor);
                 double moveX = -Math.sin(jumpAngle);
@@ -1877,7 +1871,7 @@ public class ControllerSelf extends Controller
             }
 
             if (exhaustionEnabled) {
-                float exhaustionFromJump = Config.getJumpExhaustionGain(speed, type, this.jumpCharge);
+                float exhaustionFromJump = ConfigHelper.getJumpExhaustionGain(speed, type, this.jumpCharge);
                 this.exhaustion += exhaustionFromJump;
             }
 
@@ -1909,15 +1903,15 @@ public class ControllerSelf extends Controller
         isRunning &= angle == null;
 
         if (isSprinting) {
-            return ClientConfig.Sprinting;
+            return ConfigHelper.Sprinting;
         } else if (isRunning) {
-            return ClientConfig.Running;
+            return ConfigHelper.Running;
         } else if (isSlow) {
-            return ClientConfig.Sneaking;
+            return ConfigHelper.Sneaking;
         } else if (isStanding) {
-            return ClientConfig.Standing;
+            return ConfigHelper.Standing;
         } else {
-            return ClientConfig.Walking;
+            return ConfigHelper.Walking;
         }
     }
 
@@ -1983,7 +1977,7 @@ public class ControllerSelf extends Controller
     {
         this.move(0, (-gapUnderneight), 0, true);
 
-        if (Config.isSlidingEnabled() && (this.grabButton.isPressed || this.wasHeadJumping)) {
+        if (SmartMovingConfig.sliding.enable && (this.grabButton.isPressed || this.wasHeadJumping)) {
             this.isSliding = true;
         } else {
             this.wasCrawling = this.toCrawling();
@@ -2024,36 +2018,6 @@ public class ControllerSelf extends Controller
         boolean isLevitating = this.player.capabilities.isFlying && !this.isFlying;
         boolean isRunning = this.isRunning();
 
-        this.toggleButton.update(Options.keyBindConfigToggle);
-        this.speedIncreaseButton.update(Options.keyBindSpeedIncrease);
-        this.speedDecreaseButton.update(Options.keyBindSpeedDecrease);
-
-        if (this.toggleButton.startPressed) {
-            if (Config == Options) {
-                Config.toggle();
-            } else {
-                MessageHandler.INSTANCE.sendToServer(new MessageConfigChangeServer());
-            }
-        }
-
-        if (Config.isUserSpeedEnabled() && !Config.isUserSpeedAlwaysDefault() && (this.speedIncreaseButton.startPressed || this.speedDecreaseButton.startPressed)) {
-            int difference = 0;
-            if (this.speedIncreaseButton.startPressed) {
-                difference++;
-            }
-            if (this.speedDecreaseButton.startPressed) {
-                difference--;
-            }
-
-            if (difference != 0) {
-                if (Config == Options) {
-                    Config.changeSpeed(difference);
-                } else {
-                    MessageHandler.INSTANCE.sendToServer(new MessageSpeedChangeClient(difference, null));
-                }
-            }
-        }
-
         boolean initializeCrawling = false;
         if (!this.initialized && !(this.player.world.isRemote && this.multiPlayerInitialized != 0) && !this.player.isRiding()) {
             if (this.getMaxPlayerSolidBetween(this.getBoundingBox().minY, this.getBoundingBox().maxY, 0) > this.getBoundingBox().minY) {
@@ -2077,13 +2041,13 @@ public class ControllerSelf extends Controller
             this.playerBase.setMoveStrafingField(Math.signum(((EntityPlayerSP) this.entityPlayer).movementInput.moveStrafe));
             this.playerBase.setMoveForwardField(Math.signum(((EntityPlayerSP) this.entityPlayer).movementInput.moveForward));
             this.playerBase.setIsJumpingField(((EntityPlayerSP) this.entityPlayer).movementInput.jump && !this.isCrawling && !this.isSliding &&
-                    !(Config.isHeadJumpingEnabled() && this.grabButton.isPressed && this.player.isSprinting()) &&
-                    !(Config.isJumpChargingEnabled() && this.wouldIsSneaking && this.player.onGround && this.isStanding) &&
+                    !(SmartMovingConfig.headJumping.enable && this.grabButton.isPressed && this.player.isSprinting()) &&
+                    !(SmartMovingConfig.chargedJumping.enable && this.wouldIsSneaking && this.player.onGround && this.isStanding) &&
                     !this.blockJumpTillButtonRelease);
         }
 
         boolean isSleeping = this.playerBase.getSleepingField();
-        boolean disabled = !Config.enabled || this.player.isRiding() || isSleeping || startSleeping;
+        boolean disabled = this.player.isRiding() || isSleeping || startSleeping;
 
         Minecraft minecraft = this.playerBase.getMcField();
         GameSettings gameSettings = minecraft.gameSettings;
@@ -2095,7 +2059,7 @@ public class ControllerSelf extends Controller
         this.jumpButton.update(gameSettings.keyBindJump);
         this.sprintButton.update(gameSettings.keyBindSprint);
         this.sneakButton.update(gameSettings.keyBindSneak);
-        this.grabButton.update(Options.keyBindGrab);
+        this.grabButton.update(Keybinds.GRAB);
 
         double horizontalSpeedSquare = this.player.motionX * this.player.motionX + this.player.motionZ * this.player.motionZ;
         // double verticalSpeedSquare = (sp.motionY + HoldMotion) * (sp.motionY + HoldMotion);
@@ -2106,16 +2070,16 @@ public class ControllerSelf extends Controller
         boolean mustCrawl = false;
         double crawlStandUpBottom = -1;
         if (this.isCrawling || this.isClimbCrawling) {
-            crawlStandUpBottom = this.getMaxPlayerSolidBetween(this.getBoundingBox().minY - (initializeCrawling ? 0D : 1D), this.getBoundingBox().minY, Config._crawlOverEdge.getValue() ? 0 : -0.05);
+            crawlStandUpBottom = this.getMaxPlayerSolidBetween(this.getBoundingBox().minY - (initializeCrawling ? 0D : 1D), this.getBoundingBox().minY, SmartMovingConfig.crawling.edge ? 0 : -0.05);
             double crawlStandUpCeiling = this.getMinPlayerSolidBetween(this.getBoundingBox().maxY, this.getBoundingBox().maxY + 1.1D, 0);
             mustCrawl = crawlStandUpCeiling - crawlStandUpBottom < this.player.height - this.heightOffset;
         }
 
-        if (this.entityPlayer.capabilities.isFlying && (Config.isFlyingEnabled() || Config.isLevitateSmallEnabled())) {
+        if (this.entityPlayer.capabilities.isFlying && (SmartMovingConfig.smartFlying.enable || SmartMovingConfig.standardFlying.small)) {
             mustCrawl = false;
         }
 
-        boolean inputContinueCrawl = Options.isCrawlToggleEnabled() ? this.crawlToggled : this.sneakButton.isPressed || !Config.isFreeClimbingEnabled() && this.grabButton.isPressed;
+        boolean inputContinueCrawl = SmartMovingConfig.userInterface.crawlToggle ? this.crawlToggled : this.sneakButton.isPressed || !SmartMovingConfig.climb.enable && this.grabButton.isPressed;
         if (this.contextContinueCrawl) {
             if (inputContinueCrawl || this.player.isInWater() || mustCrawl) {
                 this.contextContinueCrawl = false;
@@ -2128,13 +2092,13 @@ public class ControllerSelf extends Controller
         }
         boolean wouldWantCrawl = !this.entityPlayer.capabilities.isFlying && ((this.isCrawling && (inputContinueCrawl || this.contextContinueCrawl)) || (this.grabButton.startPressed && (this.sneakToggled || this.sneakButton.isPressed) && this.player.onGround));
 
-        boolean wantCrawl = Config.isCrawlingEnabled() && wouldWantCrawl;
+        boolean wantCrawl = SmartMovingConfig.crawling.enable && wouldWantCrawl;
 
         boolean canCrawl = !this.isSwimming
                 && !this.isDiving
                 && (!this.isDipping || (this.dippingDepth + this.heightOffset) < SwimCrawlWaterTopBorder)
                 && !this.isClimbing
-                && this.player.fallDistance < Config._fallingDistanceMinimum.getValue();
+                && this.player.fallDistance < SmartMovingConfig.falling.distanceMinimum;
 
         this.wasCrawling = this.isCrawling;
         this.isCrawling = canCrawl && (wantCrawl || mustCrawl);
@@ -2144,7 +2108,7 @@ public class ControllerSelf extends Controller
         }
 
         if (this.wasCrawling && !this.isCrawling && this.entityPlayer.capabilities.isFlying) {
-            this.tryJump(ClientConfig.Up, null, null, null);
+            this.tryJump(ConfigHelper.Up, null, null, null);
         }
 
         this.wantCrawlNotClimb = (this.wantCrawlNotClimb || (this.grabButton.startPressed && !this.wasCrawling))
@@ -2157,14 +2121,14 @@ public class ControllerSelf extends Controller
 
         boolean wouldWantClimb = (this.grabButton.isPressed
                 || (this.isClimbHolding && this.sneakButton.isPressed)
-                || (Config.isFreeClimbAutoLaddderEnabled() && this.isFacedToLadder(this.isClimbCrawling))
-                || (Config.isFreeClimbAutoVineEnabled() && isFacedToSolidVine))
+                || (SmartMovingConfig.climb.freeLadderAuto && this.isFacedToLadder(this.isClimbCrawling))
+                || (SmartMovingConfig.climb.freeVineAuto && isFacedToSolidVine))
                 && (!this.isSliding || this.grabButton.isPressed && ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward > 0F)
                 && !this.isHeadJumping
                 && !this.wantCrawlNotClimb
                 && !disabled;
 
-        boolean wantClimb = Config.isFreeClimbingEnabled() && wouldWantClimb;
+        boolean wantClimb = SmartMovingConfig.climb.enable && wouldWantClimb;
 
         if (!wantClimb || this.player.collidedHorizontally) {
             this.isClimbJumping = false;
@@ -2183,7 +2147,7 @@ public class ControllerSelf extends Controller
                 && ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward <= 0F
                 && !wantCrawl;
 
-        this.wantClimbCeiling = Config.isCeilingClimbingEnabled()
+        this.wantClimbCeiling = SmartMovingConfig.climb.ceiling
                 && this.grabButton.isPressed
                 && !this.wantCrawlNotClimb
                 && !this.isSneaking()
@@ -2193,14 +2157,14 @@ public class ControllerSelf extends Controller
         boolean restoreFromFlying = false;
 
         boolean wasFlying = this.isFlying;
-        this.isFlying = Config.isFlyingEnabled() && this.player.capabilities.isFlying && !this.isSwimming && !this.isDiving;
+        this.isFlying = SmartMovingConfig.smartFlying.enable && this.player.capabilities.isFlying && !this.isSwimming && !this.isDiving;
         if (this.isFlying && !wasFlying) {
             this.setHeightOffset(-1);
         } else if (!this.isFlying && wasFlying) {
             restoreFromFlying = true;
         }
 
-        if (!Config.isFlyingEnabled() && Config.isLevitateSmallEnabled()) {
+        if (!SmartMovingConfig.smartFlying.enable && SmartMovingConfig.standardFlying.small) {
             if (isLevitating && !this.wasLevitating) {
                 this.setHeightOffset(-1);
             } else if (!isLevitating && this.wasLevitating) {
@@ -2222,12 +2186,12 @@ public class ControllerSelf extends Controller
 
         if (this.wasHeadJumping && !this.isHeadJumping) {
             if (this.player.onGround) {
-                this.handleCrash(Config._headFallDamageStartDistance.getValue(), Config._headFallDamageFactor.getValue());
+                this.handleCrash(SmartMovingConfig.headJumping.damageStartDistance, SmartMovingConfig.headJumping.damageFactor);
                 restoreFromFlying = true;
             }
         }
 
-        boolean tryLanding = this.isFlying && !Options._flyCloseToGround.getValue() && horizontalSpeedSquare < 0.003D && this.player.motionY > -0.03D;
+        boolean tryLanding = this.isFlying && !SmartMovingConfig.userInterface.flyGroundClose && horizontalSpeedSquare < 0.003D && this.player.motionY > -0.03D;
         if (restoreFromFlying || tryLanding) {
             this.standupIfPossible(tryLanding, restoreFromFlying);
         }
@@ -2238,57 +2202,57 @@ public class ControllerSelf extends Controller
             this.isAerodynamic = true;
         }
 
-        if (Config.isSlidingEnabled() && this.grabButton.isPressed && (this.isGroundSprinting || (this.wasRunning && !isRunning && this.player.onGround)) && !this.isCrawling && this.sneakButton.startPressed && !this.isDipping) {
+        if (SmartMovingConfig.sliding.enable && this.grabButton.isPressed && (this.isGroundSprinting || (this.wasRunning && !isRunning && this.player.onGround)) && !this.isCrawling && this.sneakButton.startPressed && !this.isDipping) {
             this.setHeightOffset(-1);
             this.move(0, (-1D), 0, true);
-            this.tryJump(ClientConfig.SlideDown, false, this.wasRunning, null);
+            this.tryJump(ConfigHelper.SlideDown, false, this.wasRunning, null);
             this.isSliding = true;
             this.isHeadJumping = false;
             this.isAerodynamic = false;
         }
 
-        if (this.isSliding && (!this.sneakButton.isPressed || horizontalSpeedSquare < Config._slidingSpeedStopFactor.getValue() * 0.01)) {
+        if (this.isSliding && (!this.sneakButton.isPressed || horizontalSpeedSquare < SmartMovingConfig.sliding.speedStopFactor * 0.01)) {
             this.isSliding = false;
             this.wasCrawling = this.toCrawling();
         }
 
-        if (this.isSliding && this.player.fallDistance > Config._fallingDistanceMinimum.getValue()) {
+        if (this.isSliding && this.player.fallDistance > SmartMovingConfig.falling.distanceMinimum) {
             this.isSliding = false;
             this.wasCrawling = true;
             this.isCrawling = false;
         }
 
-        boolean sneakContinueInput = Options.isSneakToggleEnabled() ? this.sneakToggled || this.sneakButton.startPressed : this.sneakButton.isPressed;
+        boolean sneakContinueInput = SmartMovingConfig.userInterface.sneakToggle ? this.sneakToggled || this.sneakButton.startPressed : this.sneakButton.isPressed;
         boolean wouldWantSneak = !this.isFlying
                 && !this.isSliding
                 && !this.isHeadJumping
-                && !(this.isDiving && Config._diveDownOnSneak.getValue())
-                && !(this.isSwimming && Config._swimDownOnSneak.getValue() && !this.isFakeShallowWaterSneaking)
+                && !(this.isDiving && SmartMovingConfig.diving.downSneak)
+                && !(this.isSwimming && SmartMovingConfig.swimming.downSneak && !this.isFakeShallowWaterSneaking)
                 && sneakContinueInput
                 && !wantCrawl
                 && !mustCrawl
-                && (!Config.isCrawlingEnabled() || !this.grabButton.isPressed);
+                && (!SmartMovingConfig.crawling.enable || !this.grabButton.isPressed);
 
-        boolean wantSneak = Config.isSneakingEnabled() && wouldWantSneak;
+        boolean wantSneak = SmartMovingConfig.genericSneaking.enable && wouldWantSneak;
 
         boolean moveButtonPressed = ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward != 0F || ((EntityPlayerSP) this.entityPlayer).movementInput.moveStrafe != 0F;
         boolean moveForwardButtonPressed = ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward > 0F;
 
-        this.wantSprint = Config.isSprintingEnabled()
+        this.wantSprint = SmartMovingConfig.genericSprinting.enable
                 && !this.isSliding
                 && this.sprintButton.isPressed
                 && (moveForwardButtonPressed
                 || this.isClimbing
-                || (this.isSwimming && (moveButtonPressed || (this.sneakButton.isPressed && Config._swimDownOnSneak.getValue())))
-                || (this.isDiving && (moveButtonPressed || this.jumpButton.isPressed || (this.sneakButton.isPressed && Config._diveDownOnSneak.getValue())))
+                || (this.isSwimming && (moveButtonPressed || (this.sneakButton.isPressed && SmartMovingConfig.swimming.downSneak)))
+                || (this.isDiving && (moveButtonPressed || this.jumpButton.isPressed || (this.sneakButton.isPressed && SmartMovingConfig.diving.downSneak)))
                 || (this.isFlying && (moveButtonPressed || this.jumpButton.isPressed || this.sneakButton.isPressed)))
                 && !disabled;
 
-        boolean exhaustionAllowsRunning = !Config.isRunExhaustionEnabled() || (this.exhaustion < Config._runExhaustionStop.getValue() && (this.wasRunning || this.exhaustion < Config._runExhaustionStart.getValue()));
+        boolean exhaustionAllowsRunning = !SmartMovingConfig.standardSprinting.exhaustion || (this.exhaustion < SmartMovingConfig.standardSprinting.exhaustionStop && (this.wasRunning || this.exhaustion < SmartMovingConfig.standardSprinting.exhaustionStart));
 
-        if (isRunning && this.player.onGround && Config.isRunExhaustionEnabled()) {
-            this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, Config._runExhaustionStop.getValue());
-            this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, Config._runExhaustionStart.getValue());
+        if (isRunning && this.player.onGround && SmartMovingConfig.standardSprinting.exhaustion) {
+            this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, SmartMovingConfig.standardSprinting.exhaustionStop);
+            this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, SmartMovingConfig.standardSprinting.exhaustionStart);
         }
 
         if (!exhaustionAllowsRunning && isRunning) {
@@ -2299,9 +2263,9 @@ public class ControllerSelf extends Controller
             this.isSprintJump = true;
         }
 
-        boolean exhaustionAllowsSprinting = !Config.isSprintExhaustionEnabled()
-                || (this.exhaustion <= Config._sprintExhaustionStop.getValue()
-                && (this.isFast || this.isSprintJump || this.exhaustion <= Config._sprintExhaustionStart.getValue()));
+        boolean exhaustionAllowsSprinting = !SmartMovingConfig.genericSprinting.exhaustion
+                || (this.exhaustion <= SmartMovingConfig.genericSprinting.exhaustionStop
+                && (this.isFast || this.isSprintJump || this.exhaustion <= SmartMovingConfig.genericSprinting.exhaustionStart));
 
         if (this.player.onGround || this.isFlying || this.isSwimming || this.isDiving || this.player.isInLava()) {
             this.isSprintJump = false;
@@ -2309,9 +2273,9 @@ public class ControllerSelf extends Controller
 
         boolean preferSprint = false;
         if (this.wantSprint && !wantSneak) {
-            if (!this.isSprintJump && Config.isSprintExhaustionEnabled()) {
-                this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, Config._sprintExhaustionStop.getValue());
-                this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, Config._sprintExhaustionStart.getValue());
+            if (!this.isSprintJump && SmartMovingConfig.genericSprinting.exhaustion) {
+                this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, SmartMovingConfig.genericSprinting.exhaustionStop);
+                this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, SmartMovingConfig.genericSprinting.exhaustionStart);
             }
 
             if (exhaustionAllowsSprinting) {
@@ -2323,9 +2287,9 @@ public class ControllerSelf extends Controller
         if (this.isClimbing && preferSprint) {
             double minTickDistance;
             if (this.wantClimbUp) {
-                minTickDistance = 0.07 * Config._freeClimbingUpSpeedFactor.getValue();
+                minTickDistance = 0.07 * SmartMovingConfig.climb.freeUpSpeedFactor;
             } else if (this.wantClimbDown) {
-                minTickDistance = 0.11 * Config._freeClimbingDownSpeedFactor.getValue();
+                minTickDistance = 0.11 * SmartMovingConfig.climb.freeDownSpeedFactor;
             } else {
                 minTickDistance = 0.07;
             }
@@ -2333,7 +2297,7 @@ public class ControllerSelf extends Controller
             isClimbSprintSpeed = net.smart.render.statistics.SmartStatisticsFactory.getInstance(this.player).getTickDistance() >= minTickDistance;
         }
 
-        boolean canAnySprint = preferSprint && !this.player.isBurning() && (Config._sprintDuringItemUsage.getValue() || this.player.getItemInUseCount() < 1);
+        boolean canAnySprint = preferSprint && !this.player.isBurning() && (SmartMovingConfig.itemUsage.sprint || this.player.getItemInUseCount() < 1);
         boolean canVerticallySprint = canAnySprint && !this.player.collidedHorizontally;
         boolean canHorizontallySprint = canAnySprint && this.collidedHorizontallyTickCount < 3;
         boolean canAllSprint = canHorizontallySprint && canVerticallySprint;
@@ -2495,14 +2459,14 @@ public class ControllerSelf extends Controller
             this.continueWallJumping = false;
         }
 
-        boolean canWallJumping = Config.isWallJumpEnabled() && !this.isHeadJumping && !this.player.onGround && !this.isClimbing && !this.isSwimming && !this.isDiving && !isLevitating && !this.isFlying;
+        boolean canWallJumping = SmartMovingConfig.wallJumping.enable && !this.isHeadJumping && !this.player.onGround && !this.isClimbing && !this.isSwimming && !this.isDiving && !isLevitating && !this.isFlying;
         boolean triggerWallJumping = false;
 
-        if (Options._wallJumpDoubleClick.getValue()) {
+        if (SmartMovingConfig.userInterface.jumpWallDoubleClick) {
             if (canWallJumping) {
                 if (this.jumpButton.startPressed) {
                     if (this.wallJumpCount == 0) {
-                        this.wallJumpCount = Options.wallJumpDoubleClickTicks();
+                        this.wallJumpCount = SmartMovingConfig.userInterface.jumpWallDoubleClickTicks;
                     } else {
                         triggerWallJumping = true;
                         this.wallJumpCount = 0;
@@ -2522,15 +2486,15 @@ public class ControllerSelf extends Controller
                         (this.wantWallJumping && this.jumpButton.isPressed && !this.player.collidedHorizontally));
 
         boolean canAngleJump = !isSleeping && this.player.onGround && !this.isCrawling && !this.isClimbing && !this.isClimbCrawling && !this.isSwimming && !this.isDiving;
-        boolean canSideJump = Config.isSideJumpEnabled() && canAngleJump;
+        boolean canSideJump = SmartMovingConfig.sideAndBackJumping.side && canAngleJump;
         boolean canLeftJump = canSideJump && !this.rightButton.isPressed;
         boolean canRightJump = canSideJump && !this.leftButton.isPressed;
-        boolean canBackJump = Config.isBackJumpEnabled() && canAngleJump && !this.forwardButton.isPressed && !this.isStandupSprintingOrRunning();
+        boolean canBackJump = SmartMovingConfig.sideAndBackJumping.back && canAngleJump && !this.forwardButton.isPressed && !this.isStandupSprintingOrRunning();
 
         if (canLeftJump) {
             if (this.leftButton.startPressed) {
                 if (this.leftJumpCount == 0) {
-                    this.leftJumpCount = Options.angleJumpDoubleClickTicks();
+                    this.leftJumpCount = SmartMovingConfig.userInterface.jumpAngleDoubleClickTicks;
                 } else {
                     this.leftJumpCount = -1;
                 }
@@ -2544,7 +2508,7 @@ public class ControllerSelf extends Controller
         if (canRightJump) {
             if (this.rightButton.startPressed) {
                 if (this.rightJumpCount == 0) {
-                    this.rightJumpCount = Options.angleJumpDoubleClickTicks();
+                    this.rightJumpCount = SmartMovingConfig.userInterface.jumpAngleDoubleClickTicks;
                 } else {
                     this.rightJumpCount = -1;
                 }
@@ -2558,7 +2522,7 @@ public class ControllerSelf extends Controller
         if (canBackJump) {
             if (this.backButton.startPressed) {
                 if (this.backJumpCount == 0) {
-                    this.backJumpCount = Options.angleJumpDoubleClickTicks();
+                    this.backJumpCount = SmartMovingConfig.userInterface.jumpAngleDoubleClickTicks;
                 } else {
                     this.backJumpCount = -1;
                 }
@@ -2593,8 +2557,8 @@ public class ControllerSelf extends Controller
             this.angleJumpType = 0;
         }
 
-        boolean isSneakToggleEnabled = Options.isSneakToggleEnabled();
-        boolean isCrawlToggleEnabled = Options.isCrawlToggleEnabled();
+        boolean isSneakToggleEnabled = SmartMovingConfig.userInterface.sneakToggle;
+        boolean isCrawlToggleEnabled = SmartMovingConfig.userInterface.crawlToggle;
 
         boolean willStopCrawl = false;
         boolean willStopCrawlStartSneak = false;
@@ -2682,7 +2646,7 @@ public class ControllerSelf extends Controller
     private boolean toCrawling()
     {
         this.isCrawling = true;
-        if (Options.isCrawlToggleEnabled()) {
+        if (SmartMovingConfig.userInterface.crawlToggle) {
             this.crawlToggled = true;
         }
         this.ignoreNextStopSneakButtonPressed = true;
@@ -2700,9 +2664,6 @@ public class ControllerSelf extends Controller
     public final Button sneakButton = new Button();
     public final Button grabButton = new Button();
     public final Button sprintButton = new Button();
-    public final Button toggleButton = new Button();
-    public final Button speedIncreaseButton = new Button();
-    public final Button speedDecreaseButton = new Button();
     public boolean wasRunning;
     public boolean wasLevitating;
     public boolean wasCrawling;
@@ -2846,9 +2807,9 @@ public class ControllerSelf extends Controller
     public boolean isSneaking()
     {
         return (this.isSlow && (this.player.onGround || this.playerBase.getIsInWebField()))
-                || ((Config._sneak.getValue() == null || !Config._sneak.getValue()) && this.wouldIsSneaking && this.jumpCharge > 0)
-                || ((this.player.isRiding() || !Config.enabled) && this.playerBase.localIsSneaking())
-                || ((Config._crawlOverEdge.getValue() == null || !Config._crawlOverEdge.getValue()) && this.isCrawling && !this.isClimbing);
+                || (!SmartMovingConfig.genericSneaking.enable && this.wouldIsSneaking && this.jumpCharge > 0)
+                || (this.player.isRiding() && this.playerBase.localIsSneaking())
+                || (!SmartMovingConfig.crawling.edge && this.isCrawling && !this.isClimbing);
     }
 
     public boolean isStandupSprintingOrRunning()
@@ -2884,7 +2845,7 @@ public class ControllerSelf extends Controller
     @Override
     public boolean doFlyingAnimation()
     {
-        if (Config.isFlyingEnabled() || Config.isLevitationAnimationEnabled()) {
+        if (SmartMovingConfig.smartFlying.enable || SmartMovingConfig.standardFlying.animation) {
             return this.player.capabilities.isFlying;
         }
         return false;
@@ -2893,8 +2854,8 @@ public class ControllerSelf extends Controller
     @Override
     public boolean doFallingAnimation()
     {
-        if (Config.isFallAnimationEnabled()) {
-            return !this.player.onGround && this.player.fallDistance > Config._fallAnimationDistanceMinimum.getValue();
+        if (SmartMovingConfig.falling.animation) {
+            return !this.player.onGround && this.player.fallDistance > SmartMovingConfig.falling.animationDistanceMinimum;
         }
         return false;
     }
@@ -2906,14 +2867,10 @@ public class ControllerSelf extends Controller
 
     public float getFOVMultiplier()
     {
-        if (!Config.enabled) {
-            return this.playerBase.localGetFOVMultiplier();
-        }
-
-        float landMovmentFactor = this.getLandMovementFactor();
+        float landMovementFactor = this.getLandMovementFactor();
         this.setLandMovementFactor(this.fadingPerspectiveFactor);
         float result = this.playerBase.localGetFOVMultiplier();
-        this.setLandMovementFactor(landMovmentFactor);
+        this.setLandMovementFactor(landMovementFactor);
         return result;
     }
 

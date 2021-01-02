@@ -17,18 +17,17 @@
 package net.smart.moving.playerapi;
 
 import api.player.asm.interfaces.IServerPlayerEntity;
-import api.player.asm.interfaces.IServerPlayerEntityAccessor;
 import api.player.server.ServerPlayerAPI;
 import api.player.server.ServerPlayerEntityBase;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.smart.moving.SmartMovingMod;
 import net.smart.moving.SmartMovingServer;
-import net.smart.utilities.Reflect;
-import net.smart.utilities.SoundUtil;
+import net.smart.moving.asm.interfaces.INetHandlerPlayServer;
 
 import java.util.List;
 
@@ -49,7 +48,7 @@ public class CustomServerPlayerEntityBase extends ServerPlayerEntityBase
     public CustomServerPlayerEntityBase(ServerPlayerAPI playerApi)
     {
         super(playerApi);
-        this.controller = new SmartMovingServer(this, false);
+        this.controller = new SmartMovingServer(this);
     }
 
     @Override
@@ -209,7 +208,7 @@ public class CustomServerPlayerEntityBase extends ServerPlayerEntityBase
 
     public void localPlaySound(String soundId, float volume, float pitch)
     {
-        SoundEvent soundEvent = SoundUtil.getSoundEvent(soundId);
+        SoundEvent soundEvent = SoundEvent.REGISTRY.getObject(new ResourceLocation(soundId));
         if (soundEvent != null) {
             this.playerEntity.playSound(soundEvent, volume, pitch);
         }
@@ -236,11 +235,6 @@ public class CustomServerPlayerEntityBase extends ServerPlayerEntityBase
         return this.playerEntity;
     }
 
-    public String getUsername()
-    {
-        return this.playerEntity.getGameProfile().getName();
-    }
-
     public void resetFallDistance()
     {
         this.playerEntity.fallDistance = 0;
@@ -249,7 +243,7 @@ public class CustomServerPlayerEntityBase extends ServerPlayerEntityBase
 
     public void resetTicksForFloatKick()
     {
-        Reflect.SetField(net.minecraft.network.NetHandlerPlayServer.class, ((IServerPlayerEntityAccessor) this.playerEntity).getNetHandlerPlayServer(), SmartMovingMod.NetServerHandler_ticksForFloatKick, 0);
+        ((INetHandlerPlayServer) this.playerEntity.connection).setFloatingTickCount(0);
     }
 
     public SmartMovingServer getController()

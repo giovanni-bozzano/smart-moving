@@ -11,8 +11,9 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.smart.moving.ContextBase;
+import net.smart.moving.ConfigHelper;
 import net.smart.moving.ControllerSelf;
+import net.smart.moving.SmartMovingConfig;
 import net.smart.moving.SmartMovingMod;
 import net.smart.moving.playerapi.Factory;
 
@@ -35,19 +36,19 @@ public class GuiEventListener
             return;
         }
 
-        if (ContextBase.Config.enabled && ((ContextBase.Options._displayExhaustionBar.getValue() != null && ContextBase.Options._displayExhaustionBar.getValue()) || (ContextBase.Options._displayJumpChargeBar.getValue() != null && ContextBase.Options._displayJumpChargeBar.getValue())) || !minecraft.playerController.gameIsSurvivalOrAdventure()) {
+        if (SmartMovingConfig.userInterface.guiExhaustionBar || SmartMovingConfig.userInterface.guiJumpChargeBar || !minecraft.playerController.gameIsSurvivalOrAdventure()) {
             ScaledResolution scaledresolution = new ScaledResolution(minecraft);
             int width = scaledresolution.getScaledWidth();
             int height = scaledresolution.getScaledHeight();
 
-            float maxExhaustion = ContextBase.Config.getMaxExhaustion();
+            float maxExhaustion = ConfigHelper.getMaxExhaustion();
             float exhaustion = Math.min(moving.exhaustion, maxExhaustion);
             boolean drawExhaustion = exhaustion > 0 && exhaustion <= maxExhaustion;
 
-            float maxStillJumpCharge = ContextBase.Config._jumpChargeMaximum.getValue() != null ? ContextBase.Config._jumpChargeMaximum.getValue() : 0.0F;
+            float maxStillJumpCharge = SmartMovingConfig.chargedJumping.maximum;
             float stillJumpCharge = Math.min(moving.jumpCharge, maxStillJumpCharge);
 
-            float maxRunJumpCharge = ContextBase.Config._headJumpChargeMaximum.getValue() != null ? ContextBase.Config._headJumpChargeMaximum.getValue() : 0.0F;
+            float maxRunJumpCharge = SmartMovingConfig.headJumping.maximum;
             float runJumpCharge = Math.min(moving.headJumpCharge, maxRunJumpCharge);
 
             boolean drawJumpCharge = stillJumpCharge > 0 || runJumpCharge > 0;

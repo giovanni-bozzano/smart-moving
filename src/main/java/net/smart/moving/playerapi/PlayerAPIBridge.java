@@ -24,8 +24,6 @@ public abstract class PlayerAPIBridge
 {
     public static void register()
     {
-        CustomClientPlayerEntityBase.registerPlayerBase();
-        CustomServerPlayerEntityBase.registerPlayerBase();
     }
 
     public static CustomClientPlayerEntityBase getPlayerBase(EntityPlayer entityPlayer)

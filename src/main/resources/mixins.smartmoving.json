@@ -5,6 +5,7 @@
 	"minVersion": "0.8",
 	"mixins": [
 		"net.minecraft.block.MixinBlockWall",
-		"net.minecraft.entity.ai.MixinModifiableAttributeInstance"
+		"net.minecraft.entity.ai.MixinModifiableAttributeInstance",
+		"net.minecraft.network.MixinNetHandlerPlayServer"
 	]
 }

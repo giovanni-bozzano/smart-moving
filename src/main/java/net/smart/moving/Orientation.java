@@ -20,7 +20,6 @@ import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -597,7 +596,7 @@ public class Orientation extends ContextBase
 
     private boolean hasHalfHold()
     {
-        if (Config.isFreeBaseClimb()) {
+        if (ConfigHelper.isFreeBaseClimb()) {
             if (isOnLadder(0) && this.isOnLadderFront(0)) {
                 return this.setHalfGrabType(AroundGrab, getBaseBlock(0), false);
             }
@@ -619,7 +618,7 @@ public class Orientation extends ContextBase
             return this.setHalfGrabType(HalfGrab, wallId, false);
         }
 
-        if (Config._freeFenceClimbing.getValue()) {
+        if (SmartMovingConfig.climb.freeFence) {
             if (isFence(remoteState) && this.headedToFrontWall(remote_i, 0, remote_k, remoteState)) {
                 if (!isFence(getBaseBlockState(0))) {
                     return this.setHalfGrabType(HalfGrab, remoteState);
@@ -668,7 +667,7 @@ public class Orientation extends ContextBase
             return this.setHalfGrabType(HalfGrab, baseState, false);
         }
 
-        if (Config.isFreeBaseClimb()) {
+        if (ConfigHelper.isFreeBaseClimb()) {
             int meta = this.baseVineClimbing(0);
             if (meta > -1) {
                 return this.setHalfGrabType(HalfGrab, Block.getBlockFromName("vine"), false, meta);
@@ -684,7 +683,7 @@ public class Orientation extends ContextBase
 
     private boolean hasBottomHold()
     {
-        if (Config.isFreeBaseClimb()) {
+        if (ConfigHelper.isFreeBaseClimb()) {
             if (isOnLadder(-1) && this.isOnLadderFront(-1)) {
                 return this.setBottomGrabType(AroundGrab, getBaseBlock(-1), false);
             }
@@ -712,7 +711,7 @@ public class Orientation extends ContextBase
             }
         }
 
-        if (Config._freeFenceClimbing.getValue()) {
+        if (SmartMovingConfig.climb.freeFence) {
             IBlockState baseBelowState = getBaseBlockState(-1);
             if (isFence(remoteBelowState) && this.headedToFrontWall(remote_i, -1, remote_k, remoteBelowState)) {
                 if (!isFence(baseBelowState)) {
@@ -743,7 +742,7 @@ public class Orientation extends ContextBase
                 }
             }
 
-            if (Config._freeFenceClimbing.getValue() && isFence(belowWallState) && this.headedToBaseWall(-1, belowWallState)) {
+            if (SmartMovingConfig.climb.freeFence && isFence(belowWallState) && this.headedToBaseWall(-1, belowWallState)) {
                 return this.setBottomGrabType(HalfGrab, belowWallState, false);
             }
 
@@ -756,7 +755,7 @@ public class Orientation extends ContextBase
                     if (!isStairCompact(remoteBelowState) || !this.isBottomStairCompactFront(remoteBelowState)) {
                         if (!isDoor(remoteBelowState) || isDoorTop(remoteBelowState)) {
                             if (!isDoor(getBaseBlockState(0)) || !this.isDoorFrontBlocked(base_i, 0, base_k)) {
-                                if (Config._freeFenceClimbing.getValue() || !isFence(getRemoteBlockState(-1))) {
+                                if (SmartMovingConfig.climb.freeFence || !isFence(getRemoteBlockState(-1))) {
                                     return this.setBottomGrabType(HalfGrab, remoteBelowState);
                                 }
                             }
@@ -787,7 +786,7 @@ public class Orientation extends ContextBase
             return this.setBottomGrabType(HalfGrab, baseBelowState, false);
         }
 
-        if (Config.isFreeBaseClimb()) {
+        if (ConfigHelper.isFreeBaseClimb()) {
             int meta = this.baseVineClimbing(-1);
             if (meta != DefaultMeta) {
                 return this.setHalfGrabType(HalfGrab, Block.getBlockFromName("vine"), false, meta);
@@ -933,7 +932,7 @@ public class Orientation extends ContextBase
     private boolean setClimbingAngles(float directionAngle)
     {
         this._directionAngle = directionAngle;
-        float halfAreaAngle = (this._isDiagonal ? Config._freeClimbingDiagonalDirectionAngle.getValue() : Config._freeClimbingOrthogonalDirectionAngle.getValue()) / 2F;
+        float halfAreaAngle = (this._isDiagonal ? SmartMovingConfig.climb.freeDirectionDiagonalAngle : SmartMovingConfig.climb.freeDirectionOrthogonalAngle) / 2F;
         return this.setClimbingAngles(directionAngle - halfAreaAngle, directionAngle + halfAreaAngle);
     }
 
@@ -2069,7 +2068,7 @@ public class Orientation extends ContextBase
         local_offset = all_j + (local_halfOffset - local_half) / 2;
     }
 
-    private final static float _handClimbingHoldGap = Math.min(0.25F, 0.06F * Math.max(Config._freeClimbingUpSpeedFactor.getValue(), Config._freeClimbingDownSpeedFactor.getValue()));
+    private final static float _handClimbingHoldGap = Math.min(0.25F, 0.06F * Math.max(SmartMovingConfig.climb.freeUpSpeedFactor, SmartMovingConfig.climb.freeDownSpeedFactor));
     private static final ClimbGap _climbGapTemp = new ClimbGap();
     private static final ClimbGap _climbGapOuterTemp = new ClimbGap();
     private static World world;

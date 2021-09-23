@@ -184,7 +184,11 @@ public class CustomServerPlayerEntityBase extends ServerPlayerEntityBase
     {
         float eyeHeight = this.playerEntity.getDefaultEyeHeight();
 
-        if (this.playerEntity.isPlayerSleeping())
+        if (this.controller.isCrawling || this.controller.isSmall)
+        {
+            eyeHeight = 0.72F;
+        }
+        else if (this.playerEntity.isPlayerSleeping())
         {
             eyeHeight = 0.2F;
         }

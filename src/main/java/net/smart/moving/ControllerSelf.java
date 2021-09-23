@@ -777,7 +777,7 @@ public class ControllerSelf extends Controller
                 horizontalDamping = HORIZONTAL_GROUND_DAMPING;
             }
 
-            if (((EntityPlayerSP) this.entityPlayer).movementInput.jump && this.isFast && ConfigHelper.isJumpingEnabled(ConfigHelper.Sprinting, ConfigHelper.Up))
+            if (((EntityPlayerSP) this.entityPlayer).movementInput.jump && this.isFast && ConfigHelper.isJumpingEnabled(ConfigHelper.SPRINTING, ConfigHelper.UP))
             {
                 speedFactor *= SmartMovingConfig.JUMPING.sprintVerticalFactor;
             }
@@ -1141,7 +1141,7 @@ public class ControllerSelf extends Controller
                             else if (handsClimbing == HandsClimbing.TOP_HOLD || feetClimbing == FeetClimbing.BASE_HOLD || (feetClimbing == FeetClimbing.SLOW_UP_WITH_HOLD_WITHOUT_HANDS && handsClimbing == HandsClimbing.NONE))
                             {
                                 // holding at top
-                                if (!this.jumpButton.startPressed || !(this.isClimbJumping = this.tryJump(feetClimbing != FeetClimbing.NONE ? ConfigHelper.ClimbUp : ConfigHelper.ClimbUpHandsOnly, null, null, null)))
+                                if (!this.jumpButton.startPressed || !(this.isClimbJumping = this.tryJump(feetClimbing != FeetClimbing.NONE ? ConfigHelper.CLIMB_UP : ConfigHelper.CLIMB_UP_HANDS_ONLY, null, null, null)))
                                 {
                                     if (handsClimbing == HandsClimbing.SINK && feetClimbing == FeetClimbing.BASE_HOLD || handsClimbing == HandsClimbing.TOP_HOLD && feetClimbing == FeetClimbing.TOP_WITH_HANDS)
                                     {
@@ -1209,7 +1209,7 @@ public class ControllerSelf extends Controller
                                 {
                                     boolean handsOnly = feetClimbing != FeetClimbing.NONE;
 
-                                    int type = (SmartMovingConfig.USER_INTERFACE.jumpClimbBackHeadOnGrab == this.grabButton.isPressed) ? (handsOnly ? ConfigHelper.ClimbBackHead : ConfigHelper.ClimbBackHeadHandsOnly) : (handsOnly ? ConfigHelper.ClimbBackUp : ConfigHelper.ClimbBackUpHandsOnly);
+                                    int type = (SmartMovingConfig.USER_INTERFACE.jumpClimbBackHeadOnGrab == this.grabButton.isPressed) ? (handsOnly ? ConfigHelper.CLIMB_BACK_HEAD : ConfigHelper.CLIMB_BACK_HEAD_HANDS_ONLY) : (handsOnly ? ConfigHelper.CLIMB_BACK_UP : ConfigHelper.CLIMB_BACK_UP_HANDS_ONLY);
 
                                     float jumpAngle = this.player.rotationYaw + 180F;
                                     if (this.tryJump(type, null, null, jumpAngle))
@@ -2020,7 +2020,7 @@ public class ControllerSelf extends Controller
                 {
                     if (this.jumpCharge > 0)
                     {
-                        this.tryJump(ConfigHelper.ChargeUp, null, null, null);
+                        this.tryJump(ConfigHelper.CHARGE_UP, null, null, null);
                     }
                     this.jumpCharge = 0;
                 }
@@ -2049,7 +2049,7 @@ public class ControllerSelf extends Controller
                 {
                     if (this.headJumpCharge > 0 && this.player.onGround)
                     {
-                        this.tryJump(ConfigHelper.HeadUp, null, null, null);
+                        this.tryJump(ConfigHelper.HEAD_UP, null, null, null);
                     }
                     this.headJumpCharge = 0;
                 }
@@ -2071,7 +2071,7 @@ public class ControllerSelf extends Controller
                 this.player.motionY -= 0.04D;
                 if (!this.isStillSwimmingJump && this.player.onGround && this.jumpCharge == 0)
                 {
-                    if (this.tryJump(ConfigHelper.Up, true, null, null))
+                    if (this.tryJump(ConfigHelper.UP, true, null, null))
                     {
                         Random rand = this.player.getRNG();
                         this.playSound("random.splash", 0.05F, 1.0F + (rand.nextFloat() - rand.nextFloat()) * 0.4F);
@@ -2082,7 +2082,7 @@ public class ControllerSelf extends Controller
 
         if (jump && !this.blockJumpTillButtonRelease && !isJumpCharging && !isHeadJumpCharging && !this.isVineAnyClimbing)
         {
-            this.tryJump(ConfigHelper.Up, false, null, null);
+            this.tryJump(ConfigHelper.UP, false, null, null);
         }
 
         int left = 0;
@@ -2116,7 +2116,7 @@ public class ControllerSelf extends Controller
                 angle = 180;
             }
 
-            if (this.tryJump(ConfigHelper.Angle, null, null, this.player.rotationYaw + angle))
+            if (this.tryJump(ConfigHelper.ANGLE, null, null, this.player.rotationYaw + angle))
             {
                 this.angleJumpType = ((360 - angle) / 45) % 8;
             }
@@ -2141,7 +2141,7 @@ public class ControllerSelf extends Controller
             {
                 return;
             }
-            jumpType = this.wasCollidedHorizontally ? ConfigHelper.WallHeadSlide : ConfigHelper.WallHead;
+            jumpType = this.wasCollidedHorizontally ? ConfigHelper.WALL_HEAD_SLIDE : ConfigHelper.WALL_HEAD;
         }
         else
         {
@@ -2149,7 +2149,7 @@ public class ControllerSelf extends Controller
             {
                 return;
             }
-            jumpType = this.wasCollidedHorizontally ? ConfigHelper.WallUpSlide : ConfigHelper.WallUp;
+            jumpType = this.wasCollidedHorizontally ? ConfigHelper.WALL_UP_SLIDE : ConfigHelper.WALL_UP;
         }
 
         float jumpAngle;
@@ -2199,17 +2199,17 @@ public class ControllerSelf extends Controller
     public boolean tryJump(int type, Boolean inWaterOrNull, Boolean isRunningOrNull, Float angle)
     {
         boolean noVertical = false;
-        if (type == ConfigHelper.WallUpSlide || type == ConfigHelper.WallHeadSlide)
+        if (type == ConfigHelper.WALL_UP_SLIDE || type == ConfigHelper.WALL_HEAD_SLIDE)
         {
-            type = type == ConfigHelper.WallUpSlide ? ConfigHelper.WallUp : ConfigHelper.WallHead;
+            type = type == ConfigHelper.WALL_UP_SLIDE ? ConfigHelper.WALL_UP : ConfigHelper.WALL_HEAD;
             noVertical = true;
         }
 
         boolean inWater = inWaterOrNull != null ? inWaterOrNull : this.isDipping;
         boolean isRunning = isRunningOrNull != null ? isRunningOrNull : this.isRunning();
-        boolean charged = type == ConfigHelper.ChargeUp;
-        boolean up = type == ConfigHelper.Up || type == ConfigHelper.ChargeUp || type == ConfigHelper.HeadUp || type == ConfigHelper.ClimbUp || type == ConfigHelper.ClimbUpHandsOnly || type == ConfigHelper.ClimbBackUp || type == ConfigHelper.ClimbBackUpHandsOnly || type == ConfigHelper.ClimbBackHead || type == ConfigHelper.ClimbBackHeadHandsOnly || type == ConfigHelper.Angle || type == ConfigHelper.WallUp || type == ConfigHelper.WallHead;
-        boolean head = type == ConfigHelper.HeadUp || type == ConfigHelper.ClimbBackHead || type == ConfigHelper.ClimbBackHeadHandsOnly || type == ConfigHelper.WallHead;
+        boolean charged = type == ConfigHelper.CHARGE_UP;
+        boolean up = type == ConfigHelper.UP || type == ConfigHelper.CHARGE_UP || type == ConfigHelper.HEAD_UP || type == ConfigHelper.CLIMB_UP || type == ConfigHelper.CLIMB_UP_HANDS_ONLY || type == ConfigHelper.CLIMB_BACK_UP || type == ConfigHelper.CLIMB_BACK_UP_HANDS_ONLY || type == ConfigHelper.CLIMB_BACK_HEAD || type == ConfigHelper.CLIMB_BACK_HEAD_HANDS_ONLY || type == ConfigHelper.ANGLE || type == ConfigHelper.WALL_UP || type == ConfigHelper.WALL_HEAD;
+        boolean head = type == ConfigHelper.HEAD_UP || type == ConfigHelper.CLIMB_BACK_HEAD || type == ConfigHelper.CLIMB_BACK_HEAD_HANDS_ONLY || type == ConfigHelper.WALL_HEAD;
 
         int speed = getJumpSpeed(this.isStanding, this.isSlow, isRunning, this.isFast, angle);
         boolean enabled = ConfigHelper.isJumpingEnabled(speed, type);
@@ -2277,7 +2277,7 @@ public class ControllerSelf extends Controller
             if (angle != null)
             {
                 float jumpAngle = angle / RadiantToAngle;
-                boolean reset = type == ConfigHelper.WallUp || type == ConfigHelper.WallHead;
+                boolean reset = type == ConfigHelper.WALL_UP || type == ConfigHelper.WALL_HEAD;
 
                 double horizontal = Math.max(horizontalMotion, horizontalJumpFactor);
                 double moveX = -Math.sin(jumpAngle);
@@ -2353,23 +2353,23 @@ public class ControllerSelf extends Controller
 
         if (isSprinting)
         {
-            return ConfigHelper.Sprinting;
+            return ConfigHelper.SPRINTING;
         }
         else if (isRunning)
         {
-            return ConfigHelper.Running;
+            return ConfigHelper.RUNNING;
         }
         else if (isSlow)
         {
-            return ConfigHelper.Sneaking;
+            return ConfigHelper.SNEAKING;
         }
         else if (isStanding)
         {
-            return ConfigHelper.Standing;
+            return ConfigHelper.STANDING;
         }
         else
         {
-            return ConfigHelper.Walking;
+            return ConfigHelper.WALKING;
         }
     }
 
@@ -2594,7 +2594,7 @@ public class ControllerSelf extends Controller
 
         if (this.wasCrawling && !this.isCrawling && this.entityPlayer.capabilities.isFlying)
         {
-            this.tryJump(ConfigHelper.Up, null, null, null);
+            this.tryJump(ConfigHelper.UP, null, null, null);
         }
 
         this.wantCrawlNotClimb = (this.wantCrawlNotClimb || (this.grabButton.startPressed && !this.wasCrawling)) && this.grabButton.isPressed && ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward > 0F && this.isCrawling && this.player.collidedHorizontally;
@@ -2680,7 +2680,7 @@ public class ControllerSelf extends Controller
         {
             this.setHeightOffset(-1);
             this.move(0, (-1D), 0, true);
-            this.tryJump(ConfigHelper.SlideDown, false, this.wasRunning, null);
+            this.tryJump(ConfigHelper.SLIDE_DOWN, false, this.wasRunning, null);
             this.isSliding = true;
             this.isHeadJumping = false;
             this.isAerodynamic = false;

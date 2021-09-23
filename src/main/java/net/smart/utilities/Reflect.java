@@ -28,22 +28,21 @@ public class Reflect
         {
             return LoadClass(base, name, true).getConstructor().newInstance();
         }
-        catch (Exception exception)
+        catch (Exception e)
         {
-            throw new RuntimeException(name.deobfuscated, exception);
+            throw new RuntimeException(name.deobfuscated, e);
         }
     }
 
     public static boolean CheckClasses(Class<?> base, Name... names)
     {
-        for (Name name : names)
+        for (int i = 0; i < names.length; i++)
         {
-            if (LoadClass(base, name, false) == null)
+            if (LoadClass(base, names[i], false) == null)
             {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -57,19 +56,20 @@ public class Reflect
             {
                 return loader.loadClass(name.obfuscated);
             }
-            catch (ClassNotFoundException ignored)
+            catch (ClassNotFoundException cnfe)
             {
             }
         }
+
         try
         {
             return loader.loadClass(name.deobfuscated);
         }
-        catch (ClassNotFoundException exception)
+        catch (ClassNotFoundException cnfe)
         {
             if (throwException)
             {
-                throw new RuntimeException(exception);
+                throw new RuntimeException(cnfe);
             }
             return null;
         }
@@ -81,9 +81,9 @@ public class Reflect
         {
             field.set(object, value);
         }
-        catch (IllegalAccessException exception)
+        catch (IllegalAccessException e)
         {
-            throw new RuntimeException(exception);
+            throw new RuntimeException(e);
         }
     }
 
@@ -93,9 +93,9 @@ public class Reflect
         {
             return field.get(object);
         }
-        catch (IllegalAccessException exception)
+        catch (IllegalAccessException e)
         {
-            throw new RuntimeException(exception);
+            throw new RuntimeException(e);
         }
     }
 
@@ -105,9 +105,9 @@ public class Reflect
         {
             GetField(theClass, name).set(object, value);
         }
-        catch (IllegalAccessException exception)
+        catch (IllegalAccessException e)
         {
-            throw new RuntimeException(exception);
+            throw new RuntimeException(e);
         }
     }
 
@@ -117,9 +117,9 @@ public class Reflect
         {
             return GetField(theClass, name).get(object);
         }
-        catch (IllegalAccessException exception)
+        catch (IllegalAccessException e)
         {
-            throw new RuntimeException(exception);
+            throw new RuntimeException(e);
         }
     }
 
@@ -128,9 +128,9 @@ public class Reflect
         return GetField(theClass, name, true);
     }
 
-    public static Field GetField(Class<?> clazz, Name name, boolean throwException)
+    public static Field GetField(Class<?> theClass, Name name, boolean throwException)
     {
-        if (clazz == null && !throwException)
+        if (theClass == null && !throwException)
         {
             return null;
         }
@@ -138,14 +138,14 @@ public class Reflect
         Field field = null;
         try
         {
-            field = GetRawField(clazz, name);
+            field = GetRawField(theClass, name);
             field.setAccessible(true);
         }
-        catch (NoSuchFieldException exception)
+        catch (NoSuchFieldException oe)
         {
             if (throwException)
             {
-                throw new RuntimeException(GetFieldMessage(clazz, name), exception);
+                throw new RuntimeException(GetFieldMessage(theClass, name), oe);
             }
         }
         return field;
@@ -155,9 +155,9 @@ public class Reflect
     {
         Field[] fields = theClass.getDeclaredFields();
         StringBuffer message = GetMessage(theClass, name, "field");
-        for (Field field : fields)
+        for (int i = 0; i < fields.length; i++)
         {
-            AppendField(message, field);
+            AppendField(message, fields[i]);
         }
         return message.toString();
     }
@@ -170,7 +170,7 @@ public class Reflect
             {
                 return theClass.getDeclaredField(name.obfuscated);
             }
-            catch (NoSuchFieldException ignored)
+            catch (NoSuchFieldException oe)
             {
             }
         }
@@ -181,7 +181,7 @@ public class Reflect
             {
                 return theClass.getDeclaredField(name.forgefuscated);
             }
-            catch (NoSuchFieldException ignored)
+            catch (NoSuchFieldException oe)
             {
             }
         }
@@ -194,9 +194,9 @@ public class Reflect
         return GetMethod(theClass, name, true, paramArrayOfClass);
     }
 
-    public static Method GetMethod(Class<?> clazz, Name name, boolean throwException, Class<?>... paramArrayOfClass)
+    public static Method GetMethod(Class<?> theClass, Name name, boolean throwException, Class<?>... paramArrayOfClass)
     {
-        if (clazz == null && !throwException)
+        if (theClass == null && !throwException)
         {
             return null;
         }
@@ -204,14 +204,14 @@ public class Reflect
         Method method = null;
         try
         {
-            method = GetRawMethod(clazz, name, paramArrayOfClass);
+            method = GetRawMethod(theClass, name, paramArrayOfClass);
             method.setAccessible(true);
         }
-        catch (NoSuchMethodException exception)
+        catch (NoSuchMethodException oe)
         {
             if (throwException)
             {
-                throw new RuntimeException(GetMethodMessage(clazz, name), exception);
+                throw new RuntimeException(GetMethodMessage(theClass, name), oe);
             }
         }
         return method;
@@ -221,9 +221,9 @@ public class Reflect
     {
         Method[] methods = theClass.getDeclaredMethods();
         StringBuffer message = GetMessage(theClass, name, "method");
-        for (Method method : methods)
+        for (int i = 0; i < methods.length; i++)
         {
-            AppendMethod(message, method);
+            AppendMethod(message, methods[i]);
         }
         return message.toString();
     }
@@ -236,7 +236,7 @@ public class Reflect
             {
                 return theClass.getDeclaredMethod(name.obfuscated, paramArrayOfClass);
             }
-            catch (NoSuchMethodException ignored)
+            catch (NoSuchMethodException oe)
             {
             }
         }
@@ -247,7 +247,7 @@ public class Reflect
             {
                 return theClass.getDeclaredMethod(name.forgefuscated, paramArrayOfClass);
             }
-            catch (NoSuchMethodException ignored)
+            catch (NoSuchMethodException oe)
             {
             }
         }
@@ -261,9 +261,9 @@ public class Reflect
         {
             return method.invoke(paramObject, paramArrayOfObject);
         }
-        catch (Exception exception)
+        catch (Exception e)
         {
-            throw new RuntimeException(method.getName(), exception);
+            throw new RuntimeException(method.getName(), e);
         }
     }
 

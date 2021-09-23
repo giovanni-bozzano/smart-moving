@@ -25,6 +25,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerInteractionManager;
+import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -1807,7 +1808,7 @@ public final class ServerPlayerAPI
             }
         }
         if (entityPlayerList != null) {
-            for (Object entityPlayer : (List<?>) entityPlayerList) {
+            for (Object entityPlayer : ((PlayerList) entityPlayerList).getPlayers()) {
                 result.add((IServerPlayerEntity) entityPlayer);
             }
         }

@@ -53,75 +53,75 @@ public class ConfigHelper
         return SmartMovingConfig.EXHAUSTION.hunger && SmartMovingConfig.HUNGER.enable;
     }
 
-    public final static int Sprinting = 0;
-    public final static int Running = 1;
-    public final static int Walking = 2;
-    public final static int Sneaking = 3;
-    public final static int Standing = 4;
-    public final static int Up = 0;
-    public final static int ChargeUp = 1;
-    public final static int Angle = 2;
-    public final static int HeadUp = 3;
-    public final static int SlideDown = 4;
-    public final static int ClimbUp = 5;
-    public final static int ClimbUpHandsOnly = 6;
-    public final static int ClimbBackUp = 7;
-    public final static int ClimbBackUpHandsOnly = 8;
-    public final static int ClimbBackHead = 9;
-    public final static int ClimbBackHeadHandsOnly = 10;
-    public final static int WallUp = 11;
-    public final static int WallHead = 12;
-    public final static int WallUpSlide = 13;
-    public final static int WallHeadSlide = 14;
+    public final static int SPRINTING = 0;
+    public final static int RUNNING = 1;
+    public final static int WALKING = 2;
+    public final static int SNEAKING = 3;
+    public final static int STANDING = 4;
+    public final static int UP = 0;
+    public final static int CHARGE_UP = 1;
+    public final static int ANGLE = 2;
+    public final static int HEAD_UP = 3;
+    public final static int SLIDE_DOWN = 4;
+    public final static int CLIMB_UP = 5;
+    public final static int CLIMB_UP_HANDS_ONLY = 6;
+    public final static int CLIMB_BACK_UP = 7;
+    public final static int CLIMB_BACK_UP_HANDS_ONLY = 8;
+    public final static int CLIMB_BACK_HEAD = 9;
+    public final static int CLIMB_BACK_HEAD_HANDS_ONLY = 10;
+    public final static int WALL_UP = 11;
+    public final static int WALL_HEAD = 12;
+    public final static int WALL_UP_SLIDE = 13;
+    public final static int WALL_HEAD_SLIDE = 14;
 
     public static boolean isJumpingEnabled(int speed, int type)
     {
-        if (type == ChargeUp)
+        if (type == CHARGE_UP)
         {
             return SmartMovingConfig.HEAD_JUMPING.enable;
         }
-        if (type == SlideDown)
+        if (type == SLIDE_DOWN)
         {
             return SmartMovingConfig.SLIDING.enable;
         }
-        if (type == ClimbUp || type == ClimbUpHandsOnly)
+        if (type == CLIMB_UP || type == CLIMB_UP_HANDS_ONLY)
         {
             return SmartMovingConfig.CLIMB_JUMPING.enable;
         }
-        if (type == ClimbBackUp || type == ClimbBackUpHandsOnly)
+        if (type == CLIMB_BACK_UP || type == CLIMB_BACK_UP_HANDS_ONLY)
         {
             return SmartMovingConfig.CLIMB_BACK_JUMPING.enable;
         }
-        if (type == ClimbBackHead || type == ClimbBackHeadHandsOnly)
+        if (type == CLIMB_BACK_HEAD || type == CLIMB_BACK_HEAD_HANDS_ONLY)
         {
             return SmartMovingConfig.CLIMB_BACK_HEAD_JUMPING.enable;
         }
-        if (type == WallUp)
+        if (type == WALL_UP)
         {
             return SmartMovingConfig.WALL_JUMPING.enable;
         }
-        if (type == WallHead)
+        if (type == WALL_HEAD)
         {
             return SmartMovingConfig.WALL_HEAD_JUMPING.enable;
         }
 
-        if (speed == Sprinting)
+        if (speed == SPRINTING)
         {
             return SmartMovingConfig.JUMPING.sprint;
         }
-        else if (speed == Running)
+        else if (speed == RUNNING)
         {
             return SmartMovingConfig.JUMPING.run;
         }
-        else if (speed == Walking)
+        else if (speed == WALKING)
         {
             return SmartMovingConfig.JUMPING.walk;
         }
-        else if (speed == Sneaking)
+        else if (speed == SNEAKING)
         {
             return SmartMovingConfig.JUMPING.sneak;
         }
-        else if (speed == Standing)
+        else if (speed == STANDING)
         {
             return SmartMovingConfig.JUMPING.stand;
         }
@@ -132,31 +132,31 @@ public class ConfigHelper
     public static boolean isJumpExhaustionEnabled(int speed, int type)
     {
         boolean result = SmartMovingConfig.JUMP_EXHAUSTION.enable;
-        if (type == SlideDown)
+        if (type == SLIDE_DOWN)
         {
             return result && SmartMovingConfig.JUMP_EXHAUSTION.slideEnable;
         }
-        else if (type == Angle)
+        else if (type == ANGLE)
         {
             result &= SmartMovingConfig.JUMP_EXHAUSTION.angleEnable;
         }
-        else if (type == ClimbUp || type == ClimbUpHandsOnly)
+        else if (type == CLIMB_UP || type == CLIMB_UP_HANDS_ONLY)
         {
             result &= SmartMovingConfig.JUMP_EXHAUSTION.climbUpEnable;
         }
-        else if (type == ClimbBackUp || type == ClimbBackUpHandsOnly)
+        else if (type == CLIMB_BACK_UP || type == CLIMB_BACK_UP_HANDS_ONLY)
         {
             result &= SmartMovingConfig.JUMP_EXHAUSTION.climbBackEnable;
         }
-        else if (type == ClimbBackHead || type == ClimbBackHeadHandsOnly)
+        else if (type == CLIMB_BACK_HEAD || type == CLIMB_BACK_HEAD_HANDS_ONLY)
         {
             result &= SmartMovingConfig.JUMP_EXHAUSTION.climbBackHeadEnable;
         }
-        else if (type == WallUp)
+        else if (type == WALL_UP)
         {
             result &= SmartMovingConfig.JUMP_EXHAUSTION.wallUpEnable;
         }
-        else if (type == WallHead)
+        else if (type == WALL_HEAD)
         {
             result &= SmartMovingConfig.JUMP_EXHAUSTION.wallHeadEnable;
         }
@@ -165,38 +165,38 @@ public class ConfigHelper
             result &= SmartMovingConfig.JUMP_EXHAUSTION.upEnable;
         }
 
-        if (type == ClimbUp || type == ClimbUpHandsOnly || type == ClimbBackUp || type == ClimbBackUpHandsOnly || type == ClimbBackHead || type == ClimbBackHeadHandsOnly)
+        if (type == CLIMB_UP || type == CLIMB_UP_HANDS_ONLY || type == CLIMB_BACK_UP || type == CLIMB_BACK_UP_HANDS_ONLY || type == CLIMB_BACK_HEAD || type == CLIMB_BACK_HEAD_HANDS_ONLY)
         {
             return result && SmartMovingConfig.JUMP_EXHAUSTION.climbEnable;
         }
 
-        if (type == WallUp || type == WallHead)
+        if (type == WALL_UP || type == WALL_HEAD)
         {
             return result && SmartMovingConfig.JUMP_EXHAUSTION.wallEnable;
         }
 
-        if (speed == Sprinting)
+        if (speed == SPRINTING)
         {
             result &= SmartMovingConfig.JUMP_EXHAUSTION.sprintEnable;
         }
-        else if (speed == Running)
+        else if (speed == RUNNING)
         {
             result &= SmartMovingConfig.JUMP_EXHAUSTION.runEnable;
         }
-        else if (speed == Walking)
+        else if (speed == WALKING)
         {
             result &= SmartMovingConfig.JUMP_EXHAUSTION.walkEnable;
         }
-        else if (speed == Sneaking)
+        else if (speed == SNEAKING)
         {
             result &= SmartMovingConfig.JUMP_EXHAUSTION.sneakEnable;
         }
-        else if (speed == Standing)
+        else if (speed == STANDING)
         {
             result &= SmartMovingConfig.JUMP_EXHAUSTION.standEnable;
         }
 
-        if (type == ChargeUp)
+        if (type == CHARGE_UP)
         {
             result |= SmartMovingConfig.JUMP_EXHAUSTION.chargeEnable;
         }
@@ -208,31 +208,31 @@ public class ConfigHelper
     {
         float result = SmartMovingConfig.EXHAUSTION.gainFactor * SmartMovingConfig.JUMP_EXHAUSTION.gainFactor;
 
-        if (type == SlideDown)
+        if (type == SLIDE_DOWN)
         {
             return result * SmartMovingConfig.JUMP_EXHAUSTION.slideGainFactor;
         }
-        else if (type == Angle)
+        else if (type == ANGLE)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.angleGainFactor;
         }
-        else if (type == ClimbUp || type == ClimbUpHandsOnly)
+        else if (type == CLIMB_UP || type == CLIMB_UP_HANDS_ONLY)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.climbUpGainFactor;
         }
-        else if (type == ClimbBackUp || type == ClimbBackUpHandsOnly)
+        else if (type == CLIMB_BACK_UP || type == CLIMB_BACK_UP_HANDS_ONLY)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.climbBackGainFactor;
         }
-        else if (type == ClimbBackHead || type == ClimbBackHeadHandsOnly)
+        else if (type == CLIMB_BACK_HEAD || type == CLIMB_BACK_HEAD_HANDS_ONLY)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.climbBackHeadGainFactor;
         }
-        else if (type == WallUp)
+        else if (type == WALL_UP)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.wallUpGainFactor;
         }
-        else if (type == WallHead)
+        else if (type == WALL_HEAD)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.wallHeadGainFactor;
         }
@@ -241,40 +241,40 @@ public class ConfigHelper
             result *= SmartMovingConfig.JUMP_EXHAUSTION.upGainFactor;
         }
 
-        if (type == ClimbUp || type == ClimbUpHandsOnly || type == ClimbBackUp || type == ClimbBackUpHandsOnly || type == ClimbBackHead || type == ClimbBackHeadHandsOnly)
+        if (type == CLIMB_UP || type == CLIMB_UP_HANDS_ONLY || type == CLIMB_BACK_UP || type == CLIMB_BACK_UP_HANDS_ONLY || type == CLIMB_BACK_HEAD || type == CLIMB_BACK_HEAD_HANDS_ONLY)
         {
             return result * SmartMovingConfig.JUMP_EXHAUSTION.climbGainFactor;
         }
 
-        if (type == WallUp || type == WallHead)
+        if (type == WALL_UP || type == WALL_HEAD)
         {
             return result * SmartMovingConfig.JUMP_EXHAUSTION.wallGainFactor;
         }
 
-        if (speed == Sprinting)
+        if (speed == SPRINTING)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.sprintGainFactor;
         }
-        else if (speed == Running)
+        else if (speed == RUNNING)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.runGainFactor;
         }
-        else if (speed == Walking)
+        else if (speed == WALKING)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.walkGainFactor;
         }
-        else if (speed == Sneaking)
+        else if (speed == SNEAKING)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.sneakGainFactor;
         }
-        else if (speed == Standing)
+        else if (speed == STANDING)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.standGainFactor;
         }
 
-        if (type == ChargeUp)
+        if (type == CHARGE_UP)
         {
-            if (!isJumpExhaustionEnabled(speed, Up))
+            if (!isJumpExhaustionEnabled(speed, UP))
             {
                 result = 0;
             }
@@ -289,31 +289,31 @@ public class ConfigHelper
     {
         float result = SmartMovingConfig.JUMP_EXHAUSTION.stopFactor;
 
-        if (type == SlideDown)
+        if (type == SLIDE_DOWN)
         {
             return result * SmartMovingConfig.JUMP_EXHAUSTION.slideStopFactor;
         }
-        else if (type == Angle)
+        else if (type == ANGLE)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.angleStopFactor;
         }
-        else if (type == ClimbUp || type == ClimbUpHandsOnly)
+        else if (type == CLIMB_UP || type == CLIMB_UP_HANDS_ONLY)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.climbUpStopFactor;
         }
-        else if (type == ClimbBackUp || type == ClimbBackUpHandsOnly)
+        else if (type == CLIMB_BACK_UP || type == CLIMB_BACK_UP_HANDS_ONLY)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.climbBackStopFactor;
         }
-        else if (type == ClimbBackHead || type == ClimbBackHeadHandsOnly)
+        else if (type == CLIMB_BACK_HEAD || type == CLIMB_BACK_HEAD_HANDS_ONLY)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.climbBackHeadStopFactor;
         }
-        else if (type == WallUp)
+        else if (type == WALL_UP)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.wallUpStopFactor;
         }
-        else if (type == WallHead)
+        else if (type == WALL_HEAD)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.wallHeadStopFactor;
         }
@@ -322,42 +322,42 @@ public class ConfigHelper
             result *= SmartMovingConfig.JUMP_EXHAUSTION.upStopFactor;
         }
 
-        if (type == ClimbUp || type == ClimbUpHandsOnly || type == ClimbBackUp || type == ClimbBackUpHandsOnly || type == ClimbBackHead || type == ClimbBackHeadHandsOnly)
+        if (type == CLIMB_UP || type == CLIMB_UP_HANDS_ONLY || type == CLIMB_BACK_UP || type == CLIMB_BACK_UP_HANDS_ONLY || type == CLIMB_BACK_HEAD || type == CLIMB_BACK_HEAD_HANDS_ONLY)
         {
             return result * SmartMovingConfig.JUMP_EXHAUSTION.climbStopFactor;
         }
 
-        if (type == WallUp || type == WallHead)
+        if (type == WALL_UP || type == WALL_HEAD)
         {
             return result * SmartMovingConfig.JUMP_EXHAUSTION.wallStopFactor;
         }
 
-        if (speed == Sprinting)
+        if (speed == SPRINTING)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.sprintStopFactor;
         }
-        else if (speed == Running)
+        else if (speed == RUNNING)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.runStopFactor;
         }
-        else if (speed == Walking)
+        else if (speed == WALKING)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.walkStopFactor;
         }
-        else if (speed == Sneaking)
+        else if (speed == SNEAKING)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.sneakStopFactor;
         }
-        else if (speed == Standing)
+        else if (speed == STANDING)
         {
             result *= SmartMovingConfig.JUMP_EXHAUSTION.standStopFactor;
         }
 
-        if (type == ChargeUp)
+        if (type == CHARGE_UP)
         {
-            if (!isJumpExhaustionEnabled(speed, Up))
+            if (!isJumpExhaustionEnabled(speed, UP))
             {
-                result += getJumpExhaustionGain(speed, Up, 0);
+                result += getJumpExhaustionGain(speed, UP, 0);
             }
 
             result -= SmartMovingConfig.JUMP_EXHAUSTION.stopFactor * SmartMovingConfig.JUMP_EXHAUSTION.upStopFactor * SmartMovingConfig.JUMP_EXHAUSTION.chargeStopFactor * Math.min(jumpCharge, SmartMovingConfig.CHARGED_JUMPING.maximum) / SmartMovingConfig.CHARGED_JUMPING.maximum;
@@ -390,65 +390,65 @@ public class ConfigHelper
     {
         float result = SmartMovingConfig.JUMPING.verticalFactor;
 
-        if (type == Angle)
+        if (type == ANGLE)
         {
             return result * SmartMovingConfig.SIDE_AND_BACK_JUMPING.verticalFactor;
         }
-        if (type == ClimbUp || type == ClimbUpHandsOnly)
+        if (type == CLIMB_UP || type == CLIMB_UP_HANDS_ONLY)
         {
             result *= SmartMovingConfig.CLIMB_JUMPING.verticalFactor;
         }
-        if (type == ClimbUpHandsOnly)
+        if (type == CLIMB_UP_HANDS_ONLY)
         {
             result *= SmartMovingConfig.CLIMB_JUMPING.handsOnlyVerticalFactor;
         }
-        if (type == ClimbBackUp || type == ClimbBackUpHandsOnly)
+        if (type == CLIMB_BACK_UP || type == CLIMB_BACK_UP_HANDS_ONLY)
         {
             result *= SmartMovingConfig.CLIMB_BACK_JUMPING.verticalFactor;
         }
-        if (type == ClimbBackUpHandsOnly)
+        if (type == CLIMB_BACK_UP_HANDS_ONLY)
         {
             result *= SmartMovingConfig.CLIMB_BACK_JUMPING.handsOnlyVerticalFactor;
         }
-        if (type == ClimbBackHead || type == ClimbBackHeadHandsOnly)
+        if (type == CLIMB_BACK_HEAD || type == CLIMB_BACK_HEAD_HANDS_ONLY)
         {
             result *= SmartMovingConfig.CLIMB_BACK_HEAD_JUMPING.verticalFactor;
         }
-        if (type == ClimbBackHeadHandsOnly)
+        if (type == CLIMB_BACK_HEAD_HANDS_ONLY)
         {
             result *= SmartMovingConfig.CLIMB_BACK_HEAD_JUMPING.handsOnlyVerticalFactor;
         }
-        if (type == WallUp || type == WallHead)
+        if (type == WALL_UP || type == WALL_HEAD)
         {
             result *= SmartMovingConfig.WALL_JUMPING.verticalFactor;
         }
-        if (type == WallHead)
+        if (type == WALL_HEAD)
         {
             result *= SmartMovingConfig.WALL_HEAD_JUMPING.verticalFactor;
         }
 
-        if (type == ClimbUp || type == ClimbUpHandsOnly || type == ClimbBackUp || type == ClimbBackUpHandsOnly || type == ClimbBackHead || type == ClimbBackHeadHandsOnly || type == WallUp || type == WallHead)
+        if (type == CLIMB_UP || type == CLIMB_UP_HANDS_ONLY || type == CLIMB_BACK_UP || type == CLIMB_BACK_UP_HANDS_ONLY || type == CLIMB_BACK_HEAD || type == CLIMB_BACK_HEAD_HANDS_ONLY || type == WALL_UP || type == WALL_HEAD)
         {
             return result;
         }
 
-        if (speed == Sprinting)
+        if (speed == SPRINTING)
         {
             result *= SmartMovingConfig.JUMPING.sprintVerticalFactor;
         }
-        else if (speed == Running)
+        else if (speed == RUNNING)
         {
             result *= SmartMovingConfig.JUMPING.runVerticalFactor;
         }
-        else if (speed == Walking)
+        else if (speed == WALKING)
         {
             result *= SmartMovingConfig.JUMPING.walkVerticalFactor;
         }
-        else if (speed == Sneaking)
+        else if (speed == SNEAKING)
         {
             result *= SmartMovingConfig.JUMPING.sneakVerticalFactor;
         }
-        else if (speed == Standing)
+        else if (speed == STANDING)
         {
             result *= SmartMovingConfig.JUMPING.standVerticalFactor;
         }
@@ -460,57 +460,57 @@ public class ConfigHelper
     {
         float result = SmartMovingConfig.JUMPING.horizontalFactor;
 
-        if (type == Angle)
+        if (type == ANGLE)
         {
             result *= SmartMovingConfig.SIDE_AND_BACK_JUMPING.horizontalFactor;
         }
-        if (type == ClimbBackUp || type == ClimbBackUpHandsOnly)
+        if (type == CLIMB_BACK_UP || type == CLIMB_BACK_UP_HANDS_ONLY)
         {
             result *= SmartMovingConfig.CLIMB_BACK_JUMPING.horizontalFactor;
         }
-        if (type == ClimbBackUpHandsOnly)
+        if (type == CLIMB_BACK_UP_HANDS_ONLY)
         {
             result *= SmartMovingConfig.CLIMB_BACK_JUMPING.handsOnlyHorizontalFactor;
         }
-        if (type == ClimbBackHead || type == ClimbBackHeadHandsOnly)
+        if (type == CLIMB_BACK_HEAD || type == CLIMB_BACK_HEAD_HANDS_ONLY)
         {
             result *= SmartMovingConfig.CLIMB_BACK_HEAD_JUMPING.horizontalFactor;
         }
-        if (type == ClimbBackHeadHandsOnly)
+        if (type == CLIMB_BACK_HEAD_HANDS_ONLY)
         {
             result *= SmartMovingConfig.CLIMB_BACK_HEAD_JUMPING.handsOnlyHorizontalFactor;
         }
-        if (type == WallUp)
+        if (type == WALL_UP)
         {
             result *= SmartMovingConfig.WALL_JUMPING.horizontalFactor;
         }
-        if (type == WallHead)
+        if (type == WALL_HEAD)
         {
             result *= SmartMovingConfig.WALL_HEAD_JUMPING.horizontalFactor;
         }
 
-        if (type == Angle || type == ClimbUp || type == ClimbUpHandsOnly || type == ClimbBackUp || type == ClimbBackUpHandsOnly || type == ClimbBackHead || type == ClimbBackHeadHandsOnly || type == WallUp || type == WallHead)
+        if (type == ANGLE || type == CLIMB_UP || type == CLIMB_UP_HANDS_ONLY || type == CLIMB_BACK_UP || type == CLIMB_BACK_UP_HANDS_ONLY || type == CLIMB_BACK_HEAD || type == CLIMB_BACK_HEAD_HANDS_ONLY || type == WALL_UP || type == WALL_HEAD)
         {
             return result;
         }
 
-        if (speed == Sprinting)
+        if (speed == SPRINTING)
         {
             result *= SmartMovingConfig.JUMPING.sprintHorizontalFactor;
         }
-        else if (speed == Running)
+        else if (speed == RUNNING)
         {
             result *= SmartMovingConfig.JUMPING.runHorizontalFactor;
         }
-        else if (speed == Walking)
+        else if (speed == WALKING)
         {
             result *= SmartMovingConfig.JUMPING.walkHorizontalFactor;
         }
-        else if (speed == Sneaking)
+        else if (speed == SNEAKING)
         {
             result *= SmartMovingConfig.JUMPING.sneakHorizontalFactor;
         }
-        else if (speed == Standing)
+        else if (speed == STANDING)
         {
             result *= 0.0F;
         }
@@ -527,15 +527,15 @@ public class ConfigHelper
             maxMotion = 0.07839602977037292F;
         }
 
-        if (speed == Sprinting)
+        if (speed == SPRINTING)
         {
             maxMotion *= SmartMovingConfig.GENERIC_SPRINTING.factor;
         }
-        else if (speed == Running)
+        else if (speed == RUNNING)
         {
             maxMotion *= SmartMovingConfig.STANDARD_SPRINTING.factor;
         }
-        else if (speed == Sneaking)
+        else if (speed == SNEAKING)
         {
             maxMotion *= SmartMovingConfig.GENERIC_SNEAKING.factor;
         }
@@ -559,9 +559,9 @@ public class ConfigHelper
 
         if (SmartMovingConfig.JUMPING.enable)
         {
-            for (int i = Sprinting; i <= Standing; i++)
+            for (int i = SPRINTING; i <= STANDING; i++)
             {
-                for (int n = Up; n <= WallHeadSlide; n++)
+                for (int n = UP; n <= WALL_HEAD_SLIDE; n++)
                 {
                     if (isJumpExhaustionEnabled(i, n))
                     {

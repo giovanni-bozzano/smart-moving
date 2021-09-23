@@ -41,6 +41,13 @@ public final class ServerPlayerBaseSorting
     private String[] afterUpdateSizeSuperiors;
     private String[] afterUpdateSizeInferiors;
     // ############################################################################
+    private String[] beforeGetEyeHeightSuperiors;
+    private String[] beforeGetEyeHeightInferiors;
+    private String[] overrideGetEyeHeightSuperiors;
+    private String[] overrideGetEyeHeightInferiors;
+    private String[] afterGetEyeHeightSuperiors;
+    private String[] afterGetEyeHeightInferiors;
+    // ############################################################################
     private String[] beforeAddExhaustionSuperiors;
     private String[] beforeAddExhaustionInferiors;
     private String[] overrideAddExhaustionSuperiors;
@@ -669,6 +676,68 @@ public final class ServerPlayerBaseSorting
     public void setAfterUpdateSizeInferiors(String[] value)
     {
         this.afterUpdateSizeInferiors = value;
+    }
+
+    // ############################################################################
+
+    public String[] getBeforeGetEyeHeightSuperiors()
+    {
+        return this.beforeGetEyeHeightSuperiors;
+    }
+
+    public String[] getBeforeGetEyeHeightInferiors()
+    {
+        return this.beforeGetEyeHeightInferiors;
+    }
+
+    public String[] getOverrideGetEyeHeightSuperiors()
+    {
+        return this.overrideGetEyeHeightSuperiors;
+    }
+
+    public String[] getOverrideGetEyeHeightInferiors()
+    {
+        return this.overrideGetEyeHeightInferiors;
+    }
+
+    public String[] getAfterGetEyeHeightSuperiors()
+    {
+        return this.afterGetEyeHeightSuperiors;
+    }
+
+    public String[] getAfterGetEyeHeightInferiors()
+    {
+        return this.afterGetEyeHeightInferiors;
+    }
+
+    public void setBeforeGetEyeHeightSuperiors(String[] value)
+    {
+        this.beforeGetEyeHeightSuperiors = value;
+    }
+
+    public void setBeforeGetEyeHeightInferiors(String[] value)
+    {
+        this.beforeGetEyeHeightInferiors = value;
+    }
+
+    public void setOverrideGetEyeHeightSuperiors(String[] value)
+    {
+        this.overrideGetEyeHeightSuperiors = value;
+    }
+
+    public void setOverrideGetEyeHeightInferiors(String[] value)
+    {
+        this.overrideGetEyeHeightInferiors = value;
+    }
+
+    public void setAfterGetEyeHeightSuperiors(String[] value)
+    {
+        this.afterGetEyeHeightSuperiors = value;
+    }
+
+    public void setAfterGetEyeHeightInferiors(String[] value)
+    {
+        this.afterGetEyeHeightInferiors = value;
     }
 
     // ############################################################################

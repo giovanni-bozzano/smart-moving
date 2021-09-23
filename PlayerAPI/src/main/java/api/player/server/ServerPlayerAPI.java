@@ -205,6 +205,13 @@ public final class ServerPlayerAPI
             addSorting(id, allBaseAfterUpdateSizeSuperiors, baseSorting.getAfterUpdateSizeSuperiors());
             addSorting(id, allBaseAfterUpdateSizeInferiors, baseSorting.getAfterUpdateSizeInferiors());
 
+            addSorting(id, allBaseBeforeGetEyeHeightSuperiors, baseSorting.getBeforeGetEyeHeightSuperiors());
+            addSorting(id, allBaseBeforeGetEyeHeightInferiors, baseSorting.getBeforeGetEyeHeightInferiors());
+            addSorting(id, allBaseOverrideGetEyeHeightSuperiors, baseSorting.getOverrideGetEyeHeightSuperiors());
+            addSorting(id, allBaseOverrideGetEyeHeightInferiors, baseSorting.getOverrideGetEyeHeightInferiors());
+            addSorting(id, allBaseAfterGetEyeHeightSuperiors, baseSorting.getAfterGetEyeHeightSuperiors());
+            addSorting(id, allBaseAfterGetEyeHeightInferiors, baseSorting.getAfterGetEyeHeightInferiors());
+
             addSorting(id, allBaseBeforeAddExhaustionSuperiors, baseSorting.getBeforeAddExhaustionSuperiors());
             addSorting(id, allBaseBeforeAddExhaustionInferiors, baseSorting.getBeforeAddExhaustionInferiors());
             addSorting(id, allBaseOverrideAddExhaustionSuperiors, baseSorting.getOverrideAddExhaustionSuperiors());
@@ -546,6 +553,10 @@ public final class ServerPlayerAPI
         addMethod(id, baseClass, overrideUpdateSizeHookTypes, "updateSize");
         addMethod(id, baseClass, afterUpdateSizeHookTypes, "afterUpdateSize");
 
+        addMethod(id, baseClass, beforeGetEyeHeightHookTypes, "beforeGetEyeHeight");
+        addMethod(id, baseClass, overrideGetEyeHeightHookTypes, "getEyeHeight");
+        addMethod(id, baseClass, afterGetEyeHeightHookTypes, "afterGetEyeHeight");
+
         addMethod(id, baseClass, beforeAddExhaustionHookTypes, "beforeAddExhaustion", float.class);
         addMethod(id, baseClass, overrideAddExhaustionHookTypes, "addExhaustion", float.class);
         addMethod(id, baseClass, afterAddExhaustionHookTypes, "afterAddExhaustion", float.class);
@@ -788,6 +799,17 @@ public final class ServerPlayerAPI
         beforeUpdateSizeHookTypes.remove(id);
         overrideUpdateSizeHookTypes.remove(id);
         afterUpdateSizeHookTypes.remove(id);
+
+        allBaseBeforeGetEyeHeightSuperiors.remove(id);
+        allBaseBeforeGetEyeHeightInferiors.remove(id);
+        allBaseOverrideGetEyeHeightSuperiors.remove(id);
+        allBaseOverrideGetEyeHeightInferiors.remove(id);
+        allBaseAfterGetEyeHeightSuperiors.remove(id);
+        allBaseAfterGetEyeHeightInferiors.remove(id);
+
+        beforeGetEyeHeightHookTypes.remove(id);
+        overrideGetEyeHeightHookTypes.remove(id);
+        afterGetEyeHeightHookTypes.remove(id);
 
         allBaseBeforeAddExhaustionSuperiors.remove(id);
         allBaseBeforeAddExhaustionInferiors.remove(id);
@@ -1566,6 +1588,10 @@ public final class ServerPlayerAPI
         sortBases(overrideUpdateSizeHookTypes, allBaseOverrideUpdateSizeSuperiors, allBaseOverrideUpdateSizeInferiors, "overrideUpdateSize");
         sortBases(afterUpdateSizeHookTypes, allBaseAfterUpdateSizeSuperiors, allBaseAfterUpdateSizeInferiors, "afterUpdateSize");
 
+        sortBases(beforeGetEyeHeightHookTypes, allBaseBeforeGetEyeHeightSuperiors, allBaseBeforeGetEyeHeightInferiors, "beforeGetEyeHeight");
+        sortBases(overrideGetEyeHeightHookTypes, allBaseOverrideGetEyeHeightSuperiors, allBaseOverrideGetEyeHeightInferiors, "overrideGetEyeHeight");
+        sortBases(afterGetEyeHeightHookTypes, allBaseAfterGetEyeHeightSuperiors, allBaseAfterGetEyeHeightInferiors, "afterGetEyeHeight");
+
         sortBases(beforeAddExhaustionHookTypes, allBaseBeforeAddExhaustionSuperiors, allBaseBeforeAddExhaustionInferiors, "beforeAddExhaustion");
         sortBases(overrideAddExhaustionHookTypes, allBaseOverrideAddExhaustionSuperiors, allBaseOverrideAddExhaustionInferiors, "overrideAddExhaustion");
         sortBases(afterAddExhaustionHookTypes, allBaseAfterAddExhaustionSuperiors, allBaseAfterAddExhaustionInferiors, "afterAddExhaustion");
@@ -1930,6 +1956,11 @@ public final class ServerPlayerAPI
         this.overrideUpdateSizeHooks = this.create(overrideUpdateSizeHookTypes);
         this.afterUpdateSizeHooks = this.create(afterUpdateSizeHookTypes);
         this.isUpdateSizeModded = this.beforeUpdateSizeHooks != null || this.overrideUpdateSizeHooks != null || this.afterUpdateSizeHooks != null;
+
+        this.beforeGetEyeHeightHooks = this.create(beforeGetEyeHeightHookTypes);
+        this.overrideGetEyeHeightHooks = this.create(overrideGetEyeHeightHookTypes);
+        this.afterGetEyeHeightHooks = this.create(afterGetEyeHeightHookTypes);
+        this.isGetEyeHeightModded = this.beforeGetEyeHeightHooks != null || this.overrideGetEyeHeightHooks != null || this.afterGetEyeHeightHooks != null;
 
         this.beforeAddExhaustionHooks = this.create(beforeAddExhaustionHookTypes);
         this.overrideAddExhaustionHooks = this.create(overrideAddExhaustionHookTypes);

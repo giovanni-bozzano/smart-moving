@@ -35,7 +35,8 @@ public class CustomModelPlayerBase extends ModelPlayerBase implements IModelPlay
     @Override
     public CustomModel getMovingModel()
     {
-        if (this.model == null) {
+        if (this.model == null)
+        {
             this.model = new CustomModel(SmartRender.getPlayerBase(this.modelBiped), this);
         }
         return this.model;

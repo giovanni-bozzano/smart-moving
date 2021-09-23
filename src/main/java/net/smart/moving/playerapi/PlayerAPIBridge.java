@@ -28,7 +28,8 @@ public abstract class PlayerAPIBridge
 
     public static CustomClientPlayerEntityBase getPlayerBase(EntityPlayer entityPlayer)
     {
-        if (entityPlayer instanceof EntityPlayerSP) {
+        if (entityPlayer instanceof EntityPlayerSP)
+        {
             return CustomClientPlayerEntityBase.getPlayerBase((EntityPlayerSP) entityPlayer);
         }
         return null;
@@ -36,7 +37,8 @@ public abstract class PlayerAPIBridge
 
     public static CustomServerPlayerEntityBase getServerPlayerBase(EntityPlayer entityPlayer)
     {
-        if (entityPlayer instanceof EntityPlayerMP) {
+        if (entityPlayer instanceof EntityPlayerMP)
+        {
             return CustomServerPlayerEntityBase.getPlayerBase(entityPlayer);
         }
         return null;

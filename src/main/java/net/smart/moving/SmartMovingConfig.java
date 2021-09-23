@@ -4,33 +4,33 @@ import net.minecraftforge.common.config.Config;
 
 public class SmartMovingConfig
 {
-    public static Climb climb = new Climb();
-    public static Swimming swimming = new Swimming();
-    public static Diving diving = new Diving();
-    public static Lava lava = new Lava();
-    public static StandardSprinting standardSprinting = new StandardSprinting();
-    public static GenericSprinting genericSprinting = new GenericSprinting();
-    public static GenericSneaking genericSneaking = new GenericSneaking();
-    public static Crawling crawling = new Crawling();
-    public static Sliding sliding = new Sliding();
-    public static SmartFlying smartFlying = new SmartFlying();
-    public static StandardFlying standardFlying = new StandardFlying();
-    public static Falling falling = new Falling();
-    public static Jumping jumping = new Jumping();
-    public static ChargedJumping chargedJumping = new ChargedJumping();
-    public static HeadJumping headJumping = new HeadJumping();
-    public static SideAndBackJumping sideAndBackJumping = new SideAndBackJumping();
-    public static ClimbJumping climbJumping = new ClimbJumping();
-    public static ClimbBackJumping climbBackJumping = new ClimbBackJumping();
-    public static ClimbBackHeadJumping climbBackHeadJumping = new ClimbBackHeadJumping();
-    public static WallJumping wallJumping = new WallJumping();
-    public static WallHeadJumping wallHeadJumping = new WallHeadJumping();
-    public static JumpExhaustion jumpExhaustion = new JumpExhaustion();
-    public static Exhaustion exhaustion = new Exhaustion();
-    public static Hunger hunger = new Hunger();
-    public static ItemUsage itemUsage = new ItemUsage();
-    public static ViewpointPerspective viewpointPerspective = new ViewpointPerspective();
-    public static UserInterface userInterface = new UserInterface();
+    public static final Climb CLIMB = new Climb();
+    public static final Swimming SWIMMING = new Swimming();
+    public static final Diving DIVING = new Diving();
+    public static final Lava LAVA = new Lava();
+    public static final StandardSprinting STANDARD_SPRINTING = new StandardSprinting();
+    public static final GenericSprinting GENERIC_SPRINTING = new GenericSprinting();
+    public static final GenericSneaking GENERIC_SNEAKING = new GenericSneaking();
+    public static final Crawling CRAWLING = new Crawling();
+    public static final Sliding SLIDING = new Sliding();
+    public static final SmartFlying SMART_FLYING = new SmartFlying();
+    public static final StandardFlying STANDARD_FLYING = new StandardFlying();
+    public static final Falling FALLING = new Falling();
+    public static final Jumping JUMPING = new Jumping();
+    public static final ChargedJumping CHARGED_JUMPING = new ChargedJumping();
+    public static final HeadJumping HEAD_JUMPING = new HeadJumping();
+    public static final SideAndBackJumping SIDE_AND_BACK_JUMPING = new SideAndBackJumping();
+    public static final ClimbJumping CLIMB_JUMPING = new ClimbJumping();
+    public static final ClimbBackJumping CLIMB_BACK_JUMPING = new ClimbBackJumping();
+    public static final ClimbBackHeadJumping CLIMB_BACK_HEAD_JUMPING = new ClimbBackHeadJumping();
+    public static final WallJumping WALL_JUMPING = new WallJumping();
+    public static final WallHeadJumping WALL_HEAD_JUMPING = new WallHeadJumping();
+    public static final JumpExhaustion JUMP_EXHAUSTION = new JumpExhaustion();
+    public static final Exhaustion EXHAUSTION = new Exhaustion();
+    public static final Hunger HUNGER = new Hunger();
+    public static final ItemUsage ITEM_USAGE = new ItemUsage();
+    public static final ViewpointPerspective VIEWPOINT_PERSPECTIVE = new ViewpointPerspective();
+    public static final UserInterface USER_INTERFACE = new UserInterface();
 
     public static class Climb
     {
@@ -133,7 +133,7 @@ public class SmartMovingConfig
         @Config.Comment("To switch on/off standard sprinting")
         public boolean enable = true;
         @Config.Comment("Standard sprinting factor (>= 1.1)")
-        public float factor = 1.3F;
+        public float factor = 1.1F;
         @Config.Comment("To switch on/off standard sprinting exhaustion")
         public boolean exhaustion = false;
         @Config.Comment("Maximum exhaustion to start a standard sprint (>= 0)")
@@ -149,7 +149,7 @@ public class SmartMovingConfig
         @Config.Comment("To switch on/off generic sprinting")
         public boolean enable = true;
         @Config.Comment("Generic sprinting factor (>= 1.1 AND >= 'run.factor' + 0.1 if relevant)")
-        public float factor = 1.5F;
+        public float factor = 1.3F;
         @Config.Comment("To switch on/off sprinting exhaustion")
         public boolean exhaustion = true;
         @Config.Comment("Maximum exhaustion to start a sprint (>= 0)")
@@ -268,6 +268,8 @@ public class SmartMovingConfig
         public boolean enable = true;
         @Config.Comment("Maximum jump charge (counts up one per tick) (>= 0)")
         public int maximum = 20;
+        @Config.Comment("Jump speed factor when completely charged (>= 1)")
+        public float factor = 1.3F;
         @Config.Comment("To switch between charged jump and charge cancel on sneak button release while jump charging")
         public boolean sneakReleaseCancel = false;
     }

@@ -6,5 +6,5 @@ import net.minecraft.world.IBlockAccess;
 
 public interface IBlockWall
 {
-    boolean publicCanConnectTo(IBlockAccess world, BlockPos pos, EnumFacing facing);
+    void publicCanConnectTo(IBlockAccess world, BlockPos pos, EnumFacing facing);
 }

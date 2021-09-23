@@ -17,6 +17,7 @@
 package net.smart.moving;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.smart.moving.network.MessageHandler;
 import net.smart.moving.network.packets.MessageStateClient;
@@ -27,6 +28,7 @@ import java.util.List;
 public class SmartMovingServer
 {
     public static final float SMALL_SIZE_ITEM_GRAB_HEIGHT = 0.25F;
+
     protected final CustomServerPlayerEntityBase playerBase;
     private boolean resetFallDistance = false;
     private boolean resetTicksForFloatKick = false;
@@ -40,19 +42,19 @@ public class SmartMovingServer
         this.playerBase = playerBase;
     }
 
-    public void processStatePacket(int entityId, long state)
+    public void processStatePacket(int entityId, NBTTagCompound state)
     {
-        boolean isCrawling = ((state >>> 13) & 1) != 0;
+        boolean isCrawling = state.getBoolean("is_crawling");
         this.setCrawling(isCrawling);
 
-        boolean isSmall = ((state >>> 15) & 1) != 0;
+        boolean isSmall = state.getBoolean("is_small");
         this.setSmall(isSmall);
 
-        boolean isClimbing = ((state >>> 14) & 1) != 0;
-        boolean isCrawlClimbing = ((state >>> 12) & 1) != 0;
-        boolean isCeilingClimbing = ((state >>> 18) & 1) != 0;
+        boolean isClimbing = state.getBoolean("is_climbing");
+        boolean isCrawlClimbing = state.getBoolean("is_crawl_climbing");
+        boolean isCeilingClimbing = state.getBoolean("is_ceiling_climbing");
 
-        boolean isWallJumping = ((state >>> 31) & 1) != 0;
+        boolean isWallJumping = state.getBoolean("is_wall_jumping");
 
         this.resetFallDistance = isClimbing || isCrawlClimbing || isCeilingClimbing || isWallJumping;
         this.resetTicksForFloatKick = isClimbing || isCrawlClimbing || isCeilingClimbing;
@@ -71,17 +73,20 @@ public class SmartMovingServer
 
     public void afterOnUpdate()
     {
-        if (this.resetFallDistance) {
+        if (this.resetFallDistance)
+        {
             this.playerBase.resetFallDistance();
         }
-        if (this.resetTicksForFloatKick) {
+        if (this.resetTicksForFloatKick)
+        {
             this.playerBase.resetTicksForFloatKick();
         }
     }
 
     public void setCrawling(boolean crawling)
     {
-        if (!crawling && this.isCrawling) {
+        if (!crawling && this.isCrawling)
+        {
             this.crawlingCooldown = 10;
         }
         this.isCrawling = crawling;
@@ -95,14 +100,16 @@ public class SmartMovingServer
 
     public void afterSetPosition()
     {
-        if (!this.crawlingInitialized) {
+        if (!this.crawlingInitialized)
+        {
             this.playerBase.setMaxY(this.playerBase.getMinY() + this.playerBase.getHeight() - 1);
         }
     }
 
     public void beforeIsPlayerSleeping()
     {
-        if (!this.crawlingInitialized) {
+        if (!this.crawlingInitialized)
+        {
             this.playerBase.setMaxY(this.playerBase.getMinY() + this.playerBase.getHeight());
             this.crawlingInitialized = true;
         }
@@ -110,18 +117,21 @@ public class SmartMovingServer
 
     public void beforeOnUpdate()
     {
-        if (this.crawlingCooldown > 0) {
+        if (this.crawlingCooldown > 0)
+        {
             this.crawlingCooldown--;
         }
     }
 
     public void afterOnLivingUpdate()
     {
-        if (!this.isSmall) {
+        if (!this.isSmall)
+        {
             return;
         }
 
-        if (this.playerBase.doGetHealth() <= 0) {
+        if (this.playerBase.doGetHealth() <= 0)
+        {
             return;
         }
 
@@ -129,19 +139,23 @@ public class SmartMovingServer
         AxisAlignedBB box = this.playerBase.expandBox(this.playerBase.getBox(), 1, offset, 1);
 
         List<?> offsetEntities = this.playerBase.getEntitiesExcludingPlayer(box);
-        if (offsetEntities != null && offsetEntities.size() > 0) {
+        if (offsetEntities != null && offsetEntities.size() > 0)
+        {
             Object[] offsetEntityArray = offsetEntities.toArray();
 
             box = this.playerBase.expandBox(box, 0, -offset, 0);
             List<?> standardEntities = this.playerBase.getEntitiesExcludingPlayer(box);
 
-            for (Object o : offsetEntityArray) {
+            for (Object o : offsetEntityArray)
+            {
                 Entity offsetEntity = (Entity) o;
-                if (standardEntities != null && standardEntities.contains(offsetEntity)) {
+                if (standardEntities != null && standardEntities.contains(offsetEntity))
+                {
                     continue;
                 }
 
-                if (!this.playerBase.isDeadEntity(offsetEntity)) {
+                if (!this.playerBase.isDeadEntity(offsetEntity))
+                {
                     this.playerBase.onCollideWithPlayer(offsetEntity);
                 }
             }
@@ -150,7 +164,8 @@ public class SmartMovingServer
 
     public boolean isEntityInsideOpaqueBlock()
     {
-        if (this.crawlingCooldown > 0) {
+        if (this.crawlingCooldown > 0)
+        {
             return false;
         }
 

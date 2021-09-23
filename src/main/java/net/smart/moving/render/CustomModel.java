@@ -17,18 +17,20 @@
 package net.smart.moving.render;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.model.ModelBiped;
 import net.minecraft.util.math.MathHelper;
 import net.smart.moving.climbing.FeetClimbing;
 import net.smart.moving.climbing.HandsClimbing;
 import net.smart.render.ModelRotationRenderer;
+import net.smart.render.SmartRenderModel;
 
 import static net.smart.render.SmartRenderUtilities.*;
 
 public class CustomModel extends ContextRender
 {
     public IModelPlayer modelPlayer;
-    public net.minecraft.client.model.ModelBiped modelBiped;
-    public net.smart.render.SmartRenderModel renderModel;
+    public ModelBiped modelBiped;
+    public SmartRenderModel renderModel;
 
     public CustomModel(net.smart.render.IModelPlayer renderModel, IModelPlayer modelPlayer)
     {
@@ -36,32 +38,33 @@ public class CustomModel extends ContextRender
         this.renderModel = renderModel.getRenderModel();
         this.modelBiped = this.renderModel.mp;
 
-        if (CustomRender.CurrentMainModel != null) {
-            this.isClimb = CustomRender.CurrentMainModel.isClimb;
-            this.isClimbJump = CustomRender.CurrentMainModel.isClimbJump;
-            this.handsClimbType = CustomRender.CurrentMainModel.handsClimbType;
-            this.feetClimbType = CustomRender.CurrentMainModel.feetClimbType;
-            this.isHandsVineClimbing = CustomRender.CurrentMainModel.isHandsVineClimbing;
-            this.isFeetVineClimbing = CustomRender.CurrentMainModel.isFeetVineClimbing;
-            this.isCeilingClimb = CustomRender.CurrentMainModel.isCeilingClimb;
-            this.isSwim = CustomRender.CurrentMainModel.isSwim;
-            this.isDive = CustomRender.CurrentMainModel.isDive;
-            this.isCrawl = CustomRender.CurrentMainModel.isCrawl;
-            this.isCrawlClimb = CustomRender.CurrentMainModel.isCrawlClimb;
-            this.isJump = CustomRender.CurrentMainModel.isJump;
-            this.isHeadJump = CustomRender.CurrentMainModel.isHeadJump;
-            this.isSlide = CustomRender.CurrentMainModel.isSlide;
-            this.isFlying = CustomRender.CurrentMainModel.isFlying;
-            this.isLevitate = CustomRender.CurrentMainModel.isLevitate;
-            this.isFalling = CustomRender.CurrentMainModel.isFalling;
-            this.isGenericSneaking = CustomRender.CurrentMainModel.isGenericSneaking;
-            this.isAngleJumping = CustomRender.CurrentMainModel.isAngleJumping;
-            this.angleJumpType = CustomRender.CurrentMainModel.angleJumpType;
-            this.isRopeSliding = CustomRender.CurrentMainModel.isRopeSliding;
+        if (CustomRender.currentMainModel != null)
+        {
+            this.isClimb = CustomRender.currentMainModel.isClimb;
+            this.isClimbJump = CustomRender.currentMainModel.isClimbJump;
+            this.handsClimbType = CustomRender.currentMainModel.handsClimbType;
+            this.feetClimbType = CustomRender.currentMainModel.feetClimbType;
+            this.isHandsVineClimbing = CustomRender.currentMainModel.isHandsVineClimbing;
+            this.isFeetVineClimbing = CustomRender.currentMainModel.isFeetVineClimbing;
+            this.isCeilingClimb = CustomRender.currentMainModel.isCeilingClimb;
+            this.isSwim = CustomRender.currentMainModel.isSwim;
+            this.isDive = CustomRender.currentMainModel.isDive;
+            this.isCrawl = CustomRender.currentMainModel.isCrawl;
+            this.isCrawlClimb = CustomRender.currentMainModel.isCrawlClimb;
+            this.isJump = CustomRender.currentMainModel.isJump;
+            this.isHeadJump = CustomRender.currentMainModel.isHeadJump;
+            this.isSlide = CustomRender.currentMainModel.isSlide;
+            this.isFlying = CustomRender.currentMainModel.isFlying;
+            this.isLevitate = CustomRender.currentMainModel.isLevitate;
+            this.isFalling = CustomRender.currentMainModel.isFalling;
+            this.isGenericSneaking = CustomRender.currentMainModel.isGenericSneaking;
+            this.isAngleJumping = CustomRender.currentMainModel.isAngleJumping;
+            this.angleJumpType = CustomRender.currentMainModel.angleJumpType;
+            this.isRopeSliding = CustomRender.currentMainModel.isRopeSliding;
 
-            this.currentHorizontalSpeedFlattened = CustomRender.CurrentMainModel.currentHorizontalSpeedFlattened;
-            this.smallOverGroundHeight = CustomRender.CurrentMainModel.smallOverGroundHeight;
-            this.overGroundBlock = CustomRender.CurrentMainModel.overGroundBlock;
+            this.currentHorizontalSpeedFlattened = CustomRender.currentMainModel.currentHorizontalSpeedFlattened;
+            this.smallOverGroundHeight = CustomRender.currentMainModel.smallOverGroundHeight;
+            this.overGroundBlock = CustomRender.currentMainModel.overGroundBlock;
         }
     }
 
@@ -81,7 +84,8 @@ public class CustomModel extends ContextRender
         float totalDistance = this.renderModel.totalDistance;
         double horizontalDistance = this.renderModel.horizontalDistance;
         float currentSpeed = this.renderModel.currentSpeed;
-        if (!Float.isNaN(this.currentHorizontalSpeedFlattened)) {
+        if (!Float.isNaN(this.currentHorizontalSpeedFlattened))
+        {
             currentHorizontalSpeed = this.currentHorizontalSpeedFlattened;
         }
 
@@ -98,7 +102,8 @@ public class CustomModel extends ContextRender
         ModelRotationRenderer bipedRightLeg = this.renderModel.bipedRightLeg;
         ModelRotationRenderer bipedLeftLeg = this.renderModel.bipedLeftLeg;
 
-        if (this.isRopeSliding) {
+        if (this.isRopeSliding)
+        {
             float time = totalTime * 0.15F;
 
             bipedHead.rotateAngleZ = Between(-Sixteenth, Sixteenth, Normalize(currentCameraAngle - currentHorizontalAngle));
@@ -123,7 +128,9 @@ public class CustomModel extends ContextRender
 
             bipedLeftLeg.rotateAngleX = Sixtyfourth * MathHelper.cos(time + Quarter);
             bipedRightLeg.rotateAngleX = Sixtyfourth * MathHelper.cos(time - Quarter);
-        } else if (this.isClimb || this.isCrawlClimb) {
+        }
+        else if (this.isClimb || this.isCrawlClimb)
+        {
             bipedOuter.rotateAngleY = forwardRotation / RadiantToAngle;
 
             bipedHead.rotateAngleY = 0.0F;
@@ -136,15 +143,17 @@ public class CustomModel extends ContextRender
             float handsFrequenceSideFactor, handsDistanceSideFactor, handsDistanceSideOffset, feetFrequenceSideFactor, feetDistanceSideFactor, feetDistanceSideOffset;
 
             int handsClimbType = this.handsClimbType;
-            if (this.isHandsVineClimbing && handsClimbType == HandsClimbing.MiddleGrab) {
-                handsClimbType = HandsClimbing.UpGrab;
+            if (this.isHandsVineClimbing && handsClimbType == HandsClimbing.MIDDLE_GRAB)
+            {
+                handsClimbType = HandsClimbing.UP_GRAB;
             }
 
             float verticalSpeed = Math.min(0.5f, currentVerticalSpeed);
             float horizontalSpeed = Math.min(0.5f, currentHorizontalSpeed);
 
-            switch (handsClimbType) {
-                case HandsClimbing.MiddleGrab:
+            switch (handsClimbType)
+            {
+                case HandsClimbing.MIDDLE_GRAB:
                     handsFrequenceSideFactor = FrequenceFactor;
                     handsDistanceSideFactor = 1.0F;
                     handsDistanceSideOffset = 0.0F;
@@ -153,7 +162,7 @@ public class CustomModel extends ContextRender
                     handsDistanceUpFactor = 2F;
                     handsDistanceUpOffset = -Quarter;
                     break;
-                case HandsClimbing.UpGrab:
+                case HandsClimbing.UP_GRAB:
                     handsFrequenceSideFactor = FrequenceFactor;
                     handsDistanceSideFactor = 1.0F;
                     handsDistanceSideOffset = 0.0F;
@@ -173,7 +182,8 @@ public class CustomModel extends ContextRender
                     break;
             }
 
-            if (this.feetClimbType == HandsClimbing.UpGrab) {
+            if (this.feetClimbType == HandsClimbing.UP_GRAB)
+            {
                 feetFrequenceUpFactor = FrequenceFactor;
                 feetDistanceUpFactor = 0.3F / verticalSpeed;
                 feetDistanceUpOffset = -0.3F;
@@ -181,7 +191,9 @@ public class CustomModel extends ContextRender
                 feetFrequenceSideFactor = FrequenceFactor;
                 feetDistanceSideFactor = 0.5F;
                 feetDistanceSideOffset = 0.0F;
-            } else {
+            }
+            else
+            {
                 feetFrequenceUpFactor = FrequenceFactor;
                 feetDistanceUpFactor = 0.0F;
                 feetDistanceUpOffset = 0.0F;
@@ -197,7 +209,8 @@ public class CustomModel extends ContextRender
             bipedRightArm.rotateAngleY = MathHelper.cos(totalHorizontalDistance * handsFrequenceSideFactor + Quarter) * horizontalSpeed * handsDistanceSideFactor + handsDistanceSideOffset;
             bipedLeftArm.rotateAngleY = MathHelper.cos(totalHorizontalDistance * handsFrequenceSideFactor) * horizontalSpeed * handsDistanceSideFactor + handsDistanceSideOffset;
 
-            if (this.isHandsVineClimbing) {
+            if (this.isHandsVineClimbing)
+            {
                 bipedLeftArm.rotateAngleY *= 1F + handsFrequenceSideFactor;
                 bipedRightArm.rotateAngleY *= 1F + handsFrequenceSideFactor;
 
@@ -207,7 +220,8 @@ public class CustomModel extends ContextRender
                 this.setArmScales(Math.abs(MathHelper.cos(bipedRightArm.rotateAngleX)), Math.abs(MathHelper.cos(bipedLeftArm.rotateAngleX)));
             }
 
-            if (!this.isFeetVineClimbing) {
+            if (!this.isFeetVineClimbing)
+            {
                 bipedRightLeg.rotateAngleX = MathHelper.cos(totalVerticalDistance * feetFrequenceUpFactor) * feetDistanceUpFactor * verticalSpeed + feetDistanceUpOffset;
                 bipedLeftLeg.rotateAngleX = MathHelper.cos(totalVerticalDistance * feetFrequenceUpFactor + Half) * feetDistanceUpFactor * verticalSpeed + feetDistanceUpOffset;
             }
@@ -215,7 +229,8 @@ public class CustomModel extends ContextRender
             bipedRightLeg.rotateAngleZ = -(MathHelper.cos(totalHorizontalDistance * feetFrequenceSideFactor) - 1.0F) * horizontalSpeed * feetDistanceSideFactor + feetDistanceSideOffset;
             bipedLeftLeg.rotateAngleZ = -(MathHelper.cos(totalHorizontalDistance * feetFrequenceSideFactor + Quarter) + 1.0F) * horizontalSpeed * feetDistanceSideFactor + feetDistanceSideOffset;
 
-            if (this.isFeetVineClimbing) {
+            if (this.isFeetVineClimbing)
+            {
                 float total = (MathHelper.cos(totalDistance + Half) + 1) * Thirtytwoth + Sixteenth;
                 bipedRightLeg.rotateAngleX = -total;
                 bipedLeftLeg.rotateAngleX = -total;
@@ -227,21 +242,27 @@ public class CustomModel extends ContextRender
                 this.setLegScales(Math.abs(MathHelper.cos(bipedRightLeg.rotateAngleX)), Math.abs(MathHelper.cos(bipedLeftLeg.rotateAngleX)));
             }
 
-            if (this.isCrawlClimb) {
+            if (this.isCrawlClimb)
+            {
                 float height = this.smallOverGroundHeight + 0.25F;
                 float bodyLength = 0.7F;
                 float legLength = 0.55F;
 
                 float bodyAngleX, legAngleX, legAngleZ;
-                if (height < bodyLength) {
+                if (height < bodyLength)
+                {
                     bodyAngleX = Math.max(0, (float) Math.acos(height / bodyLength));
                     legAngleX = Quarter - bodyAngleX;
                     legAngleZ = Thirtytwoth;
-                } else if (height < bodyLength + legLength) {
+                }
+                else if (height < bodyLength + legLength)
+                {
                     bodyAngleX = 0F;
                     legAngleX = Math.max(0, (float) Math.acos((height - bodyLength) / legLength));
                     legAngleZ = Thirtytwoth * (legAngleX / 1.537F);
-                } else {
+                }
+                else
+                {
                     bodyAngleX = 0F;
                     legAngleX = 0F;
                     legAngleZ = 0F;
@@ -261,20 +282,25 @@ public class CustomModel extends ContextRender
                 bipedLeftLeg.rotateAngleZ = -legAngleZ;
             }
 
-            if (handsClimbType == HandsClimbing.NoGrab && this.feetClimbType != FeetClimbing.NoStep) {
+            if (handsClimbType == HandsClimbing.NO_GRAB && this.feetClimbType != FeetClimbing.NO_STEP)
+            {
                 bipedTorso.rotateAngleX = 0.5F;
                 bipedHead.rotateAngleX -= 0.5F;
                 bipedPelvic.rotateAngleX -= 0.5F;
 
                 bipedTorso.rotationPointZ = -6.0F;
             }
-        } else if (this.isClimbJump) {
+        }
+        else if (this.isClimbJump)
+        {
             bipedRightArm.rotateAngleX = Half + Sixteenth;
             bipedLeftArm.rotateAngleX = Half + Sixteenth;
 
             bipedRightArm.rotateAngleZ = -Thirtytwoth;
             bipedLeftArm.rotateAngleZ = Thirtytwoth;
-        } else if (this.isCeilingClimb) {
+        }
+        else if (this.isCeilingClimb)
+        {
             float distance = totalHorizontalDistance * 0.7F;
             float walkFactor = Factor(currentHorizontalSpeed, 0F, 0.12951545F);
             float standFactor = Factor(currentHorizontalSpeed, 0.12951545F, 0F);
@@ -293,7 +319,9 @@ public class CustomModel extends ContextRender
             bipedRightLeg.rotateAngleY = bipedLeftLeg.rotateAngleY = -rotateY;
 
             bipedHead.rotateAngleY = -rotateY;
-        } else if (this.isSwim) {
+        }
+        else if (this.isSwim)
+        {
             float walkFactor = Factor(currentHorizontalSpeed, 0.15679921F, 0.52264464F);
             float sneakFactor = Math.min(Factor(currentHorizontalSpeed, 0, 0.15679921F), Factor(currentHorizontalSpeed, 0.52264464F, 0.15679921F));
             float standFactor = Factor(currentHorizontalSpeed, 0.15679921F, 0F);
@@ -327,18 +355,18 @@ public class CustomModel extends ContextRender
             bipedRightLeg.rotateAngleZ = rotateFeetAngleZ;
             bipedLeftLeg.rotateAngleZ = -rotateFeetAngleZ;
 
-            if (this.scaleLegType != NoScaleStart) {
-                this.setLegScales(
-                        1F + (MathHelper.cos(totalTime * 0.1F + Quarter) - 1F) * 0.15F * sneakFactor,
-                        1F + (MathHelper.cos(totalTime * 0.1F + Quarter) - 1F) * 0.15F * sneakFactor);
+            if (this.scaleLegType != NO_SCALE_START)
+            {
+                this.setLegScales(1F + (MathHelper.cos(totalTime * 0.1F + Quarter) - 1F) * 0.15F * sneakFactor, 1F + (MathHelper.cos(totalTime * 0.1F + Quarter) - 1F) * 0.15F * sneakFactor);
             }
 
-            if (this.scaleArmType != NoScaleStart) {
-                this.setArmScales(
-                        1F + (MathHelper.cos(totalTime * 0.1F - Quarter) - 1F) * 0.15F * sneakFactor,
-                        1F + (MathHelper.cos(totalTime * 0.1F - Quarter) - 1F) * 0.15F * sneakFactor);
+            if (this.scaleArmType != NO_SCALE_START)
+            {
+                this.setArmScales(1F + (MathHelper.cos(totalTime * 0.1F - Quarter) - 1F) * 0.15F * sneakFactor, 1F + (MathHelper.cos(totalTime * 0.1F - Quarter) - 1F) * 0.15F * sneakFactor);
             }
-        } else if (this.isDive) {
+        }
+        else if (this.isDive)
+        {
             float distance = totalDistance * 0.7F;
             float walkFactor = Factor(currentSpeed, 0F, 0.15679921F);
             float standFactor = Factor(currentSpeed, 0.15679921F, 0F);
@@ -354,21 +382,21 @@ public class CustomModel extends ContextRender
             bipedRightLeg.rotateAngleZ = (MathHelper.cos(distance) + 1F) * 0.52264464F * walkFactor + Sixteenth * standFactor;
             bipedLeftLeg.rotateAngleZ = (MathHelper.cos(distance + Half) - 1F) * 0.52264464F * walkFactor - Sixteenth * standFactor;
 
-            if (this.scaleLegType != NoScaleStart) {
-                this.setLegScales(
-                        1F + (MathHelper.cos(distance - Quarter) - 1F) * 0.25F * walkFactor,
-                        1F + (MathHelper.cos(distance - Quarter) - 1F) * 0.25F * walkFactor);
+            if (this.scaleLegType != NO_SCALE_START)
+            {
+                this.setLegScales(1F + (MathHelper.cos(distance - Quarter) - 1F) * 0.25F * walkFactor, 1F + (MathHelper.cos(distance - Quarter) - 1F) * 0.25F * walkFactor);
             }
 
             bipedRightArm.rotateAngleZ = (MathHelper.cos(distance + Half) * 0.52264464F * 2.5F + Quarter) * walkFactor + (Quarter + Eighth) * standFactor;
             bipedLeftArm.rotateAngleZ = (MathHelper.cos(distance) * 0.52264464F * 2.5F - Quarter) * walkFactor - (Quarter + Eighth) * standFactor;
 
-            if (this.scaleArmType != NoScaleStart) {
-                this.setArmScales(
-                        1F + (MathHelper.cos(distance + Quarter) - 1F) * 0.15F * walkFactor,
-                        1F + (MathHelper.cos(distance + Quarter) - 1F) * 0.15F * walkFactor);
+            if (this.scaleArmType != NO_SCALE_START)
+            {
+                this.setArmScales(1F + (MathHelper.cos(distance + Quarter) - 1F) * 0.15F * walkFactor, 1F + (MathHelper.cos(distance + Quarter) - 1F) * 0.15F * walkFactor);
             }
-        } else if (this.isCrawl) {
+        }
+        else if (this.isCrawl)
+        {
             float distance = totalHorizontalDistance * 1.3F;
             float walkFactor = Factor(this.currentHorizontalSpeedFlattened, 0F, 0.12951545F);
             float standFactor = Factor(this.currentHorizontalSpeedFlattened, 0.12951545F, 0F);
@@ -389,10 +417,9 @@ public class CustomModel extends ContextRender
             bipedRightLeg.rotateAngleZ = (MathHelper.cos(distance - Quarter) + 1F) * 0.25F * walkFactor + Thirtytwoth * standFactor;
             bipedLeftLeg.rotateAngleZ = (MathHelper.cos(distance - Quarter) - 1F) * 0.25F * walkFactor - Thirtytwoth * standFactor;
 
-            if (this.scaleLegType != NoScaleStart) {
-                this.setLegScales(
-                        1F + (MathHelper.cos(distance + Quarter - Quarter) - 1F) * 0.25F * walkFactor,
-                        1F + (MathHelper.cos(distance - Quarter - Quarter) - 1F) * 0.25F * walkFactor);
+            if (this.scaleLegType != NO_SCALE_START)
+            {
+                this.setLegScales(1F + (MathHelper.cos(distance + Quarter - Quarter) - 1F) * 0.25F * walkFactor, 1F + (MathHelper.cos(distance - Quarter - Quarter) - 1F) * 0.25F * walkFactor);
             }
 
             bipedRightArm.rotationOrder = ModelRotationRenderer.YZX;
@@ -407,12 +434,13 @@ public class CustomModel extends ContextRender
             bipedRightArm.rotateAngleY = -Quarter;
             bipedLeftArm.rotateAngleY = Quarter;
 
-            if (this.scaleArmType != NoScaleStart) {
-                this.setArmScales(
-                        1F + (MathHelper.cos(distance + Quarter) - 1F) * 0.15F * walkFactor,
-                        1F + (MathHelper.cos(distance - Quarter) - 1F) * 0.15F * walkFactor);
+            if (this.scaleArmType != NO_SCALE_START)
+            {
+                this.setArmScales(1F + (MathHelper.cos(distance + Quarter) - 1F) * 0.15F * walkFactor, 1F + (MathHelper.cos(distance - Quarter) - 1F) * 0.15F * walkFactor);
             }
-        } else if (this.isSlide) {
+        }
+        else if (this.isSlide)
+        {
             float distance = totalHorizontalDistance * 0.7F;
             float walkFactor = Factor(currentHorizontalSpeed, 0F, 1F) * 0.8F;
 
@@ -448,7 +476,9 @@ public class CustomModel extends ContextRender
 
             bipedRightArm.rotateAngleY = -Quarter;
             bipedLeftArm.rotateAngleY = Quarter;
-        } else if (this.isFlying) {
+        }
+        else if (this.isFlying)
+        {
             float distance = totalDistance * 0.08F;
             float walkFactor = Factor(currentSpeed, 0F, 1);
             float standFactor = Factor(currentSpeed, 1F, 0F);
@@ -476,7 +506,9 @@ public class CustomModel extends ContextRender
 
             bipedRightLeg.rotateAngleZ = Sixtyfourth;
             bipedLeftLeg.rotateAngleZ = -Sixtyfourth;
-        } else if (this.isHeadJump) {
+        }
+        else if (this.isHeadJump)
+        {
             bipedOuter.fadeRotateAngleX = true;
             bipedOuter.rotateAngleX = (Quarter - currentVerticalAngle);
             bipedOuter.rotateAngleY = currentHorizontalAngle;
@@ -491,7 +523,8 @@ public class CustomModel extends ContextRender
             bipedLeftLeg.rotateAngleX = bendFactor * -Eighth;
 
             float armFactorZ = Factor(currentVerticalAngle, Quarter, -Quarter);
-            if (this.overGroundBlock != null && this.overGroundBlock.getBlockState().getBaseState().getMaterial().isSolid()) {
+            if (this.overGroundBlock != null && this.overGroundBlock.getBlockState().getBaseState().getMaterial().isSolid())
+            {
                 armFactorZ = Math.min(armFactorZ, this.smallOverGroundHeight / 5F);
             }
 
@@ -501,7 +534,9 @@ public class CustomModel extends ContextRender
             float legFactorZ = Factor(currentVerticalAngle, -Quarter, Quarter);
             bipedRightLeg.rotateAngleZ = Sixtyfourth * legFactorZ;
             bipedLeftLeg.rotateAngleZ = -Sixtyfourth * legFactorZ;
-        } else if (this.isFalling) {
+        }
+        else if (this.isFalling)
+        {
             float distance = totalDistance * 0.1F;
 
             bipedRightArm.rotationOrder = ModelRotationRenderer.XZY;
@@ -518,7 +553,9 @@ public class CustomModel extends ContextRender
 
             bipedRightLeg.rotateAngleZ = (MathHelper.cos(distance) * Sixteenth + Thirtytwoth);
             bipedLeftLeg.rotateAngleZ = (MathHelper.cos(distance) * Sixteenth - Thirtytwoth);
-        } else {
+        }
+        else
+        {
             this.isStandard = true;
         }
     }
@@ -599,24 +636,30 @@ public class CustomModel extends ContextRender
     {
         this.setRotationAngles(totalHorizontalDistance, currentHorizontalSpeed, totalTime, viewHorizontalAngelOffset, viewVerticalAngelOffset, factor);
 
-        if (this.isStandard) {
+        if (this.isStandard)
+        {
             this.modelPlayer.superAnimateHeadRotation(totalHorizontalDistance, currentHorizontalSpeed, totalTime, viewHorizontalAngelOffset, viewVerticalAngelOffset, factor);
         }
     }
 
     public void animateSleeping(float totalHorizontalDistance, float currentHorizontalSpeed, float totalTime, float viewHorizontalAngelOffset, float viewVerticalAngelOffset, float factor)
     {
-        if (this.isStandard) {
+        if (this.isStandard)
+        {
             this.modelPlayer.superAnimateSleeping(totalHorizontalDistance, currentHorizontalSpeed, totalTime, viewHorizontalAngelOffset, viewVerticalAngelOffset, factor);
         }
     }
 
     public void animateArmSwinging(float totalHorizontalDistance, float currentHorizontalSpeed, float totalTime, float viewHorizontalAngelOffset, float viewVerticalAngelOffset, float factor)
     {
-        if (this.isStandard) {
-            if (this.isAngleJumping) {
+        if (this.isStandard)
+        {
+            if (this.isAngleJumping)
+            {
                 this.animateAngleJumping();
-            } else {
+            }
+            else
+            {
                 this.modelPlayer.superAnimateArmSwinging(totalHorizontalDistance, currentHorizontalSpeed, totalTime, viewHorizontalAngelOffset, viewVerticalAngelOffset, factor);
             }
         }
@@ -624,70 +667,85 @@ public class CustomModel extends ContextRender
 
     public void animateRiding(float totalHorizontalDistance, float currentHorizontalSpeed, float totalTime, float viewHorizontalAngelOffset, float viewVerticalAngelOffset, float factor)
     {
-        if (this.isStandard) {
+        if (this.isStandard)
+        {
             this.modelPlayer.superAnimateRiding(totalHorizontalDistance, currentHorizontalSpeed, totalTime, viewHorizontalAngelOffset, viewVerticalAngelOffset, factor);
         }
     }
 
     public void animateLeftArmItemHolding(float totalHorizontalDistance, float currentHorizontalSpeed, float totalTime, float viewHorizontalAngelOffset, float viewVerticalAngelOffset, float factor)
     {
-        if (this.isStandard) {
+        if (this.isStandard)
+        {
             this.modelPlayer.superAnimateLeftArmItemHolding(totalHorizontalDistance, currentHorizontalSpeed, totalTime, viewHorizontalAngelOffset, viewVerticalAngelOffset, factor);
         }
     }
 
     public void animateRightArmItemHolding(float totalHorizontalDistance, float currentHorizontalSpeed, float totalTime, float viewHorizontalAngelOffset, float viewVerticalAngelOffset, float factor)
     {
-        if (this.isStandard) {
+        if (this.isStandard)
+        {
             this.modelPlayer.superAnimateRightArmItemHolding(totalHorizontalDistance, currentHorizontalSpeed, totalTime, viewHorizontalAngelOffset, viewVerticalAngelOffset, factor);
         }
     }
 
     public void animateWorkingBody(float totalHorizontalDistance, float currentHorizontalSpeed, float totalTime, float viewHorizontalAngelOffset, float viewVerticalAngelOffset, float factor)
     {
-        if (this.isStandard) {
+        if (this.isStandard)
+        {
             this.modelPlayer.superAnimateWorkingBody(totalHorizontalDistance, currentHorizontalSpeed, totalTime, viewHorizontalAngelOffset, viewVerticalAngelOffset, factor);
-        } else if (this.isWorking()) {
+        }
+        else if (this.isWorking())
+        {
             this.animateNonStandardWorking(viewVerticalAngelOffset);
         }
     }
 
     public void animateWorkingArms(float totalHorizontalDistance, float currentHorizontalSpeed, float totalTime, float viewHorizontalAngelOffset, float viewVerticalAngelOffset, float factor)
     {
-        if (this.isStandard || this.isWorking()) {
+        if (this.isStandard || this.isWorking())
+        {
             this.modelPlayer.superAnimateWorkingArms(totalHorizontalDistance, currentHorizontalSpeed, totalTime, viewHorizontalAngelOffset, viewVerticalAngelOffset, factor);
         }
     }
 
     public void animateSneaking(float totalHorizontalDistance, float currentHorizontalSpeed, float totalTime, float viewHorizontalAngelOffset, float viewVerticalAngelOffset, float factor)
     {
-        if (this.isStandard && !this.isAngleJumping) {
+        if (this.isStandard && !this.isAngleJumping)
+        {
             this.modelPlayer.superAnimateSneaking(totalHorizontalDistance, currentHorizontalSpeed, totalTime, viewHorizontalAngelOffset, viewVerticalAngelOffset, factor);
         }
     }
 
     public void animateArms(float totalHorizontalDistance, float currentHorizontalSpeed, float totalTime, float viewHorizontalAngelOffset, float viewVerticalAngelOffset, float factor)
     {
-        if (this.isStandard) {
+        if (this.isStandard)
+        {
             this.modelPlayer.superApplyAnimationOffsets(totalHorizontalDistance, currentHorizontalSpeed, totalTime, viewHorizontalAngelOffset, viewVerticalAngelOffset, factor);
         }
     }
 
     public void animateBowAiming(float totalHorizontalDistance, float currentHorizontalSpeed, float totalTime, float viewHorizontalAngelOffset, float viewVerticalAngelOffset, float factor)
     {
-        if (this.isStandard) {
+        if (this.isStandard)
+        {
             this.modelPlayer.superAnimateBowAiming(totalHorizontalDistance, currentHorizontalSpeed, totalTime, viewHorizontalAngelOffset, viewVerticalAngelOffset, factor);
-        } else {
+        }
+        else
+        {
             this.animateNonStandardBowAiming(totalHorizontalDistance, currentHorizontalSpeed, totalTime, viewHorizontalAngelOffset, viewVerticalAngelOffset, factor);
         }
     }
 
     private void setArmScales(float rightScale, float leftScale)
     {
-        if (this.scaleArmType == Scale) {
+        if (this.scaleArmType == SCALE)
+        {
             this.renderModel.bipedRightArm.scaleY = rightScale;
             this.renderModel.bipedLeftArm.scaleY = leftScale;
-        } else if (this.scaleArmType == NoScaleEnd) {
+        }
+        else if (this.scaleArmType == NO_SCALE_END)
+        {
             this.renderModel.bipedRightArm.offsetY -= (1F - rightScale) * 0.5F;
             this.renderModel.bipedLeftArm.offsetY -= (1F - leftScale) * 0.5F;
         }
@@ -695,10 +753,13 @@ public class CustomModel extends ContextRender
 
     private void setLegScales(float rightScale, float leftScale)
     {
-        if (this.scaleLegType == Scale) {
+        if (this.scaleLegType == SCALE)
+        {
             this.renderModel.bipedRightLeg.scaleY = rightScale;
             this.renderModel.bipedLeftLeg.scaleY = leftScale;
-        } else if (this.scaleLegType == NoScaleEnd) {
+        }
+        else if (this.scaleLegType == NO_SCALE_END)
+        {
             this.renderModel.bipedRightLeg.offsetY -= (1F - rightScale) * 0.5F;
             this.renderModel.bipedLeftLeg.offsetY -= (1F - leftScale) * 0.5F;
         }
@@ -706,19 +767,26 @@ public class CustomModel extends ContextRender
 
     private static float Factor(float x, float x0, float x1)
     {
-        if (x0 > x1) {
-            if (x <= x1) {
+        if (x0 > x1)
+        {
+            if (x <= x1)
+            {
                 return 1F;
             }
-            if (x >= x0) {
+            if (x >= x0)
+            {
                 return 0F;
             }
             return (x0 - x) / (x0 - x1);
-        } else {
-            if (x >= x1) {
+        }
+        else
+        {
+            if (x >= x1)
+            {
                 return 1F;
             }
-            if (x <= x0) {
+            if (x <= x0)
+            {
                 return 0F;
             }
             return (x - x0) / (x1 - x0);
@@ -727,7 +795,8 @@ public class CustomModel extends ContextRender
 
     private static float Between(float min, float max, float value)
     {
-        if (value < min) {
+        if (value < min)
+        {
             return min;
         }
         return Math.min(value, max);
@@ -735,10 +804,12 @@ public class CustomModel extends ContextRender
 
     private static float Normalize(float radiant)
     {
-        while (radiant > Half) {
+        while (radiant > Half)
+        {
             radiant -= Whole;
         }
-        while (radiant < -Half) {
+        while (radiant < -Half)
+        {
             radiant += Whole;
         }
         return radiant;

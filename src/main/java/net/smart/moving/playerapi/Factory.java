@@ -33,7 +33,8 @@ public class Factory
 
     public Factory()
     {
-        if (instance != null) {
+        if (instance != null)
+        {
             throw new RuntimeException("FATAL: Can only create one instance of type 'SmartMovingFactory'");
         }
         instance = this;
@@ -41,15 +42,18 @@ public class Factory
 
     public static void initialize()
     {
-        if (instance == null) {
+        if (instance == null)
+        {
             new Factory();
         }
     }
 
     public void handleMultiPlayerTick(Minecraft minecraft)
     {
-        for (EntityPlayer player : minecraft.world.playerEntities) {
-            if (player instanceof EntityOtherPlayerMP) {
+        for (EntityPlayer player : minecraft.world.playerEntities)
+        {
+            if (player instanceof EntityOtherPlayerMP)
+            {
                 EntityOtherPlayerMP otherPlayer = (EntityOtherPlayerMP) player;
                 ControllerOther moving = this.getOtherSmartMoving(otherPlayer);
                 moving.spawnParticles(minecraft, otherPlayer.posX - otherPlayer.prevPosX, otherPlayer.posZ - otherPlayer.prevPosZ);
@@ -57,17 +61,22 @@ public class Factory
             }
         }
 
-        if (this.otherSmartMovings == null || this.otherSmartMovings.isEmpty()) {
+        if (this.otherSmartMovings == null || this.otherSmartMovings.isEmpty())
+        {
             return;
         }
 
         Iterator<Integer> entityIds = this.otherSmartMovings.keySet().iterator();
-        while (entityIds.hasNext()) {
+        while (entityIds.hasNext())
+        {
             Integer entityId = entityIds.next();
             ControllerOther moving = this.otherSmartMovings.get(entityId);
-            if (moving.foundAlive) {
+            if (moving.foundAlive)
+            {
                 moving.foundAlive = false;
-            } else {
+            }
+            else
+            {
                 entityIds.remove();
             }
         }
@@ -76,9 +85,11 @@ public class Factory
     public Controller getOtherSmartMoving(int entityId)
     {
         Controller moving = this.tryGetOtherSmartMoving(entityId);
-        if (moving == null) {
+        if (moving == null)
+        {
             Entity entity = Minecraft.getMinecraft().world.getEntityByID(entityId);
-            if (entity instanceof EntityOtherPlayerMP) {
+            if (entity instanceof EntityOtherPlayerMP)
+            {
                 moving = this.addOtherSmartMoving((EntityOtherPlayerMP) entity);
             }
         }
@@ -88,7 +99,8 @@ public class Factory
     public ControllerOther getOtherSmartMoving(EntityOtherPlayerMP entity)
     {
         ControllerOther moving = this.tryGetOtherSmartMoving(entity.getEntityId());
-        if (moving == null) {
+        if (moving == null)
+        {
             moving = this.addOtherSmartMoving(entity);
         }
         return moving;
@@ -96,7 +108,8 @@ public class Factory
 
     protected ControllerOther tryGetOtherSmartMoving(int entityId)
     {
-        if (this.otherSmartMovings == null) {
+        if (this.otherSmartMovings == null)
+        {
             this.otherSmartMovings = new Hashtable<>();
         }
         return this.otherSmartMovings.get(entityId);
@@ -112,15 +125,18 @@ public class Factory
     public Controller getPlayerInstance(EntityPlayer entityPlayer)
     {
         Controller moving = null;
-        if (entityPlayer instanceof EntityOtherPlayerMP) {
+        if (entityPlayer instanceof EntityOtherPlayerMP)
+        {
             moving = this.getOtherSmartMoving(entityPlayer.getEntityId());
         }
-        if (moving != null) {
+        if (moving != null)
+        {
             return moving;
         }
 
         CustomClientPlayerEntityBase playerBase = PlayerAPIBridge.getPlayerBase(entityPlayer);
-        if (playerBase != null) {
+        if (playerBase != null)
+        {
             return playerBase.getController();
         }
 

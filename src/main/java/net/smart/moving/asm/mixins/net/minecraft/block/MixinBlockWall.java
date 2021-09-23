@@ -15,8 +15,8 @@ public abstract class MixinBlockWall implements IBlockWall
     protected abstract boolean canConnectTo(IBlockAccess world, BlockPos pos, EnumFacing facing);
 
     @Override
-    public boolean publicCanConnectTo(IBlockAccess world, BlockPos pos, EnumFacing facing)
+    public void publicCanConnectTo(IBlockAccess world, BlockPos pos, EnumFacing facing)
     {
-        return this.canConnectTo(world, pos, facing);
+        this.canConnectTo(world, pos, facing);
     }
 }

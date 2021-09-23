@@ -31,31 +31,32 @@ import net.smart.render.statistics.SmartStatisticsFactory;
 
 public class CustomRender extends ContextRender
 {
-    public static CustomModel CurrentMainModel;
-    public CustomRenderPlayerBase irp;
+    public static CustomModel currentMainModel;
+    public CustomRenderPlayerBase customRenderPlayerBase;
     public final CustomModel modelBipedMain;
 
-    public CustomRender(CustomRenderPlayerBase irp)
+    public CustomRender(CustomRenderPlayerBase customRenderPlayerBase)
     {
-        this.irp = irp;
+        this.customRenderPlayerBase = customRenderPlayerBase;
 
-        this.modelBipedMain = irp.getMovingModelBipedMain().getMovingModel();
-        CustomModel modelArmorChestplate = irp.getMovingModelArmorChestplate().getMovingModel();
-        CustomModel modelArmor = irp.getMovingModelArmor().getMovingModel();
+        this.modelBipedMain = customRenderPlayerBase.getMovingModelBipedMain().getMovingModel();
+        CustomModel modelArmorChestplate = customRenderPlayerBase.getMovingModelArmorChestplate().getMovingModel();
+        CustomModel modelArmor = customRenderPlayerBase.getMovingModelArmor().getMovingModel();
 
-        this.modelBipedMain.scaleArmType = Scale;
-        this.modelBipedMain.scaleLegType = Scale;
-        modelArmorChestplate.scaleArmType = NoScaleStart;
-        modelArmorChestplate.scaleLegType = NoScaleEnd;
-        modelArmor.scaleArmType = NoScaleStart;
-        modelArmor.scaleLegType = Scale;
+        this.modelBipedMain.scaleArmType = SCALE;
+        this.modelBipedMain.scaleLegType = SCALE;
+        modelArmorChestplate.scaleArmType = NO_SCALE_START;
+        modelArmorChestplate.scaleLegType = NO_SCALE_END;
+        modelArmor.scaleArmType = NO_SCALE_START;
+        modelArmor.scaleLegType = SCALE;
     }
 
     public void doRender(AbstractClientPlayer entityplayer, double d, double d1, double d2, float f, float renderPartialTicks)
     {
         IModelPlayer[] modelPlayers = null;
         Controller moving = Factory.getInstance().getPlayerInstance(entityplayer);
-        if (moving != null) {
+        if (moving != null)
+        {
             boolean isInventory = d == 0.0F && d1 == 0.0F && d2 == 0.0F && f == 0.0F && renderPartialTicks == 1.0F;
 
             boolean isClimb = moving.isClimbing && !moving.isCrawling && !moving.isCrawlClimbing && !moving.isClimbJumping;
@@ -85,9 +86,10 @@ public class CustomRender extends ContextRender
             float smallOverGroundHeight = isCrawlClimb || isHeadJump ? (float) moving.getOverGroundHeight(5D) : 0F;
             Block overGroundBlock = isHeadJump && smallOverGroundHeight < 5F ? moving.getOverGroundBlockId(smallOverGroundHeight) : null;
 
-            modelPlayers = this.irp.getMovingModels();
+            modelPlayers = this.customRenderPlayerBase.getMovingModels();
 
-            for (IModelPlayer player : modelPlayers) {
+            for (IModelPlayer player : modelPlayers)
+            {
                 CustomModel modelPlayer = player.getMovingModel();
                 modelPlayer.isClimb = isClimb;
                 modelPlayer.isClimbJump = isClimbJump;
@@ -116,17 +118,20 @@ public class CustomRender extends ContextRender
                 modelPlayer.overGroundBlock = overGroundBlock;
             }
 
-            if (!isInventory && entityplayer.isSneaking() && !(entityplayer instanceof EntityPlayerSP) && isCrawl) {
+            if (!isInventory && entityplayer.isSneaking() && !(entityplayer instanceof EntityPlayerSP) && isCrawl)
+            {
                 d1 += 0.125D;
             }
         }
 
-        CurrentMainModel = this.modelBipedMain;
-        this.irp.superRenderDoRender(entityplayer, d, d1, d2, f, renderPartialTicks);
-        CurrentMainModel = null;
+        currentMainModel = this.modelBipedMain;
+        this.customRenderPlayerBase.superRenderDoRender(entityplayer, d, d1, d2, f, renderPartialTicks);
+        currentMainModel = null;
 
-        if (moving != null && moving.isLevitating) {
-            for (IModelPlayer modelPlayer : modelPlayers) {
+        if (moving != null && moving.isLevitating)
+        {
+            for (IModelPlayer modelPlayer : modelPlayers)
+            {
                 modelPlayer.getMovingModel().renderModel.currentHorizontalAngle = modelPlayer.getMovingModel().renderModel.currentCameraAngle;
             }
         }
@@ -135,60 +140,75 @@ public class CustomRender extends ContextRender
     public void rotateCorpse(AbstractClientPlayer player, float totalTime, float actualRotation, float f2)
     {
         Controller moving = Factory.getInstance().getPlayerInstance(player);
-        if (moving != null) {
+        if (moving != null)
+        {
             boolean isInventory = f2 == 1.0F && moving.playerBase != null && moving.playerBase.getMcField().currentScreen instanceof GuiInventory;
-            if (!isInventory) {
+            if (!isInventory)
+            {
                 float forwardRotation = player.prevRotationYaw + (player.rotationYaw - player.prevRotationYaw) * f2;
 
-                if (moving.isClimbing || moving.isClimbCrawling || moving.isCrawlClimbing || moving.isFlying || moving.isSwimming || moving.isDiving || moving.isCeilingClimbing || moving.isHeadJumping || moving.isSliding || moving.isAngleJumping()) {
+                if (moving.isClimbing || moving.isClimbCrawling || moving.isCrawlClimbing || moving.isFlying || moving.isSwimming || moving.isDiving || moving.isCeilingClimbing || moving.isHeadJumping || moving.isSliding || moving.isAngleJumping())
+                {
                     player.renderYawOffset = forwardRotation;
                 }
             }
         }
-        this.irp.superRenderRotateCorpse(player, totalTime, actualRotation, f2);
+        this.customRenderPlayerBase.superRenderRotateCorpse(player, totalTime, actualRotation, f2);
     }
 
     public void renderLivingAt(AbstractClientPlayer player, double d, double d1, double d2)
     {
-        if (player instanceof EntityOtherPlayerMP) {
+        if (player instanceof EntityOtherPlayerMP)
+        {
             Controller moving = Factory.getInstance().getOtherSmartMoving(player.getEntityId());
-            if (moving != null && moving.heightOffset != 0) {
+            if (moving != null && moving.heightOffset != 0)
+            {
                 d1 += moving.heightOffset;
             }
         }
-        this.irp.superRenderRenderLivingAt(player, d, d1, d2);
+        this.customRenderPlayerBase.superRenderRenderLivingAt(player, d, d1, d2);
     }
 
     public void renderName(AbstractClientPlayer player, double d, double d1, double d2)
     {
         boolean changedIsSneaking = false, originalIsSneaking = false;
-        if (Minecraft.isGuiEnabled() && player != this.irp.getMovingRenderManager().pointedEntity) {
+        if (Minecraft.isGuiEnabled() && player != this.customRenderPlayerBase.getMovingRenderManager().pointedEntity)
+        {
             Controller moving = Factory.getInstance().getPlayerInstance(player);
-            if (moving != null) {
+            if (moving != null)
+            {
                 originalIsSneaking = player.isSneaking();
                 boolean temporaryIsSneaking = originalIsSneaking;
-                if (moving.isCrawling && !moving.isClimbing) {
-                    temporaryIsSneaking = !SmartMovingConfig.crawling.name;
-                } else if (originalIsSneaking) {
-                    temporaryIsSneaking = !SmartMovingConfig.genericSneaking.name;
+                if (moving.isCrawling && !moving.isClimbing)
+                {
+                    temporaryIsSneaking = !SmartMovingConfig.CRAWLING.name;
+                }
+                else if (originalIsSneaking)
+                {
+                    temporaryIsSneaking = !SmartMovingConfig.GENERIC_SNEAKING.name;
                 }
 
                 changedIsSneaking = temporaryIsSneaking != originalIsSneaking;
-                if (changedIsSneaking) {
+                if (changedIsSneaking)
+                {
                     player.setSneaking(temporaryIsSneaking);
                 }
 
-                if (moving.heightOffset == -1) {
+                if (moving.heightOffset == -1)
+                {
                     d1 -= 0.2F;
-                } else if (originalIsSneaking && !temporaryIsSneaking) {
+                }
+                else if (originalIsSneaking && !temporaryIsSneaking)
+                {
                     d1 -= 0.05F;
                 }
             }
         }
 
-        this.irp.superRenderRenderName(player, d, d1, d2);
+        this.customRenderPlayerBase.superRenderRenderName(player, d, d1, d2);
 
-        if (changedIsSneaking) {
+        if (changedIsSneaking)
+        {
             player.setSneaking(originalIsSneaking);
         }
     }

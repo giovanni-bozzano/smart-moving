@@ -23,7 +23,6 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.entity.layers.LayerArmorBase;
 import net.smart.moving.render.CustomRender;
 import net.smart.moving.render.IModelPlayer;
-import net.smart.moving.render.IRenderPlayer;
 import net.smart.render.SmartRenderInstall;
 import net.smart.utilities.Reflect;
 
@@ -38,7 +37,8 @@ public class CustomRenderPlayerBase extends RenderPlayerBase
 
     public CustomRender getRenderModel()
     {
-        if (this.render == null) {
+        if (this.render == null)
+        {
             this.render = new CustomRender(this);
         }
         return this.render;
@@ -100,8 +100,10 @@ public class CustomRenderPlayerBase extends RenderPlayerBase
 
     public IModelPlayer getMovingModelArmorChestplate()
     {
-        for (Object layer : this.renderPlayerAPI.getLayerRenderersField()) {
-            if (layer instanceof LayerArmorBase) {
+        for (Object layer : this.renderPlayerAPI.getLayerRenderersField())
+        {
+            if (layer instanceof LayerArmorBase)
+            {
                 return RenderPlayerAPIBridge.getPlayerBase((net.minecraft.client.model.ModelBiped) Reflect.GetField(_modelArmorChestplate, layer));
             }
         }
@@ -110,8 +112,10 @@ public class CustomRenderPlayerBase extends RenderPlayerBase
 
     public IModelPlayer getMovingModelBipedMain()
     {
-        for (Object layer : this.renderPlayerAPI.getLayerRenderersField()) {
-            if (layer instanceof LayerArmorBase) {
+        for (Object layer : this.renderPlayerAPI.getLayerRenderersField())
+        {
+            if (layer instanceof LayerArmorBase)
+            {
                 return RenderPlayerAPIBridge.getPlayerBase((net.minecraft.client.model.ModelBiped) Reflect.GetField(_modelArmor, layer));
             }
         }
@@ -121,13 +125,15 @@ public class CustomRenderPlayerBase extends RenderPlayerBase
     public IModelPlayer[] getMovingModels()
     {
         net.minecraft.client.model.ModelBiped[] modelPlayers = api.player.model.ModelPlayerAPI.getAllInstances();
-        if (this.allModelPlayers != null && (this.allModelPlayers == modelPlayers || modelPlayers.length == 0 && this.allModelPlayers.length == 0)) {
+        if (this.allModelPlayers != null && (this.allModelPlayers == modelPlayers || modelPlayers.length == 0 && this.allModelPlayers.length == 0))
+        {
             return this.allIModelPlayers;
         }
 
         this.allModelPlayers = modelPlayers;
         this.allIModelPlayers = new IModelPlayer[modelPlayers.length];
-        for (int i = 0; i < this.allIModelPlayers.length; i++) {
+        for (int i = 0; i < this.allIModelPlayers.length; i++)
+        {
             this.allIModelPlayers[i] = RenderPlayerAPIBridge.getPlayerBase(this.allModelPlayers[i]);
         }
         return this.allIModelPlayers;

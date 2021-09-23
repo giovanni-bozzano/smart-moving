@@ -21,12 +21,12 @@ import net.smart.moving.Orientation;
 
 public class ClimbGap
 {
-    public Block Block;
-    public int Meta;
-    public boolean CanStand;
-    public boolean MustCrawl;
-    public Orientation Direction;
-    public boolean SkipGaps;
+    public Block block;
+    public int meta;
+    public boolean canStand;
+    public boolean mustCrawl;
+    public Orientation direction;
+    public boolean skipGaps;
 
     public ClimbGap()
     {
@@ -35,11 +35,11 @@ public class ClimbGap
 
     public void reset()
     {
-        this.Block = null;
-        this.Meta = -1;
-        this.CanStand = false;
-        this.MustCrawl = false;
-        this.Direction = null;
-        this.SkipGaps = false;
+        this.block = null;
+        this.meta = -1;
+        this.canStand = false;
+        this.mustCrawl = false;
+        this.direction = null;
+        this.skipGaps = false;
     }
 }

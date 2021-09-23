@@ -55,27 +55,38 @@ public class CustomClientPlayerEntityBase extends ClientPlayerEntityBase
         float width = 0.6F;
         float height = 1.8F;
 
-        if (this.controller.isSwimming || this.controller.isDiving || this.controller.isCrawling || this.controller.isSliding || this.controller.isFlying) {
+        if (this.controller.isSwimming || this.controller.isDiving || this.controller.isCrawling || this.controller.isSliding || this.controller.isFlying)
+        {
             height = 0.8F;
-        } else if (this.playerEntity.isElytraFlying()) {
+        }
+        else if (this.playerEntity.isElytraFlying())
+        {
             height = 0.6F;
-        } else if (this.playerEntity.isPlayerSleeping()) {
+        }
+        else if (this.playerEntity.isPlayerSleeping())
+        {
             width = 0.2F;
             height = 0.2F;
-        } else if (this.playerEntity.isSneaking()) {
+        }
+        else if (this.playerEntity.isSneaking())
+        {
             height = 1.65F;
         }
 
-        if (width != this.playerEntity.width || height != this.playerEntity.height) {
+        if (width != this.playerEntity.width || height != this.playerEntity.height)
+        {
             AxisAlignedBB axisalignedbb = this.playerEntity.getEntityBoundingBox();
             axisalignedbb = new AxisAlignedBB(axisalignedbb.minX, axisalignedbb.minY, axisalignedbb.minZ, axisalignedbb.minX + (double) width, axisalignedbb.minY + (double) height, axisalignedbb.minZ + (double) width);
-            if (!this.playerEntity.world.collidesWithAnyBlock(axisalignedbb)) {
-                if (width != this.playerEntity.width || height != this.playerEntity.height) {
+            if (!this.playerEntity.world.collidesWithAnyBlock(axisalignedbb))
+            {
+                if (width != this.playerEntity.width || height != this.playerEntity.height)
+                {
                     float previousWidth = this.playerEntity.width;
                     this.playerEntity.width = width;
                     this.playerEntity.height = height;
 
-                    if (this.playerEntity.width < previousWidth) {
+                    if (this.playerEntity.width < previousWidth)
+                    {
                         double d0 = (double) width / 2.0D;
                         this.playerEntity.setEntityBoundingBox(new AxisAlignedBB(this.playerEntity.posX - d0, this.playerEntity.posY, this.playerEntity.posZ - d0, this.playerEntity.posX + d0, this.playerEntity.posY + (double) this.playerEntity.height, this.playerEntity.posZ + d0));
                         return;

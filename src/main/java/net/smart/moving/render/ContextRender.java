@@ -18,7 +18,7 @@ package net.smart.moving.render;
 
 public abstract class ContextRender
 {
-    public static final int Scale = 0;
-    public static final int NoScaleStart = 1;
-    public static final int NoScaleEnd = 2;
+    public static final int SCALE = 0;
+    public static final int NO_SCALE_START = 1;
+    public static final int NO_SCALE_END = 2;
 }

@@ -18,15 +18,16 @@ package net.smart.moving.climbing;
 
 public class HandsClimbing
 {
-    public static final int MiddleGrab = 2;
-    public static final int UpGrab = 1;
-    public static final int NoGrab = 0;
-    public static HandsClimbing None = new HandsClimbing(-3);
-    public static HandsClimbing Sink = new HandsClimbing(-2);
-    public static HandsClimbing TopHold = new HandsClimbing(-1);
-    public static HandsClimbing BottomHold = new HandsClimbing(0);
-    public static HandsClimbing Up = new HandsClimbing(1);
-    public static HandsClimbing FastUp = new HandsClimbing(2);
+    public static final int MIDDLE_GRAB = 2;
+    public static final int UP_GRAB = 1;
+    public static final int NO_GRAB = 0;
+    public static final HandsClimbing NONE = new HandsClimbing(-3);
+    public static final HandsClimbing SINK = new HandsClimbing(-2);
+    public static final HandsClimbing TOP_HOLD = new HandsClimbing(-1);
+    public static final HandsClimbing BOTTOM_HOLD = new HandsClimbing(0);
+    public static final HandsClimbing UP = new HandsClimbing(1);
+    public static final HandsClimbing FAST_UP = new HandsClimbing(2);
+
     private final int _value;
 
     private HandsClimbing(int value)
@@ -36,40 +37,44 @@ public class HandsClimbing
 
     public boolean IsRelevant()
     {
-        return this._value > None._value;
+        return this._value > NONE._value;
     }
 
     public boolean IsUp()
     {
-        return this == Up || this == FastUp;
+        return this == UP || this == FAST_UP;
     }
 
     public HandsClimbing ToUp()
     {
-        if (this == BottomHold) {
-            return Up;
+        if (this == BOTTOM_HOLD)
+        {
+            return UP;
         }
         return this;
     }
 
     public HandsClimbing ToDown()
     {
-        if (this == TopHold) {
-            return Sink;
+        if (this == TOP_HOLD)
+        {
+            return SINK;
         }
         return this;
     }
 
     public HandsClimbing max(HandsClimbing other, ClimbGap inout_thisClimbGap, ClimbGap otherClimbGap)
     {
-        if (!otherClimbGap.SkipGaps) {
-            inout_thisClimbGap.CanStand |= otherClimbGap.CanStand;
-            inout_thisClimbGap.MustCrawl |= otherClimbGap.MustCrawl;
+        if (!otherClimbGap.skipGaps)
+        {
+            inout_thisClimbGap.canStand |= otherClimbGap.canStand;
+            inout_thisClimbGap.mustCrawl |= otherClimbGap.mustCrawl;
         }
-        if (this._value < other._value) {
-            inout_thisClimbGap.Block = otherClimbGap.Block;
-            inout_thisClimbGap.Meta = otherClimbGap.Meta;
-            inout_thisClimbGap.Direction = otherClimbGap.Direction;
+        if (this._value < other._value)
+        {
+            inout_thisClimbGap.block = otherClimbGap.block;
+            inout_thisClimbGap.meta = otherClimbGap.meta;
+            inout_thisClimbGap.direction = otherClimbGap.direction;
         }
         return get(Math.max(this._value, other._value));
     }
@@ -77,19 +82,24 @@ public class HandsClimbing
     @Override
     public String toString()
     {
-        if (this._value <= None._value) {
+        if (this._value <= NONE._value)
+        {
             return "None";
         }
-        if (this._value == Sink._value) {
+        if (this._value == SINK._value)
+        {
             return "Sink";
         }
-        if (this._value == BottomHold._value) {
+        if (this._value == BOTTOM_HOLD._value)
+        {
             return "BottomHold";
         }
-        if (this._value == TopHold._value) {
+        if (this._value == TOP_HOLD._value)
+        {
             return "TopHold";
         }
-        if (this._value == Up._value) {
+        if (this._value == UP._value)
+        {
             return "Up";
         }
         return "FastUp";
@@ -97,21 +107,26 @@ public class HandsClimbing
 
     private static HandsClimbing get(int value)
     {
-        if (value <= None._value) {
-            return None;
+        if (value <= NONE._value)
+        {
+            return NONE;
         }
-        if (value == Sink._value) {
-            return Sink;
+        if (value == SINK._value)
+        {
+            return SINK;
         }
-        if (value == BottomHold._value) {
-            return BottomHold;
+        if (value == BOTTOM_HOLD._value)
+        {
+            return BOTTOM_HOLD;
         }
-        if (value == TopHold._value) {
-            return TopHold;
+        if (value == TOP_HOLD._value)
+        {
+            return TOP_HOLD;
         }
-        if (value == Up._value) {
-            return Up;
+        if (value == UP._value)
+        {
+            return UP;
         }
-        return FastUp;
+        return FAST_UP;
     }
 }

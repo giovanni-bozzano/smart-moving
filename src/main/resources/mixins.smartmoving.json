@@ -1,11 +1,13 @@
 {
-	"package": "net.smart.moving.asm.mixins",
-	"compatibilityLevel": "JAVA_8",
-	"refmap": "mixins.edencraft.refmap.json",
-	"minVersion": "0.8",
-	"mixins": [
-		"net.minecraft.block.MixinBlockWall",
-		"net.minecraft.entity.ai.MixinModifiableAttributeInstance",
-		"net.minecraft.network.MixinNetHandlerPlayServer"
-	]
+  "package": "net.smart.moving.asm.mixins",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "mixins.edencraft.refmap.json",
+  "minVersion": "0.8",
+  "mixins": [
+    "net.minecraft.block.MixinBlockWall",
+    "net.minecraft.entity.MixinEntity",
+    "net.minecraft.entity.ai.MixinModifiableAttributeInstance",
+    "net.minecraft.entity.player.MixinEntityPlayer",
+    "net.minecraft.network.MixinNetHandlerPlayServer"
+  ]
 }

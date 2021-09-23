@@ -17,6 +17,8 @@
 package net.smart.moving;
 
 import net.minecraft.client.entity.EntityOtherPlayerMP;
+import net.minecraft.nbt.NBTTagCompound;
+import net.smart.moving.asm.interfaces.IEntity;
 
 public class ControllerOther extends Controller
 {
@@ -30,67 +32,45 @@ public class ControllerOther extends Controller
         super(sp, null);
     }
 
-    public void processStatePacket(long state)
+    public void processStatePacket(NBTTagCompound state)
     {
-        this.actualFeetClimbType = (int) (state & 15);
-        state >>>= 4;
-        this.actualHandsClimbType = (int) (state & 15);
-        state >>>= 4;
-        this.isJumping = (state & 1) != 0;
-        state >>>= 1;
-        this.isDiving = (state & 1) != 0;
-        state >>>= 1;
-        this.isDipping = (state & 1) != 0;
-        state >>>= 1;
-        this.isSwimming = (state & 1) != 0;
-        state >>>= 1;
-        this.isCrawlClimbing = (state & 1) != 0;
-        state >>>= 1;
-        this.isCrawling = (state & 1) != 0;
-        state >>>= 1;
-        this.isClimbing = (state & 1) != 0;
-        state >>>= 1;
-        boolean isSmall = (state & 1) != 0;
+        this.actualFeetClimbType = state.getInteger("actual_feet_climb_type");
+        this.actualHandsClimbType = state.getInteger("actual_hands_climb_type");
+        this.isJumping = state.getBoolean("is_jumping");
+        this.isDiving = state.getBoolean("is_diving");
+        this.isDipping = state.getBoolean("is_dipping");
+        this.isSwimming = state.getBoolean("is_swimming");
+        this.isCrawlClimbing = state.getBoolean("is_crawl_climbing");
+        this.isCrawling = state.getBoolean("is_crawling");
+        this.isClimbing = state.getBoolean("is_climbing");
+        boolean isSmall = state.getBoolean("is_small");
         this.heightOffset = isSmall ? -1 : 0;
-        this.entityPlayer.height = 1.8F + this.heightOffset;
-        state >>>= 1;
-        this.doFallingAnimation = (state & 1) != 0;
-        state >>>= 1;
-        this.doFlyingAnimation = (state & 1) != 0;
-        state >>>= 1;
-        this.isCeilingClimbing = (state & 1) != 0;
-        state >>>= 1;
-        this.isLevitating = (state & 1) != 0;
-        state >>>= 1;
-        this.isHeadJumping = (state & 1) != 0;
-        state >>>= 1;
-        this.isSliding = (state & 1) != 0;
-        state >>>= 1;
-        this.angleJumpType = (int) (state & 7);
-        state >>>= 3;
-        this.isFeetVineClimbing = (state & 1) != 0;
-        state >>>= 1;
-        this.isHandsVineClimbing = (state & 1) != 0;
-        state >>>= 1;
-        this.isClimbJumping = (state & 1) != 0;
-        state >>>= 1;
+        ((IEntity) this.entityPlayer).publicSetSize(this.entityPlayer.width, 1.8F + this.heightOffset);
+        this.doFallingAnimation = state.getBoolean("is_falling");
+        this.doFlyingAnimation = state.getBoolean("is_flying");
+        this.isCeilingClimbing = state.getBoolean("is_ceiling_climbing");
+        this.isLevitating = state.getBoolean("is_levitating");
+        this.isHeadJumping = state.getBoolean("is_head_jumping");
+        this.isSliding = state.getBoolean("is_sliding");
+        this.angleJumpType = state.getInteger("angle_jump_type");
+        this.isFeetVineClimbing = state.getBoolean("is_feet_vine_climbing");
+        this.isHandsVineClimbing = state.getBoolean("is_hands_vine_climbing");
+        this.isClimbJumping = state.getBoolean("is_climb_jumping");
         boolean wasClimbBackJumping = this.isClimbBackJumping;
-        this.isClimbBackJumping = (state & 1) != 0;
-        if (!wasClimbBackJumping && this.isClimbBackJumping) {
+        this.isClimbBackJumping = state.getBoolean("is_climb_back_jumping");
+        if (!wasClimbBackJumping && this.isClimbBackJumping)
+        {
             this.onStartClimbBackJump();
         }
-        state >>>= 1;
-        this.isSlow = (state & 1) != 0;
-        state >>>= 1;
-        this.isFast = (state & 1) != 0;
-        state >>>= 1;
+        this.isSlow = state.getBoolean("is_slow");
+        this.isFast = state.getBoolean("is_fast");
         boolean wasWallJumping = this.isWallJumping;
-        this.isWallJumping = (state & 1) != 0;
-        if (!wasWallJumping && this.isWallJumping) {
+        this.isWallJumping = state.getBoolean("is_wall_jumping");
+        if (!wasWallJumping && this.isWallJumping)
+        {
             this.onStartWallJump(null);
         }
-        state >>>= 1;
-        this.isRopeSliding = (state & 1) != 0;
+        this.isRopeSliding = state.getBoolean("is_rope_sliding");
     }
 
     @Override

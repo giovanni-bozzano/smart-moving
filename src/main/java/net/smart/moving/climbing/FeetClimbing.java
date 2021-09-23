@@ -18,65 +18,74 @@ package net.smart.moving.climbing;
 
 public class FeetClimbing
 {
-    public static final int DownStep = 1;
-    public static final int NoStep = 0;
-    public static FeetClimbing None = new FeetClimbing(-3);
-    public static FeetClimbing BaseHold = new FeetClimbing(-2);
-    public static FeetClimbing BaseWithHands = new FeetClimbing(-1);
-    public static FeetClimbing TopWithHands = new FeetClimbing(0);
-    public static FeetClimbing SlowUpWithHoldWithoutHands = new FeetClimbing(1);
-    public static FeetClimbing SlowUpWithSinkWithoutHands = new FeetClimbing(2);
-    public static FeetClimbing FastUp = new FeetClimbing(3);
-    private final int _value;
+    public static final int DOWN_STEP = 1;
+    public static final int NO_STEP = 0;
+    public static final FeetClimbing NONE = new FeetClimbing(-3);
+    public static final FeetClimbing BASE_HOLD = new FeetClimbing(-2);
+    public static final FeetClimbing BASE_WITH_HANDS = new FeetClimbing(-1);
+    public static final FeetClimbing TOP_WITH_HANDS = new FeetClimbing(0);
+    public static final FeetClimbing SLOW_UP_WITH_HOLD_WITHOUT_HANDS = new FeetClimbing(1);
+    public static final FeetClimbing SLOW_UP_WITH_SINK_WITHOUT_HANDS = new FeetClimbing(2);
+    public static final FeetClimbing FAST_UP = new FeetClimbing(3);
+
+    private final int value;
 
     private FeetClimbing(int value)
     {
-        this._value = value;
+        this.value = value;
     }
 
     public boolean IsRelevant()
     {
-        return this._value > None._value;
+        return this.value > NONE.value;
     }
 
     public boolean IsIndependentlyRelevant()
     {
-        return this._value > BaseWithHands._value;
+        return this.value > BASE_WITH_HANDS.value;
     }
 
     public FeetClimbing max(FeetClimbing other, ClimbGap inout_thisClimbGap, ClimbGap otherClimbGap)
     {
-        if (!otherClimbGap.SkipGaps) {
-            inout_thisClimbGap.CanStand |= otherClimbGap.CanStand;
-            inout_thisClimbGap.MustCrawl |= otherClimbGap.MustCrawl;
+        if (!otherClimbGap.skipGaps)
+        {
+            inout_thisClimbGap.canStand |= otherClimbGap.canStand;
+            inout_thisClimbGap.mustCrawl |= otherClimbGap.mustCrawl;
         }
-        if (this._value < other._value) {
-            inout_thisClimbGap.Block = otherClimbGap.Block;
-            inout_thisClimbGap.Meta = otherClimbGap.Meta;
-            inout_thisClimbGap.Direction = otherClimbGap.Direction;
+        if (this.value < other.value)
+        {
+            inout_thisClimbGap.block = otherClimbGap.block;
+            inout_thisClimbGap.meta = otherClimbGap.meta;
+            inout_thisClimbGap.direction = otherClimbGap.direction;
         }
-        return get(Math.max(this._value, other._value));
+        return get(Math.max(this.value, other.value));
     }
 
     @Override
     public String toString()
     {
-        if (this._value <= None._value) {
+        if (this.value <= NONE.value)
+        {
             return "None";
         }
-        if (this._value == BaseHold._value) {
+        if (this.value == BASE_HOLD.value)
+        {
             return "BaseHold";
         }
-        if (this._value == BaseWithHands._value) {
+        if (this.value == BASE_WITH_HANDS.value)
+        {
             return "BaseWithHands";
         }
-        if (this._value == TopWithHands._value) {
+        if (this.value == TOP_WITH_HANDS.value)
+        {
             return "TopWithHands";
         }
-        if (this._value == SlowUpWithHoldWithoutHands._value) {
+        if (this.value == SLOW_UP_WITH_HOLD_WITHOUT_HANDS.value)
+        {
             return "SlowUpWithHoldWithoutHands";
         }
-        if (this._value == SlowUpWithSinkWithoutHands._value) {
+        if (this.value == SLOW_UP_WITH_SINK_WITHOUT_HANDS.value)
+        {
             return "SlowUpWithSinkWithoutHands";
         }
         return "FastUp";
@@ -84,24 +93,30 @@ public class FeetClimbing
 
     private static FeetClimbing get(int value)
     {
-        if (value <= None._value) {
-            return None;
+        if (value <= NONE.value)
+        {
+            return NONE;
         }
-        if (value == BaseHold._value) {
-            return BaseHold;
+        if (value == BASE_HOLD.value)
+        {
+            return BASE_HOLD;
         }
-        if (value == BaseWithHands._value) {
-            return BaseWithHands;
+        if (value == BASE_WITH_HANDS.value)
+        {
+            return BASE_WITH_HANDS;
         }
-        if (value == TopWithHands._value) {
-            return TopWithHands;
+        if (value == TOP_WITH_HANDS.value)
+        {
+            return TOP_WITH_HANDS;
         }
-        if (value == SlowUpWithHoldWithoutHands._value) {
-            return SlowUpWithHoldWithoutHands;
+        if (value == SLOW_UP_WITH_HOLD_WITHOUT_HANDS.value)
+        {
+            return SLOW_UP_WITH_HOLD_WITHOUT_HANDS;
         }
-        if (value == SlowUpWithSinkWithoutHands._value) {
-            return SlowUpWithSinkWithoutHands;
+        if (value == SLOW_UP_WITH_SINK_WITHOUT_HANDS.value)
+        {
+            return SLOW_UP_WITH_SINK_WITHOUT_HANDS;
         }
-        return FastUp;
+        return FAST_UP;
     }
 }

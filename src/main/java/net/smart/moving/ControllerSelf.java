@@ -78,34 +78,40 @@ public class ControllerSelf extends Controller
         this.lastHorizontalCollisionZ = 0;
         this.lastHungerIncrease = -2;
 
-        this.prevPacketState = -1;
+        this.prevPacketState = null;
     }
 
     public void moveEntityWithHeading(float strafe, float forward)
     {
-        if (this.player.motionX == 0 && this.prevMotionX < 0.005) {
+        if (this.player.motionX == 0 && this.prevMotionX < 0.005)
+        {
             this.player.motionX = this.prevMotionX;
         }
 
-        if (this.player.motionZ == 0 && this.prevMotionZ < 0.005) {
+        if (this.player.motionZ == 0 && this.prevMotionZ < 0.005)
+        {
             this.player.motionZ = this.prevMotionZ;
         }
 
-        if (this.player.capabilities.isFlying && !SmartMovingConfig.smartFlying.enable) {
+        if (this.player.capabilities.isFlying && !SmartMovingConfig.SMART_FLYING.enable)
+        {
             double d3 = this.player.motionY;
             float f2 = this.player.jumpMovementFactor;
             this.player.jumpMovementFactor = 0.05F;
             this.superMoveEntityWithHeading(strafe, forward);
             this.player.motionY = d3 * 0.6D;
             this.player.jumpMovementFactor = f2;
-        } else {
+        }
+        else
+        {
             this.superMoveEntityWithHeading(strafe, forward);
         }
     }
 
     private void superMoveEntityWithHeading(float strage, float forward)
     {
-        if (this.isRunning() && !SmartMovingConfig.standardSprinting.enable) {
+        if (this.isRunning() && !SmartMovingConfig.STANDARD_SPRINTING.enable)
+        {
             this.player.setSprinting(false);
         }
 
@@ -122,14 +128,15 @@ public class ControllerSelf extends Controller
         double d1_S = this.player.posY;
         double d2_S = this.player.posZ;
 
-        if (this.player.collidedHorizontally) {
+        if (this.player.collidedHorizontally)
+        {
             this.lastHorizontalCollisionX = this.player.posX;
             this.lastHorizontalCollisionZ = this.player.posZ;
         }
 
         float speedFactor = this.getSpeedFactor(forward, strage);
 
-        boolean isLiquidClimbing = SmartMovingConfig.climb.enable && this.player.fallDistance <= 3.0 && this.wantClimbUp && this.player.collidedHorizontally && !this.isDiving;
+        boolean isLiquidClimbing = SmartMovingConfig.CLIMB.enable && this.player.fallDistance <= 3.0 && this.wantClimbUp && this.player.collidedHorizontally && !this.isDiving;
         boolean handledSwimming = this.handleSwimming(forward, strage, speedFactor, wasSwimming, wasDiving, isLiquidClimbing, wasJumpingOutOfWater);
         boolean handledLava = this.handleLava(forward, strage, handledSwimming, isLiquidClimbing);
         boolean handledAlternativeFlying = this.handleAlternativeFlying(forward, strage, speedFactor, handledSwimming, handledLava);
@@ -155,39 +162,54 @@ public class ControllerSelf extends Controller
     {
         float speedFactor = this.getSpeedFactor();
 
-        if (this.player.getItemInUseCount() > 0) {
+        if (this.player.getItemInUseCount() > 0)
+        {
             float itemFactor;
             Item item = this.player.getActiveItemStack().getItem();
-            if (item instanceof ItemSword) {
-                itemFactor = SmartMovingConfig.itemUsage.swordSpeedFactor;
-            } else if (item instanceof ItemBow) {
-                itemFactor = SmartMovingConfig.itemUsage.bowSpeedFactor;
-            } else if (item instanceof ItemFood) {
-                itemFactor = SmartMovingConfig.itemUsage.foodSpeedFactor;
-            } else {
-                itemFactor = SmartMovingConfig.itemUsage.speedFactor;
+            if (item instanceof ItemSword)
+            {
+                itemFactor = SmartMovingConfig.ITEM_USAGE.swordSpeedFactor;
+            }
+            else if (item instanceof ItemBow)
+            {
+                itemFactor = SmartMovingConfig.ITEM_USAGE.bowSpeedFactor;
+            }
+            else if (item instanceof ItemFood)
+            {
+                itemFactor = SmartMovingConfig.ITEM_USAGE.foodSpeedFactor;
+            }
+            else
+            {
+                itemFactor = SmartMovingConfig.ITEM_USAGE.speedFactor;
             }
             speedFactor *= itemFactor;
         }
 
-        if (this.isCrawling || (this.isCrawlClimbing && !this.isClimbCrawling)) {
-            speedFactor *= SmartMovingConfig.crawling.factor;
-        } else if (this.isSlow) {
-            speedFactor *= SmartMovingConfig.genericSneaking.factor;
+        if (this.isCrawling || (this.isCrawlClimbing && !this.isClimbCrawling))
+        {
+            speedFactor *= SmartMovingConfig.CRAWLING.factor;
+        }
+        else if (this.isSlow)
+        {
+            speedFactor *= SmartMovingConfig.GENERIC_SNEAKING.factor;
         }
 
-        if (this.isFast) {
-            speedFactor *= SmartMovingConfig.genericSprinting.factor;
+        if (this.isFast)
+        {
+            speedFactor *= SmartMovingConfig.GENERIC_SPRINTING.factor;
         }
 
-        if (this.isClimbing) {
-            if (moveStrafing != 0F || moveForward != 0F) {
-                speedFactor *= SmartMovingConfig.climb.freeHorizontalSpeedFactor;
+        if (this.isClimbing)
+        {
+            if (moveStrafing != 0F || moveForward != 0F)
+            {
+                speedFactor *= SmartMovingConfig.CLIMB.freeHorizontalSpeedFactor;
             }
         }
 
-        if (this.isCeilingClimbing) {
-            speedFactor *= SmartMovingConfig.climb.ceilingSpeedFactor;
+        if (this.isCeilingClimbing)
+        {
+            speedFactor *= SmartMovingConfig.CLIMB.ceilingSpeedFactor;
         }
 
         return speedFactor;
@@ -196,25 +218,31 @@ public class ControllerSelf extends Controller
     private boolean handleSwimming(float moveForward, float moveStrafing, float speedFactor, boolean wasSwimming, boolean wasDiving, boolean isLiquidClimbing, boolean wasJumpingOutOfWater)
     {
         boolean handleSwimmingRejected = false;
-        boolean handleSwimming = !this.isFlying && !isLiquidClimbing && (this.player.isInWater() || (wasSwimming && this.isInLiquid()) || (SmartMovingConfig.lava.likeWater && this.player.isInLava()));
-        if (handleSwimming) {
+        boolean handleSwimming = !this.isFlying && !isLiquidClimbing && (this.player.isInWater() || (wasSwimming && this.isInLiquid()) || (SmartMovingConfig.LAVA.likeWater && this.player.isInLava()));
+        if (handleSwimming)
+        {
             this.resetClimbing();
 
             float wasHeightOffset = this.heightOffset;
 
-            boolean useStandard = !SmartMovingConfig.swimming.enable && !SmartMovingConfig.diving.enable;
-            if (this.player.isRiding()) {
+            boolean useStandard = !SmartMovingConfig.SWIMMING.enable && !SmartMovingConfig.DIVING.enable;
+            if (this.player.isRiding())
+            {
                 this.resetSwimming();
                 useStandard = true;
             }
 
-            if (useStandard && this.isCrawling) {
+            if (useStandard && this.isCrawling)
+            {
                 this.standupIfPossible();
-            } else {
+            }
+            else
+            {
                 this.resetHeightOffset();
             }
 
-            if (!useStandard) {
+            if (!useStandard)
+            {
                 this.resetSwimming();
 
                 int i = MathHelper.floor(this.player.posX);
@@ -234,7 +262,8 @@ public class ControllerSelf extends Controller
                 double realMinPlayerSwimWaterDepth = totalSwimWaterBorder - this.getMaxPlayerSolidBetween(realTotalSwimWaterBorder - 2, realTotalSwimWaterBorder, 0);
                 double playerSwimWaterBorder = totalSwimWaterBorder - j - j_offset;
 
-                if (this.isCrawling && playerSwimWaterBorder > SwimCrawlWaterTopBorder) {
+                if (this.isCrawling && playerSwimWaterBorder > SWIM_CRAWL_WATER_TOP_BORDER)
+                {
                     this.standupIfPossible();
                 }
 
@@ -242,138 +271,228 @@ public class ControllerSelf extends Controller
                 boolean couldStandUp = playerSwimWaterBorder >= 0 && minPlayerSwimWaterDepth <= 1.5;
 
                 boolean diveUp = this.playerBase.getIsJumpingField();
-                boolean diveDown = ((EntityPlayerSP) this.entityPlayer).movementInput.sneak && SmartMovingConfig.diving.downSneak;
-                boolean swimDown = ((EntityPlayerSP) this.entityPlayer).movementInput.sneak && SmartMovingConfig.swimming.downSneak;
+                boolean diveDown = ((EntityPlayerSP) this.entityPlayer).movementInput.sneak && SmartMovingConfig.DIVING.downSneak;
+                boolean swimDown = ((EntityPlayerSP) this.entityPlayer).movementInput.sneak && SmartMovingConfig.SWIMMING.downSneak;
 
                 boolean wantShallowSwim = couldStandUp && (wasSwimming || wasDiving);
-                if (wantShallowSwim) {
+                if (wantShallowSwim)
+                {
                     HashSet<Orientation> orientations = Orientation.getClimbingOrientations(this.player, true, true);
-                    for (Orientation orientation : orientations) {
-                        if (!(wantShallowSwim = !orientation.isTunnelAhead(this.player.world, i, j, k))) {
+                    for (Orientation orientation : orientations)
+                    {
+                        if (!(wantShallowSwim = !orientation.isTunnelAhead(this.player.world, i, j, k)))
+                        {
                             break;
                         }
                     }
                 }
 
-                if (wasSwimming && wantShallowSwim && swimDown) {
+                if (wasSwimming && wantShallowSwim && swimDown)
+                {
                     swimDown = false;
                     this.isFakeShallowWaterSneaking = true;
                 }
 
-                if (this.isDiving && diveUp && diveDown) {
+                if (this.isDiving && diveUp && diveDown)
+                {
                     diveUp = diveDown = false;
                 }
 
-                if (this.isCrawling || this.isClimbCrawling || this.isCrawlClimbing) {
+                if (this.isCrawling || this.isClimbCrawling || this.isCrawlClimbing)
+                {
                     this.isDipping = true;
-                } else if (playerSwimWaterBorder >= 0 && playerSwimWaterBorder <= 2) {
+                }
+                else if (playerSwimWaterBorder >= 0 && playerSwimWaterBorder <= 2)
+                {
                     double offset = playerSwimWaterBorder + 0.1625D; // for fine tuning
                     boolean moveSwim = this.player.rotationPitch < 0F && ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward > 0F || this.player.rotationPitch > 0F && ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward < 0F;
-                    if (diveUp || moveSwim || wantShallowSwim) {
-                        if (offset < 1.4) {
+                    if (diveUp || moveSwim || wantShallowSwim)
+                    {
+                        if (offset < 1.4)
+                        {
                             dipping = true;
-                            if (offset < 1) {
+                            if (offset < 1)
+                            {
                                 motionYDiff = -0.02D;
-                            } else {
+                            }
+                            else
+                            {
                                 motionYDiff = -0.01D;
                             }
-                        } else if (offset < 1.9) {
+                        }
+                        else if (offset < 1.9)
+                        {
                             swimming = true;
-                            if (offset < 1.6) {
+                            if (offset < 1.6)
+                            {
                                 motionYDiff = -0.01D;
-                            } else if (offset < 1.62) {
+                            }
+                            else if (offset < 1.62)
+                            {
                                 motionYDiff = -0.005D;
-                            } else if (offset < 1.64) {
+                            }
+                            else if (offset < 1.64)
+                            {
                                 motionYDiff = -0.0025D;
-                            } else if (offset < 1.66) {
+                            }
+                            else if (offset < 1.66)
+                            {
                                 motionYDiff = -0.00125D;
-                            } else if (offset < 1.664) {
+                            }
+                            else if (offset < 1.664)
+                            {
                                 motionYDiff = -0.000625D;
-                            } else if (offset < 1.668) {
+                            }
+                            else if (offset < 1.668)
+                            {
                                 motionYDiff = 0D;
-                            } else if (offset < 1.672) {
+                            }
+                            else if (offset < 1.672)
+                            {
                                 motionYDiff = 0.000625D;
-                            } else if (offset < 1.676) {
+                            }
+                            else if (offset < 1.676)
+                            {
                                 motionYDiff = 0.00125D;
-                            } else if (offset < 1.68) {
+                            }
+                            else if (offset < 1.68)
+                            {
                                 motionYDiff = 0.0025D;
-                            } else if (offset < 1.7) {
+                            }
+                            else if (offset < 1.7)
+                            {
                                 motionYDiff = 0.005D;
-                            } else if (offset < 1.8) {
+                            }
+                            else if (offset < 1.8)
+                            {
                                 motionYDiff = 0.01D;
-                            } else {
+                            }
+                            else
+                            {
                                 motionYDiff = 0.02D;
                             }
-                        } else {
+                        }
+                        else
+                        {
                             diving = true;
-                            if (diveUp) {
-                                motionYDiff = 0.05D * (this.isFast ? SmartMovingConfig.genericSprinting.factor : 1F);
-                            } else if (diveDown) {
+                            if (diveUp)
+                            {
+                                motionYDiff = 0.05D * (this.isFast ? SmartMovingConfig.GENERIC_SPRINTING.factor : 1F);
+                            }
+                            else if (diveDown)
+                            {
                                 motionYDiff = 0.01 - 0.1 * speedFactor;
-                            } else {
+                            }
+                            else
+                            {
                                 motionYDiff = moveSwim ? 0.04D : 0.02D;
                             }
                         }
-                    } else {
-                        if (offset < 1.5) {
+                    }
+                    else
+                    {
+                        if (offset < 1.5)
+                        {
                             dipping = true;
                             motionYDiff = -0.02D;
-                        } else {
+                        }
+                        else
+                        {
                             diving = true;
-                            if (diveDown) {
+                            if (diveDown)
+                            {
                                 motionYDiff = 0.01 - 0.1 * speedFactor;
-                            } else if (offset < 1.8) {
+                            }
+                            else if (offset < 1.8)
+                            {
                                 motionYDiff = -0.02D;
-                            } else if (offset < 1.82) {
+                            }
+                            else if (offset < 1.82)
+                            {
                                 motionYDiff = -0.01D;
-                            } else if (offset < 1.84) {
+                            }
+                            else if (offset < 1.84)
+                            {
                                 motionYDiff = -0.005D;
-                            } else if (offset < 1.86) {
+                            }
+                            else if (offset < 1.86)
+                            {
                                 motionYDiff = -0.0025D;
-                            } else if (offset < 1.864) {
+                            }
+                            else if (offset < 1.864)
+                            {
                                 motionYDiff = -0.00125D;
-                            } else if (offset < 1.868) {
+                            }
+                            else if (offset < 1.868)
+                            {
                                 motionYDiff = 0D;
-                            } else if (offset < 1.872) {
+                            }
+                            else if (offset < 1.872)
+                            {
                                 motionYDiff = 0.00125D;
-                            } else if (offset < 1.876) {
+                            }
+                            else if (offset < 1.876)
+                            {
                                 motionYDiff = 0.0025D;
-                            } else if (offset < 1.88) {
+                            }
+                            else if (offset < 1.88)
+                            {
                                 motionYDiff = 0.005D;
-                            } else if (offset < 1.9) {
+                            }
+                            else if (offset < 1.9)
+                            {
                                 motionYDiff = 0.01D;
-                            } else {
+                            }
+                            else
+                            {
                                 motionYDiff = 0.01D;
                             }
                         }
                     }
-                } else if (playerSwimWaterBorder > 2) {
+                }
+                else if (playerSwimWaterBorder > 2)
+                {
                     diving = true;
-                    if (diveUp) {
-                        if (this.isFast && playerSwimWaterBorder < 2.5 && this.isAirBlock(i, j + 3, k)) {
-                            motionYDiff = 0.11D / SmartMovingConfig.genericSprinting.factor;
-                        } else {
+                    if (diveUp)
+                    {
+                        if (this.isFast && playerSwimWaterBorder < 2.5 && this.isAirBlock(i, j + 3, k))
+                        {
+                            motionYDiff = 0.11D / SmartMovingConfig.GENERIC_SPRINTING.factor;
+                        }
+                        else
+                        {
                             motionYDiff = 0.01 + 0.1 * speedFactor;
                         }
-                    } else if (diveDown) {
+                    }
+                    else if (diveDown)
+                    {
                         motionYDiff = 0.01 - 0.1 * speedFactor;
-                    } else {
+                    }
+                    else
+                    {
                         motionYDiff = 0.01D;
                     }
-                } else {
+                }
+                else
+                {
                     handleSwimmingRejected = true;
                 }
 
                 this.dippingDepth = (float) playerSwimWaterBorder;
                 float playerCrawlWaterBorder = this.dippingDepth + wasHeightOffset;
-                if ((this.isCrawling || this.isSliding) && playerCrawlWaterBorder < SwimCrawlWaterMaxBorder) {
-                    if (playerCrawlWaterBorder < SwimCrawlWaterTopBorder) {
+                if ((this.isCrawling || this.isSliding) && playerCrawlWaterBorder < SWIM_CRAWL_WATER_MAX_BORDER)
+                {
+                    if (playerCrawlWaterBorder < SWIM_CRAWL_WATER_TOP_BORDER)
+                    {
                         // continue crawling in shallow water
                         this.setHeightOffset(wasHeightOffset);
                         handleSwimmingRejected = true;
-                    } else {
+                    }
+                    else
+                    {
                         // from crawling in shallow water to swimming/diving
-                        if (wantShallowSwim) {
+                        if (wantShallowSwim)
+                        {
                             this.move(0, 0.1, 0, true); // to avoid diving in shallow water
                         }
                         this.isCrawling = false;
@@ -383,30 +502,40 @@ public class ControllerSelf extends Controller
                     }
                 }
 
-                if (!handleSwimmingRejected) {
-                    swimming = swimming && SmartMovingConfig.swimming.enable;
-                    diving = diving && SmartMovingConfig.diving.enable;
-                    dipping = dipping && SmartMovingConfig.swimming.enable;
+                if (!handleSwimmingRejected)
+                {
+                    swimming = swimming && SmartMovingConfig.SWIMMING.enable;
+                    diving = diving && SmartMovingConfig.DIVING.enable;
+                    dipping = dipping && SmartMovingConfig.SWIMMING.enable;
                     useStandard = !swimming && !diving && !dipping;
 
-                    if (!useStandard) {
-                        if (diveUp) {
+                    if (!useStandard)
+                    {
+                        if (diveUp)
+                        {
                             this.player.motionY -= 0.04D;
                         }
 
-                        if (swimming) {
+                        if (swimming)
+                        {
                             this.player.motionX *= 0.85D;
                             this.player.motionY *= 0.85D;
                             this.player.motionZ *= 0.85D;
-                        } else if (diving) {
+                        }
+                        else if (diving)
+                        {
                             this.player.motionX *= 0.83D;
                             this.player.motionY *= 0.83D;
                             this.player.motionZ *= 0.83D;
-                        } else if (dipping) {
+                        }
+                        else if (dipping)
+                        {
                             this.player.motionX *= 0.80D;
                             this.player.motionY *= 0.83D;
                             this.player.motionZ *= 0.80D;
-                        } else {
+                        }
+                        else
+                        {
                             this.player.motionX *= 0.9D;
                             this.player.motionY *= 0.85D;
                             this.player.motionZ *= 0.9D;
@@ -415,34 +544,49 @@ public class ControllerSelf extends Controller
                         boolean moveFlying = true;
                         boolean levitating = diving && !diveUp && !diveDown && moveStrafing == 0F && moveForward == 0F;
 
-                        if (diving) {
-                            speedFactor *= SmartMovingConfig.diving.speedFactor;
+                        if (diving)
+                        {
+                            speedFactor *= SmartMovingConfig.DIVING.speedFactor;
                         }
-                        if (swimming) {
-                            speedFactor *= SmartMovingConfig.swimming.speedFactor;
+                        if (swimming)
+                        {
+                            speedFactor *= SmartMovingConfig.SWIMMING.speedFactor;
                         }
 
-                        if (swimming || diving) {
+                        if (swimming || diving)
+                        {
                             this.waterMovementTicks++;
-                        } else {
+                        }
+                        else
+                        {
                             this.waterMovementTicks = 0;
                         }
 
                         boolean wantJumpOutOfWater = (moveForward != 0 || moveStrafing != 0) && this.player.collidedHorizontally && diveUp && !this.isSlow;
                         this.isJumpingOutOfWater = wantJumpOutOfWater && (this.waterMovementTicks > 10 || this.player.onGround || wasJumpingOutOfWater);
 
-                        if (diving) {
-                            if (diveUp || diveDown || levitating) {
+                        if (diving)
+                        {
+                            if (diveUp || diveDown || levitating)
+                            {
                                 this.player.motionY = (this.player.motionY + motionYDiff) * 0.6;
-                            } else {
-                                this.moveFlying((float) motionYDiff, moveStrafing, moveForward, 0.02F * speedFactor, SmartMovingConfig.userInterface.diveControlVertical);
+                            }
+                            else
+                            {
+                                this.moveFlying((float) motionYDiff, moveStrafing, moveForward, 0.02F * speedFactor, SmartMovingConfig.USER_INTERFACE.diveControlVertical);
                             }
                             moveFlying = false;
-                        } else if (swimming && swimDown) {
+                        }
+                        else if (swimming && swimDown)
+                        {
                             this.player.motionY = (this.player.motionY + motionYDiff) * 0.6;
-                        } else if (this.isJumpingOutOfWater) {
+                        }
+                        else if (this.isJumpingOutOfWater)
+                        {
                             this.player.motionY = 0.3D;
-                        } else {
+                        }
+                        else
+                        {
                             this.player.motionY += motionYDiff;
                         }
 
@@ -452,16 +596,21 @@ public class ControllerSelf extends Controller
                         this.isShallowDiveOrSwim = couldStandUp && (this.isDiving || this.isSwimming);
                         this.isDipping = dipping;
 
-                        if (this.isDiving || this.isSwimming) {
+                        if (this.isDiving || this.isSwimming)
+                        {
                             this.setHeightOffset(-1F);
                         }
 
-                        if (this.isShallowDiveOrSwim && realMinPlayerSwimWaterDepth < SwimCrawlWaterBottomBorder) {
-                            if (this.isSlow) {
+                        if (this.isShallowDiveOrSwim && realMinPlayerSwimWaterDepth < SWIM_CRAWL_WATER_BOTTOM_BORDER)
+                        {
+                            if (this.isSlow)
+                            {
                                 // from swimming/diving in shallow water to crawling in shallow water
                                 this.setHeightOffset(-1F);
                                 this.isCrawling = true;
-                            } else {
+                            }
+                            else
+                            {
                                 // from swimming/diving in shallow water to walking in shallow water
                                 this.resetHeightOffset();
                                 this.player.move(MoverType.SELF, 0, this.getMaxPlayerSolidBetween(this.getBoundingBox().minY, this.getBoundingBox().maxY, 0) - this.getBoundingBox().minY, 0);
@@ -473,13 +622,16 @@ public class ControllerSelf extends Controller
                             this.isDipping = true;
                         }
 
-                        if (moveFlying) {
+                        if (moveFlying)
+                        {
                             this.moveFlying(0f, moveStrafing, moveForward, 0.02F * speedFactor, false);
                         }
                         this.player.move(MoverType.SELF, this.player.motionX, this.player.motionY, this.player.motionZ);
                     }
                 }
-            } else {
+            }
+            else
+            {
                 this.isDiving = false;
                 this.isSwimming = false;
                 this.isShallowDiveOrSwim = false;
@@ -487,10 +639,12 @@ public class ControllerSelf extends Controller
                 this.isStillSwimmingJump = false;
             }
 
-            if (useStandard) {
+            if (useStandard)
+            {
                 this.resetSwimming();
 
-                if (this.isCrawling) {
+                if (this.isCrawling)
+                {
                     this.setHeightOffset(wasHeightOffset);
                 }
 
@@ -502,7 +656,8 @@ public class ControllerSelf extends Controller
                 this.player.motionY *= 0.80000001192092896D;
                 this.player.motionZ *= 0.80000001192092896D;
                 this.player.motionY -= 0.02D;
-                if (this.player.collidedHorizontally && this.player.isOffsetPositionInLiquid(this.player.motionX, ((this.player.motionY + 0.60000002384185791D) - this.player.posY) + dY, this.player.motionZ)) {
+                if (this.player.collidedHorizontally && this.player.isOffsetPositionInLiquid(this.player.motionX, ((this.player.motionY + 0.60000002384185791D) - this.player.posY) + dY, this.player.motionZ))
+                {
                     this.player.motionY = 0.30000001192092896D;
                 }
             }
@@ -514,7 +669,8 @@ public class ControllerSelf extends Controller
     private boolean handleLava(float moveForward, float moveStrafing, boolean handledSwimming, boolean isLiquidClimbing)
     {
         boolean handleLava = !this.isFlying && !handledSwimming && !isLiquidClimbing && this.player.isInLava();
-        if (handleLava) {
+        if (handleLava)
+        {
             this.standupIfPossible();
             this.resetClimbing();
             this.resetSwimming();
@@ -526,7 +682,8 @@ public class ControllerSelf extends Controller
             this.player.motionY *= 0.5D;
             this.player.motionZ *= 0.5D;
             this.player.motionY -= 0.02D;
-            if (this.player.collidedHorizontally && this.player.isOffsetPositionInLiquid(this.player.motionX, ((this.player.motionY + 0.60000002384185791D) - this.player.posY) + d1, this.player.motionZ)) {
+            if (this.player.collidedHorizontally && this.player.isOffsetPositionInLiquid(this.player.motionX, ((this.player.motionY + 0.60000002384185791D) - this.player.posY) + d1, this.player.motionZ))
+            {
                 this.player.motionY = 0.30000001192092896D;
             }
         }
@@ -535,38 +692,43 @@ public class ControllerSelf extends Controller
 
     private boolean handleAlternativeFlying(float moveForward, float moveStrafing, float speedFactor, boolean handledSwimming, boolean handledLava)
     {
-        boolean handleAlternativeFlying = !handledSwimming && !handledLava && this.player.capabilities.isFlying && SmartMovingConfig.smartFlying.enable;
-        if (handleAlternativeFlying) {
+        boolean handleAlternativeFlying = !handledSwimming && !handledLava && this.player.capabilities.isFlying && SmartMovingConfig.SMART_FLYING.enable;
+        if (handleAlternativeFlying)
+        {
             this.resetSwimming();
             this.resetClimbing();
 
             float moveUpward = 0F;
-            if (((EntityPlayerSP) this.entityPlayer).movementInput.sneak) {
+            if (((EntityPlayerSP) this.entityPlayer).movementInput.sneak)
+            {
                 this.player.motionY += 0.15D;
                 moveUpward -= 0.98F;
             }
-            if (((EntityPlayerSP) this.entityPlayer).movementInput.jump) {
+            if (((EntityPlayerSP) this.entityPlayer).movementInput.jump)
+            {
                 this.player.motionY -= 0.15D;
                 moveUpward += 0.98F;
             }
 
-            this.moveFlying(moveUpward, moveStrafing, moveForward, speedFactor * 0.05F * SmartMovingConfig.smartFlying.speedFactor, SmartMovingConfig.userInterface.flyControlVertical);
+            this.moveFlying(moveUpward, moveStrafing, moveForward, speedFactor * 0.05F * SmartMovingConfig.SMART_FLYING.speedFactor, SmartMovingConfig.USER_INTERFACE.flyControlVertical);
 
             this.player.move(MoverType.SELF, this.player.motionX, this.player.motionY, this.player.motionZ);
 
-            this.player.motionX *= HorizontalAirDamping;
-            this.player.motionY *= HorizontalAirDamping;
-            this.player.motionZ *= HorizontalAirDamping;
+            this.player.motionX *= HORIZONTAL_AIR_DAMPING;
+            this.player.motionY *= HORIZONTAL_AIR_DAMPING;
+            this.player.motionZ *= HORIZONTAL_AIR_DAMPING;
         }
         return handleAlternativeFlying;
     }
 
     private void handleLand(float moveForward, float moveStrafing, float speedFactor, boolean handledSwimming, boolean handledLava, boolean handledAlternativeFlying, boolean wasShortInWater, boolean wasClimbing, boolean wasCeilingClimbing)
     {
-        if (!handledSwimming && !handledLava && !handledAlternativeFlying) {
+        if (!handledSwimming && !handledLava && !handledAlternativeFlying)
+        {
             this.resetSwimming();
 
-            if (!this.grabButton.isPressed) {
+            if (!this.grabButton.isPressed)
+            {
                 this.fromSwimmingOrDiving(wasShortInWater);
             }
 
@@ -588,11 +750,13 @@ public class ControllerSelf extends Controller
     private void move(double motionX, double motionY, double motionZ, boolean relocate)
     {
         boolean isInWeb = this.playerBase.getIsInWebField();
-        if (relocate) {
+        if (relocate)
+        {
             this.playerBase.setIsInWebField(false);
         }
         this.player.move(MoverType.SELF, motionX, motionY, motionZ);
-        if (relocate) {
+        if (relocate)
+        {
             this.playerBase.setIsInWebField(isInWeb);
         }
     }
@@ -601,113 +765,160 @@ public class ControllerSelf extends Controller
     {
         float horizontalDamping;
         final boolean isUsingItem = this.player.getItemInUseCount() > 0;
-        if (this.player.onGround && !this.isJumping) {
+        if (this.player.onGround && !this.isJumping)
+        {
             Block block = this.getBlock(MathHelper.floor(this.player.posX), MathHelper.floor(this.getBoundingBox().minY) - 1, MathHelper.floor(this.player.posZ));
-            if (block != null) {
-                horizontalDamping = block.slipperiness * HorizontalAirDamping;
-            } else {
-                horizontalDamping = HorizontalGroundDamping;
+            if (block != null)
+            {
+                horizontalDamping = block.slipperiness * HORIZONTAL_AIR_DAMPING;
+            }
+            else
+            {
+                horizontalDamping = HORIZONTAL_GROUND_DAMPING;
             }
 
-            if (((EntityPlayerSP) this.entityPlayer).movementInput.jump && this.isFast && ConfigHelper.isJumpingEnabled(ConfigHelper.Sprinting, ConfigHelper.Up)) {
-                speedFactor *= SmartMovingConfig.jumping.sprintVerticalFactor;
+            if (((EntityPlayerSP) this.entityPlayer).movementInput.jump && this.isFast && ConfigHelper.isJumpingEnabled(ConfigHelper.Sprinting, ConfigHelper.Up))
+            {
+                speedFactor *= SmartMovingConfig.JUMPING.sprintVerticalFactor;
             }
-        } else {
-            horizontalDamping = HorizontalAirDamping;
+        }
+        else
+        {
+            horizontalDamping = HORIZONTAL_AIR_DAMPING;
         }
 
-        if (this.isClimbing && this.climbingUpIsBlockedByLadder()) {
+        if (this.isClimbing && this.climbingUpIsBlockedByLadder())
+        {
             this.moveFlying(0.07F, moveStrafing, moveForward, 0.07F, true);
-        } else if (this.isClimbing && this.climbingUpIsBlockedByTrapDoor()) {
+        }
+        else if (this.isClimbing && this.climbingUpIsBlockedByTrapDoor())
+        {
             this.moveFlying(0F, moveStrafing, moveForward, 0.09F, true);
-        } else if (this.isClimbing && this.climbingUpIsBlockedByCobbleStoneWall()) {
+        }
+        else if (this.isClimbing && this.climbingUpIsBlockedByCobbleStoneWall())
+        {
             this.moveFlying(0F, moveStrafing, moveForward, 0.07F, true);
-        } else if (!this.isSliding) {
-            if (this.isHeadJumping) {
-                speedFactor *= SmartMovingConfig.headJumping.controlFactor;
-            } else if (!this.player.onGround && !this.player.capabilities.isFlying && !this.isFlying) {
-                speedFactor *= SmartMovingConfig.jumping.controlFactor;
+        }
+        else if (!this.isSliding)
+        {
+            if (this.isHeadJumping)
+            {
+                speedFactor *= SmartMovingConfig.HEAD_JUMPING.controlFactor;
+            }
+            else if (!this.player.onGround && !this.player.capabilities.isFlying && !this.isFlying)
+            {
+                speedFactor *= SmartMovingConfig.JUMPING.controlFactor;
             }
 
             float f3 = 0.1627714F / (horizontalDamping * horizontalDamping * horizontalDamping);
             float f4 = this.player.onGround ? this.getLandMovementFactor() * f3 : this.player.jumpMovementFactor;
             float rawSpeed = this.player.isSprinting() ? f4 / 1.3F : f4;
-            if (SmartMovingConfig.standardSprinting.enable && this.isRunning() && !this.isFast) {
-                speedFactor *= SmartMovingConfig.standardSprinting.factor;
+            if (SmartMovingConfig.STANDARD_SPRINTING.enable && this.isRunning() && !this.isFast)
+            {
+                speedFactor *= SmartMovingConfig.STANDARD_SPRINTING.factor;
             }
 
             this.moveFlying(0F, moveStrafing, moveForward, rawSpeed * speedFactor, false);
         }
 
-        if (this.player.onGround && !this.isJumping) {
+        if (this.player.onGround && !this.isJumping)
+        {
             Block block = this.getBlock(MathHelper.floor(this.player.posX), MathHelper.floor(this.getBoundingBox().minY) - 1, MathHelper.floor(this.player.posZ));
-            if (block != null) {
+            if (block != null)
+            {
                 float slipperiness = block.slipperiness;
-                if (this.isSliding) {
-                    horizontalDamping = 1F / (((1F / slipperiness) - 1F) / 25F * SmartMovingConfig.sliding.slipperinessFactor + 1F) * 0.98F;
-                    if (moveStrafing != 0 && SmartMovingConfig.sliding.controlAngle > 0) {
+                if (this.isSliding)
+                {
+                    horizontalDamping = 1F / (((1F / slipperiness) - 1F) / 25F * SmartMovingConfig.SLIDING.slipperinessFactor + 1F) * 0.98F;
+                    if (moveStrafing != 0 && SmartMovingConfig.SLIDING.controlAngle > 0)
+                    {
                         double angle = -Math.atan(this.player.motionX / this.player.motionZ);
-                        if (!Double.isNaN(angle)) {
-                            if (this.player.motionZ < 0) {
+                        if (!Double.isNaN(angle))
+                        {
+                            if (this.player.motionZ < 0)
+                            {
                                 angle += Math.PI;
                             }
 
-                            angle -= SmartMovingConfig.sliding.controlAngle / RadiantToAngle * Math.signum(moveStrafing);
+                            angle -= SmartMovingConfig.SLIDING.controlAngle / RadiantToAngle * Math.signum(moveStrafing);
 
                             double hMotion = Math.sqrt(this.player.motionX * this.player.motionX + this.player.motionZ * this.player.motionZ);
                             this.player.motionX = hMotion * -Math.sin(angle);
                             this.player.motionZ = hMotion * Math.cos(angle);
                         }
                     }
-                } else {
-                    horizontalDamping = slipperiness * HorizontalAirDamping;
                 }
-            } else {
-                horizontalDamping = HorizontalGroundDamping;
+                else
+                {
+                    horizontalDamping = slipperiness * HORIZONTAL_AIR_DAMPING;
+                }
             }
-        } else if (this.isAerodynamic) {
-            horizontalDamping = HorizontalAerodynamicDamping;
-        } else {
-            horizontalDamping = HorizontalAirDamping;
+            else
+            {
+                horizontalDamping = HORIZONTAL_GROUND_DAMPING;
+            }
+        }
+        else if (this.isAerodynamic)
+        {
+            horizontalDamping = HORIZONTAL_AERODYNAMIC_DAMPING;
+        }
+        else
+        {
+            horizontalDamping = HORIZONTAL_AIR_DAMPING;
         }
 
-        if (isOnLadder || isOnVine) {
+        if (isOnLadder || isOnVine)
+        {
             float f4 = 0.15F;
-            if (this.player.motionX < -f4) {
+            if (this.player.motionX < -f4)
+            {
                 this.player.motionX = -f4;
             }
-            if (this.player.motionX > f4) {
+            if (this.player.motionX > f4)
+            {
                 this.player.motionX = f4;
             }
-            if (this.player.motionZ < (-f4)) {
+            if (this.player.motionZ < (-f4))
+            {
                 this.player.motionZ = -f4;
             }
-            if (this.player.motionZ > f4) {
+            if (this.player.motionZ > f4)
+            {
                 this.player.motionZ = f4;
             }
             boolean notTotalFreeClimbing = !this.isClimbing && isOnLadder && !ConfigHelper.isTotalFreeLadderClimb() || isOnVine && !ConfigHelper.isTotalFreeVineClimb();
-            if (notTotalFreeClimbing) {
+            if (notTotalFreeClimbing)
+            {
                 this.player.fallDistance = 0.0F;
                 this.player.motionY = Math.max(this.player.motionY, -0.15 * this.getSpeedFactor());
             }
-            if (ConfigHelper.isFreeBaseClimb()) {
-                if (isUsingItem || ((EntityPlayerSP) this.entityPlayer).movementInput.sneak && this.player.motionY < 0.0D && !this.player.onGround && notTotalFreeClimbing) {
-                    this.player.motionY = 0.0D;
-                }
-            } else {
-                if (isUsingItem || this.playerBase.localIsSneaking() && this.player.motionY < 0.0D) {
+            if (ConfigHelper.isFreeBaseClimb())
+            {
+                if (isUsingItem || ((EntityPlayerSP) this.entityPlayer).movementInput.sneak && this.player.motionY < 0.0D && !this.player.onGround && notTotalFreeClimbing)
+                {
                     this.player.motionY = 0.0D;
                 }
             }
-        } else if (SmartMovingConfig.climb.freeLadderAuto && moveForward > 0) {
+            else
+            {
+                if (isUsingItem || this.playerBase.localIsSneaking() && this.player.motionY < 0.0D)
+                {
+                    this.player.motionY = 0.0D;
+                }
+            }
+        }
+        else if (SmartMovingConfig.CLIMB.freeLadderAuto && moveForward > 0)
+        {
             int j = MathHelper.floor(this.getBoundingBox().minY);
             double jGap = this.getBoundingBox().minY - j;
 
-            if (jGap < 0.1) {
+            if (jGap < 0.1)
+            {
                 int i = MathHelper.floor(this.player.posX);
                 int k = MathHelper.floor(this.player.posZ);
 
-                if (Orientation.isLadder(this.getState(i, j - 1, k))) {
+                if (Orientation.isLadder(this.getState(i, j - 1, k)))
+                {
                     this.player.motionY = Math.max(this.player.motionY, 0.0);
                 }
             }
@@ -721,11 +932,13 @@ public class ControllerSelf extends Controller
 
         boolean isOnLadderOrVine = isOnLadder || isOnVine;
 
-        if (ConfigHelper.isStandardBaseClimb() && this.player.collidedHorizontally && isOnLadderOrVine) {
+        if (ConfigHelper.isStandardBaseClimb() && this.player.collidedHorizontally && isOnLadderOrVine)
+        {
             this.player.motionY = 0.2 * this.getSpeedFactor();
         }
 
-        if (ConfigHelper.isSimpleBaseClimb() && this.player.collidedHorizontally && isOnLadderOrVine) {
+        if (ConfigHelper.isSimpleBaseClimb() && this.player.collidedHorizontally && isOnLadderOrVine)
+        {
             int i = MathHelper.floor(this.player.posX);
             int j = MathHelper.floor(this.getBoundingBox().minY);
             int k = MathHelper.floor(this.player.posZ);
@@ -733,20 +946,28 @@ public class ControllerSelf extends Controller
             boolean feet = Orientation.isClimbable(this.player.world, i, j, k);
             boolean hands = Orientation.isClimbable(this.player.world, i, j + 1, k);
 
-            if (feet && hands) {
-                this.player.motionY = FastUpMotion;
-            } else if (feet) {
-                this.player.motionY = FastUpMotion;
-            } else if (hands) {
-                this.player.motionY = SlowUpMotion;
-            } else {
+            if (feet && hands)
+            {
+                this.player.motionY = FAST_UP_MOTION;
+            }
+            else if (feet)
+            {
+                this.player.motionY = FAST_UP_MOTION;
+            }
+            else if (hands)
+            {
+                this.player.motionY = SLOW_UP_MOTION;
+            }
+            else
+            {
                 this.player.motionY = 0.0D;
             }
 
             this.player.motionY *= this.getSpeedFactor();
         }
 
-        if (ConfigHelper.isSmartBaseClimb() || SmartMovingConfig.climb.enable) {
+        if (ConfigHelper.isSmartBaseClimb() || SmartMovingConfig.CLIMB.enable)
+        {
             double id = this.player.posX;
             double jd = this.getBoundingBox().minY;
             double kd = this.player.posZ;
@@ -755,70 +976,83 @@ public class ControllerSelf extends Controller
             int j = MathHelper.floor(jd);
             int k = MathHelper.floor(kd);
 
-            if (ConfigHelper.isSmartBaseClimb() && isOnLadderOrVine && this.player.collidedHorizontally) {
+            if (ConfigHelper.isSmartBaseClimb() && isOnLadderOrVine && this.player.collidedHorizontally)
+            {
                 boolean feet = Orientation.isClimbable(this.player.world, i, j, k);
                 boolean hands = Orientation.isClimbable(this.player.world, i, j + 1, k);
 
-                if (feet && hands) {
-                    this.player.motionY = FastUpMotion;
-                } else if (feet) {
-                    boolean handsSubstitute = Orientation.PZ.isHandsLadderSubstitute(this.player.world, i, j + 1, k)
-                            || Orientation.NZ.isHandsLadderSubstitute(this.player.world, i, j + 1, k)
-                            || Orientation.ZP.isHandsLadderSubstitute(this.player.world, i, j + 1, k)
-                            || Orientation.ZN.isHandsLadderSubstitute(this.player.world, i, j + 1, k);
+                if (feet && hands)
+                {
+                    this.player.motionY = FAST_UP_MOTION;
+                }
+                else if (feet)
+                {
+                    boolean handsSubstitute = Orientation.PZ.isHandsLadderSubstitute(this.player.world, i, j + 1, k) || Orientation.NZ.isHandsLadderSubstitute(this.player.world, i, j + 1, k) || Orientation.ZP.isHandsLadderSubstitute(this.player.world, i, j + 1, k) || Orientation.ZN.isHandsLadderSubstitute(this.player.world, i, j + 1, k);
 
-                    if (handsSubstitute) {
-                        this.player.motionY = FastUpMotion;
-                    } else {
-                        this.player.motionY = SlowUpMotion;
+                    if (handsSubstitute)
+                    {
+                        this.player.motionY = FAST_UP_MOTION;
                     }
-                } else if (hands) {
-                    boolean feetSubstitute = Orientation.ZZ.isFeetLadderSubstitute(this.player.world, i, j, k)
-                            || Orientation.PZ.isFeetLadderSubstitute(this.player.world, i, j, k)
-                            || Orientation.NZ.isFeetLadderSubstitute(this.player.world, i, j, k)
-                            || Orientation.ZP.isFeetLadderSubstitute(this.player.world, i, j, k)
-                            || Orientation.ZN.isFeetLadderSubstitute(this.player.world, i, j, k);
-                    if (feetSubstitute) {
-                        this.player.motionY = FastUpMotion;
-                    } else {
-                        this.player.motionY = SlowUpMotion;
+                    else
+                    {
+                        this.player.motionY = SLOW_UP_MOTION;
                     }
-                } else {
+                }
+                else if (hands)
+                {
+                    boolean feetSubstitute = Orientation.ZZ.isFeetLadderSubstitute(this.player.world, i, j, k) || Orientation.PZ.isFeetLadderSubstitute(this.player.world, i, j, k) || Orientation.NZ.isFeetLadderSubstitute(this.player.world, i, j, k) || Orientation.ZP.isFeetLadderSubstitute(this.player.world, i, j, k) || Orientation.ZN.isFeetLadderSubstitute(this.player.world, i, j, k);
+                    if (feetSubstitute)
+                    {
+                        this.player.motionY = FAST_UP_MOTION;
+                    }
+                    else
+                    {
+                        this.player.motionY = SLOW_UP_MOTION;
+                    }
+                }
+                else
+                {
                     this.player.motionY = 0.0D;
                 }
 
                 this.player.motionY *= this.getSpeedFactor();
             }
 
-            if (SmartMovingConfig.climb.enable && this.player.fallDistance <= SmartMovingConfig.climb.fallMaximumDistance && (!isOnLadderOrVine || ConfigHelper.isFreeBaseClimb())) {
-                boolean exhaustionAllowsClimbing = !SmartMovingConfig.climb.exhaustion
-                        || (this.exhaustion <= SmartMovingConfig.climb.exhaustionStop && (wasClimbing || this.exhaustion <= SmartMovingConfig.climb.exhaustionStart));
+            if (SmartMovingConfig.CLIMB.enable && this.player.fallDistance <= SmartMovingConfig.CLIMB.fallMaximumDistance && (!isOnLadderOrVine || ConfigHelper.isFreeBaseClimb()))
+            {
+                boolean exhaustionAllowsClimbing = !SmartMovingConfig.CLIMB.exhaustion || (this.exhaustion <= SmartMovingConfig.CLIMB.exhaustionStop && (wasClimbing || this.exhaustion <= SmartMovingConfig.CLIMB.exhaustionStart));
 
                 boolean preferClimb = false;
-                if (this.wantClimbUp || this.wantClimbDown) {
-                    if (SmartMovingConfig.climb.exhaustion) {
-                        this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, SmartMovingConfig.climb.exhaustionStop);
-                        this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, SmartMovingConfig.climb.exhaustionStart);
+                if (this.wantClimbUp || this.wantClimbDown)
+                {
+                    if (SmartMovingConfig.CLIMB.exhaustion)
+                    {
+                        this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, SmartMovingConfig.CLIMB.exhaustionStop);
+                        this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, SmartMovingConfig.CLIMB.exhaustionStart);
                     }
-                    if (exhaustionAllowsClimbing) {
+                    if (exhaustionAllowsClimbing)
+                    {
                         preferClimb = true;
                     }
                 }
-                if (preferClimb) {
+                if (preferClimb)
+                {
                     boolean isSmallClimbing = this.isCrawling || this.isSliding;
-                    if (this.isClimbCrawling || this.isCrawlClimbing || isSmallClimbing) {
+                    if (this.isClimbCrawling || this.isCrawlClimbing || isSmallClimbing)
+                    {
                         jd += -1D;
                     }
 
                     float rotation = this.player.rotationYaw % 360F;
-                    if (rotation < 0) {
+                    if (rotation < 0)
+                    {
                         rotation += 360F;
                     }
 
                     double jh = jd * 2D + 1;
 
-                    HandsClimbing handsClimbing = HandsClimbing.None;
-                    FeetClimbing feetClimbing = FeetClimbing.None;
+                    HandsClimbing handsClimbing = HandsClimbing.NONE;
+                    FeetClimbing feetClimbing = FeetClimbing.NONE;
 
                     inout_handsClimbing[0] = handsClimbing;
                     inout_feetClimbing[0] = feetClimbing;
@@ -834,11 +1068,12 @@ public class ControllerSelf extends Controller
                     handsClimbing = inout_handsClimbing[0];
                     feetClimbing = inout_feetClimbing[0];
 
-                    this.isNeighborClimbing = handsClimbing != HandsClimbing.None || feetClimbing != FeetClimbing.None;
-                    this.hasNeighborClimbGap = out_handsClimbGap.CanStand || out_feetClimbGap.CanStand;
-                    this.hasNeighborClimbCrawlGap = out_handsClimbGap.MustCrawl || out_feetClimbGap.MustCrawl;
+                    this.isNeighborClimbing = handsClimbing != HandsClimbing.NONE || feetClimbing != FeetClimbing.NONE;
+                    this.hasNeighborClimbGap = out_handsClimbGap.canStand || out_feetClimbGap.canStand;
+                    this.hasNeighborClimbCrawlGap = out_handsClimbGap.mustCrawl || out_feetClimbGap.mustCrawl;
 
-                    if (!isSmallClimbing) {
+                    if (!isSmallClimbing)
+                    {
                         Orientation.PP.seekClimbGap(rotation, this.player.world, i, id, jh, k, kd, this.isClimbCrawling, this.isCrawlClimbing, false, inout_handsClimbing, inout_feetClimbing, out_handsClimbGap, out_feetClimbGap);
                         Orientation.NP.seekClimbGap(rotation, this.player.world, i, id, jh, k, kd, this.isClimbCrawling, this.isCrawlClimbing, false, inout_handsClimbing, inout_feetClimbing, out_handsClimbGap, out_feetClimbGap);
                         Orientation.NN.seekClimbGap(rotation, this.player.world, i, id, jh, k, kd, this.isClimbCrawling, this.isCrawlClimbing, false, inout_handsClimbing, inout_feetClimbing, out_handsClimbGap, out_feetClimbGap);
@@ -848,97 +1083,137 @@ public class ControllerSelf extends Controller
                     handsClimbing = inout_handsClimbing[0];
                     feetClimbing = inout_feetClimbing[0];
 
-                    this.hasClimbGap = out_handsClimbGap.CanStand || out_feetClimbGap.CanStand;
-                    this.hasClimbCrawlGap = out_handsClimbGap.MustCrawl || out_feetClimbGap.MustCrawl;
+                    this.hasClimbGap = out_handsClimbGap.canStand || out_feetClimbGap.canStand;
+                    this.hasClimbCrawlGap = out_handsClimbGap.mustCrawl || out_feetClimbGap.mustCrawl;
 
-                    if (handsClimbing == HandsClimbing.BottomHold && Orientation.isLadder(this.getState(i, j + 2, k))) {
+                    if (handsClimbing == HandsClimbing.BOTTOM_HOLD && Orientation.isLadder(this.getState(i, j + 2, k)))
+                    {
                         Orientation ladderOrientation = Orientation.getKnownLadderOrientation(this.player.world, i, j + 2, k);
-                        int remote_i = i + ladderOrientation._i;
-                        int remote_k = k + ladderOrientation._k;
-                        if (!this.getState(remote_i, j, remote_k).getMaterial().isSolid() && !this.getState(remote_i, j + 1, remote_k).getMaterial().isSolid()) {
-                            handsClimbing = HandsClimbing.None;
+                        int remote_i = i + ladderOrientation.i;
+                        int remote_k = k + ladderOrientation.k;
+                        if (!this.getState(remote_i, j, remote_k).getMaterial().isSolid() && !this.getState(remote_i, j + 1, remote_k).getMaterial().isSolid())
+                        {
+                            handsClimbing = HandsClimbing.NONE;
                         }
                     }
 
-                    if (!this.grabButton.isPressed && handsClimbing == HandsClimbing.Up && feetClimbing == FeetClimbing.None) {
-                        if (!this.player.collidedHorizontally && this.isAirBlock(i, j, k) && this.isAirBlock(i, j + 1, k)) {
-                            handsClimbing = HandsClimbing.None;
+                    if (!this.grabButton.isPressed && handsClimbing == HandsClimbing.UP && feetClimbing == FeetClimbing.NONE)
+                    {
+                        if (!this.player.collidedHorizontally && this.isAirBlock(i, j, k) && this.isAirBlock(i, j + 1, k))
+                        {
+                            handsClimbing = HandsClimbing.NONE;
                         }
                     }
 
                     // feet climbing only with balancing in gaps or combined with hand climbing
-                    if (feetClimbing.IsRelevant() || handsClimbing.IsRelevant()) {
-                        if (this.wantClimbUp) {
-                            if (this.isSliding && handsClimbing.IsRelevant()) {
+                    if (feetClimbing.IsRelevant() || handsClimbing.IsRelevant())
+                    {
+                        if (this.wantClimbUp)
+                        {
+                            if (this.isSliding && handsClimbing.IsRelevant())
+                            {
                                 this.isSliding = false;
                                 this.isCrawling = true;
                             }
 
                             handsClimbing = handsClimbing.ToUp();
 
-                            if (feetClimbing == FeetClimbing.FastUp && !(handsClimbing == HandsClimbing.None && this.player.onGround && out_feetClimbGap.Block != Block.getBlockFromName("bed"))) {
+                            if (feetClimbing == FeetClimbing.FAST_UP && !(handsClimbing == HandsClimbing.NONE && this.player.onGround && out_feetClimbGap.block != Block.getBlockFromName("bed")))
+                            {
                                 // climbing fast
-                                this.setShouldClimbSpeed(FastUpMotion, HandsClimbing.NoGrab, FeetClimbing.DownStep);
-                            } else if ((this.hasClimbGap || this.hasClimbCrawlGap) && handsClimbing == HandsClimbing.FastUp && (feetClimbing == FeetClimbing.None || feetClimbing == FeetClimbing.BaseWithHands)) {
+                                this.setShouldClimbSpeed(FAST_UP_MOTION, HandsClimbing.NO_GRAB, FeetClimbing.DOWN_STEP);
+                            }
+                            else if ((this.hasClimbGap || this.hasClimbCrawlGap) && handsClimbing == HandsClimbing.FAST_UP && (feetClimbing == FeetClimbing.NONE || feetClimbing == FeetClimbing.BASE_WITH_HANDS))
+                            {
                                 // climb into crawl gap
-                                this.setShouldClimbSpeed(feetClimbing == FeetClimbing.None ? SlowUpMotion : FastUpMotion, HandsClimbing.MiddleGrab, FeetClimbing.DownStep);
-                            } else if (feetClimbing.IsRelevant() && handsClimbing.IsRelevant() && !(feetClimbing == FeetClimbing.BaseHold && handsClimbing == HandsClimbing.Sink) && !(handsClimbing == HandsClimbing.Sink && feetClimbing == FeetClimbing.TopWithHands) && !(handsClimbing == HandsClimbing.TopHold && feetClimbing == FeetClimbing.TopWithHands)) {
+                                this.setShouldClimbSpeed(feetClimbing == FeetClimbing.NONE ? SLOW_UP_MOTION : FAST_UP_MOTION, HandsClimbing.MIDDLE_GRAB, FeetClimbing.DOWN_STEP);
+                            }
+                            else if (feetClimbing.IsRelevant() && handsClimbing.IsRelevant() && !(feetClimbing == FeetClimbing.BASE_HOLD && handsClimbing == HandsClimbing.SINK) && !(handsClimbing == HandsClimbing.SINK && feetClimbing == FeetClimbing.TOP_WITH_HANDS) && !(handsClimbing == HandsClimbing.TOP_HOLD && feetClimbing == FeetClimbing.TOP_WITH_HANDS))
+                            {
                                 // climbing all limbed
-                                this.setShouldClimbSpeed(MediumUpMotion, (this.hasClimbGap || this.hasClimbCrawlGap) && !(handsClimbing == HandsClimbing.Sink && feetClimbing == FeetClimbing.BaseWithHands) ? HandsClimbing.MiddleGrab : HandsClimbing.UpGrab, FeetClimbing.DownStep);
-                            } else if (handsClimbing.IsUp()) {
+                                this.setShouldClimbSpeed(MEDIUM_UP_MOTION, (this.hasClimbGap || this.hasClimbCrawlGap) && !(handsClimbing == HandsClimbing.SINK && feetClimbing == FeetClimbing.BASE_WITH_HANDS) ? HandsClimbing.MIDDLE_GRAB : HandsClimbing.UP_GRAB, FeetClimbing.DOWN_STEP);
+                            }
+                            else if (handsClimbing.IsUp())
+                            {
                                 // climbing slow
-                                this.setShouldClimbSpeed(SlowUpMotion);
-                            } else if (handsClimbing == HandsClimbing.TopHold || feetClimbing == FeetClimbing.BaseHold || (feetClimbing == FeetClimbing.SlowUpWithHoldWithoutHands && handsClimbing == HandsClimbing.None)) {
+                                this.setShouldClimbSpeed(SLOW_UP_MOTION);
+                            }
+                            else if (handsClimbing == HandsClimbing.TOP_HOLD || feetClimbing == FeetClimbing.BASE_HOLD || (feetClimbing == FeetClimbing.SLOW_UP_WITH_HOLD_WITHOUT_HANDS && handsClimbing == HandsClimbing.NONE))
+                            {
                                 // holding at top
-                                if (!this.jumpButton.startPressed || !(this.isClimbJumping = this.tryJump(feetClimbing != FeetClimbing.None ? ConfigHelper.ClimbUp : ConfigHelper.ClimbUpHandsOnly, null, null, null))) {
-                                    if (handsClimbing == HandsClimbing.Sink && feetClimbing == FeetClimbing.BaseHold || handsClimbing == HandsClimbing.TopHold && feetClimbing == FeetClimbing.TopWithHands) {
-                                        this.setShouldClimbSpeed(HoldMotion, HandsClimbing.MiddleGrab, FeetClimbing.DownStep);
-                                    } else {
-                                        this.setShouldClimbSpeed(HoldMotion);
+                                if (!this.jumpButton.startPressed || !(this.isClimbJumping = this.tryJump(feetClimbing != FeetClimbing.NONE ? ConfigHelper.ClimbUp : ConfigHelper.ClimbUpHandsOnly, null, null, null)))
+                                {
+                                    if (handsClimbing == HandsClimbing.SINK && feetClimbing == FeetClimbing.BASE_HOLD || handsClimbing == HandsClimbing.TOP_HOLD && feetClimbing == FeetClimbing.TOP_WITH_HANDS)
+                                    {
+                                        this.setShouldClimbSpeed(HOLD_MOTION, HandsClimbing.MIDDLE_GRAB, FeetClimbing.DOWN_STEP);
+                                    }
+                                    else
+                                    {
+                                        this.setShouldClimbSpeed(HOLD_MOTION);
                                     }
                                 }
-                            } else if (handsClimbing == HandsClimbing.Sink || (feetClimbing == FeetClimbing.SlowUpWithSinkWithoutHands && handsClimbing == HandsClimbing.None)) {
-                                // sinking unwillingly
-                                this.setShouldClimbSpeed(SinkDownMotion);
                             }
-                        } else if (this.wantClimbDown) {
+                            else if (handsClimbing == HandsClimbing.SINK || (feetClimbing == FeetClimbing.SLOW_UP_WITH_SINK_WITHOUT_HANDS && handsClimbing == HandsClimbing.NONE))
+                            {
+                                // sinking unwillingly
+                                this.setShouldClimbSpeed(SINK_DOWN_MOTION);
+                            }
+                        }
+                        else if (this.wantClimbDown)
+                        {
                             handsClimbing = handsClimbing.ToDown();
 
-                            if (handsClimbing == HandsClimbing.BottomHold && !feetClimbing.IsIndependentlyRelevant()) {
+                            if (handsClimbing == HandsClimbing.BOTTOM_HOLD && !feetClimbing.IsIndependentlyRelevant())
+                            {
                                 // holding at bottom
-                                this.setShouldClimbSpeed(HoldMotion);
-                            } else if (handsClimbing.IsRelevant()) {
+                                this.setShouldClimbSpeed(HOLD_MOTION);
+                            }
+                            else if (handsClimbing.IsRelevant())
+                            {
                                 // sinking willingly
-                                if (feetClimbing == FeetClimbing.FastUp) {
-                                    this.setShouldClimbSpeed(ClimbDownMotion, HandsClimbing.NoGrab, FeetClimbing.DownStep);
-                                } else if (feetClimbing == FeetClimbing.SlowUpWithHoldWithoutHands) {
-                                    this.setShouldClimbSpeed(ClimbDownMotion);
-                                } else if (feetClimbing == FeetClimbing.TopWithHands) {
-                                    this.setShouldClimbSpeed(ClimbDownMotion);
-                                } else if (feetClimbing == FeetClimbing.BaseWithHands || feetClimbing == FeetClimbing.BaseHold) {
-                                    if ((handsClimbing != HandsClimbing.None && handsClimbing != HandsClimbing.Up) || (handsClimbing == HandsClimbing.Up && feetClimbing == FeetClimbing.BaseHold)) {
-                                        this.setShouldClimbSpeed(ClimbDownMotion);
-                                    } else {
-                                        this.setShouldClimbSpeed(SinkDownMotion);
+                                if (feetClimbing == FeetClimbing.FAST_UP)
+                                {
+                                    this.setShouldClimbSpeed(CLIMB_DOWN_MOTION, HandsClimbing.NO_GRAB, FeetClimbing.DOWN_STEP);
+                                }
+                                else if (feetClimbing == FeetClimbing.SLOW_UP_WITH_HOLD_WITHOUT_HANDS)
+                                {
+                                    this.setShouldClimbSpeed(CLIMB_DOWN_MOTION);
+                                }
+                                else if (feetClimbing == FeetClimbing.TOP_WITH_HANDS)
+                                {
+                                    this.setShouldClimbSpeed(CLIMB_DOWN_MOTION);
+                                }
+                                else if (feetClimbing == FeetClimbing.BASE_WITH_HANDS || feetClimbing == FeetClimbing.BASE_HOLD)
+                                {
+                                    if ((handsClimbing != HandsClimbing.NONE && handsClimbing != HandsClimbing.UP) || (handsClimbing == HandsClimbing.UP && feetClimbing == FeetClimbing.BASE_HOLD))
+                                    {
+                                        this.setShouldClimbSpeed(CLIMB_DOWN_MOTION);
                                     }
-                                } else {
-                                    this.setShouldClimbSpeed(SinkDownMotion, handsClimbing == HandsClimbing.FastUp ? HandsClimbing.MiddleGrab : HandsClimbing.UpGrab, FeetClimbing.NoStep);
+                                    else
+                                    {
+                                        this.setShouldClimbSpeed(SINK_DOWN_MOTION);
+                                    }
+                                }
+                                else
+                                {
+                                    this.setShouldClimbSpeed(SINK_DOWN_MOTION, handsClimbing == HandsClimbing.FAST_UP ? HandsClimbing.MIDDLE_GRAB : HandsClimbing.UP_GRAB, FeetClimbing.NO_STEP);
                                 }
                             }
 
-                            if (this.isClimbHolding) {
+                            if (this.isClimbHolding)
+                            {
                                 // holding
-                                this.setOnlyShouldClimbSpeed(HoldMotion);
+                                this.setOnlyShouldClimbSpeed(HOLD_MOTION);
 
-                                if (this.jumpButton.startPressed) {
-                                    boolean handsOnly = feetClimbing != FeetClimbing.None;
+                                if (this.jumpButton.startPressed)
+                                {
+                                    boolean handsOnly = feetClimbing != FeetClimbing.NONE;
 
-                                    int type = (SmartMovingConfig.userInterface.jumpClimbBackHeadOnGrab == this.grabButton.isPressed)
-                                            ? (handsOnly ? ConfigHelper.ClimbBackHead : ConfigHelper.ClimbBackHeadHandsOnly)
-                                            : (handsOnly ? ConfigHelper.ClimbBackUp : ConfigHelper.ClimbBackUpHandsOnly);
+                                    int type = (SmartMovingConfig.USER_INTERFACE.jumpClimbBackHeadOnGrab == this.grabButton.isPressed) ? (handsOnly ? ConfigHelper.ClimbBackHead : ConfigHelper.ClimbBackHeadHandsOnly) : (handsOnly ? ConfigHelper.ClimbBackUp : ConfigHelper.ClimbBackUpHandsOnly);
 
                                     float jumpAngle = this.player.rotationYaw + 180F;
-                                    if (this.tryJump(type, null, null, jumpAngle)) {
+                                    if (this.tryJump(type, null, null, jumpAngle))
+                                    {
                                         this.continueWallJumping = !this.isHeadJumping;
                                         this.isClimbing = false;
                                         this.player.rotationYaw = jumpAngle;
@@ -948,21 +1223,26 @@ public class ControllerSelf extends Controller
                             }
                         }
 
-                        if (this.isClimbing) {
-                            this.handleCrash(SmartMovingConfig.climb.fallDamageStartDistance, SmartMovingConfig.climb.fallDamageFactor);
+                        if (this.isClimbing)
+                        {
+                            this.handleCrash(SmartMovingConfig.CLIMB.fallDamageStartDistance, SmartMovingConfig.CLIMB.fallDamageFactor);
                         }
 
-                        if (this.wantClimbUp || this.wantClimbDown) {
-                            if (handsClimbing == HandsClimbing.None) {
-                                this.actualHandsClimbType = HandsClimbing.NoGrab;
-                            } else if (feetClimbing == FeetClimbing.None) {
-                                this.actualFeetClimbType = FeetClimbing.NoStep;
+                        if (this.wantClimbUp || this.wantClimbDown)
+                        {
+                            if (handsClimbing == HandsClimbing.NONE)
+                            {
+                                this.actualHandsClimbType = HandsClimbing.NO_GRAB;
+                            }
+                            else if (feetClimbing == FeetClimbing.NONE)
+                            {
+                                this.actualFeetClimbType = FeetClimbing.NO_STEP;
                             }
 
-                            this.handsEdgeBlock = out_handsClimbGap.Block;
-                            this.handsEdgeMeta = out_handsClimbGap.Meta;
-                            this.feetEdgeBlock = out_feetClimbGap.Block;
-                            this.feetEdgeMeta = out_feetClimbGap.Meta;
+                            this.handsEdgeBlock = out_handsClimbGap.block;
+                            this.handsEdgeMeta = out_handsClimbGap.meta;
+                            this.feetEdgeBlock = out_feetClimbGap.block;
+                            this.feetEdgeMeta = out_feetClimbGap.meta;
                         }
                     }
                 }
@@ -972,29 +1252,25 @@ public class ControllerSelf extends Controller
 
                 this.isVineAnyClimbing = this.isHandsVineClimbing || this.isFeetVineClimbing;
 
-                this.isVineOnlyClimbing = this.isVineAnyClimbing
-                        && !(this.handsEdgeBlock != null
-                        && this.handsEdgeBlock != Block.getBlockFromName("vine")
-                        || this.feetEdgeBlock != null
-                        && this.feetEdgeBlock != Block.getBlockFromName("vine"));
+                this.isVineOnlyClimbing = this.isVineAnyClimbing && !(this.handsEdgeBlock != null && this.handsEdgeBlock != Block.getBlockFromName("vine") || this.feetEdgeBlock != null && this.feetEdgeBlock != Block.getBlockFromName("vine"));
             }
         }
     }
 
     private void handleCeilingClimbing(boolean wasCeilingClimbing)
     {
-        boolean exhaustionAllowsClimbCeiling = !SmartMovingConfig.climb.ceilingExhaustion
-                || (this.exhaustion <= SmartMovingConfig.climb.ceilingExhaustionStop
-                && (wasCeilingClimbing || this.exhaustion <= SmartMovingConfig.climb.ceilingExhaustionStart));
+        boolean exhaustionAllowsClimbCeiling = !SmartMovingConfig.CLIMB.ceilingExhaustion || (this.exhaustion <= SmartMovingConfig.CLIMB.ceilingExhaustionStop && (wasCeilingClimbing || this.exhaustion <= SmartMovingConfig.CLIMB.ceilingExhaustionStart));
 
-        boolean climbCeilingCrawlingStartConflict = !SmartMovingConfig.climb.enable && this.isCrawling && !this.wasCrawling;
+        boolean climbCeilingCrawlingStartConflict = !SmartMovingConfig.CLIMB.enable && this.isCrawling && !this.wasCrawling;
         boolean couldClimbCeiling = this.wantClimbCeiling && !this.isClimbing && (!this.isCrawling || climbCeilingCrawlingStartConflict) && !this.isCrawlClimbing;
-        if (couldClimbCeiling && SmartMovingConfig.climb.ceilingExhaustion) {
-            this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, SmartMovingConfig.climb.ceilingExhaustionStop);
-            this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, SmartMovingConfig.climb.ceilingExhaustionStart);
+        if (couldClimbCeiling && SmartMovingConfig.CLIMB.ceilingExhaustion)
+        {
+            this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, SmartMovingConfig.CLIMB.ceilingExhaustionStop);
+            this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, SmartMovingConfig.CLIMB.ceilingExhaustionStart);
         }
 
-        if (couldClimbCeiling && exhaustionAllowsClimbCeiling) {
+        if (couldClimbCeiling && exhaustionAllowsClimbCeiling)
+        {
             double id = this.player.posX;
             double jd = this.getBoundingBox().maxY + (climbCeilingCrawlingStartConflict ? 1F : 0F);
             double kd = this.player.posZ;
@@ -1009,19 +1285,27 @@ public class ControllerSelf extends Controller
             boolean topCeilingClimbing = topBlock != null;
             boolean bottomCeilingClimbing = bottomBlock != null;
 
-            if (topCeilingClimbing || bottomCeilingClimbing) {
+            if (topCeilingClimbing || bottomCeilingClimbing)
+            {
                 double jgap = 1D - jd + j;
-                if (bottomCeilingClimbing) {
+                if (bottomCeilingClimbing)
+                {
                     jgap++;
                 }
 
                 double actuallySolidHeight = this.getMinPlayerSolidBetween(jd, jd + 0.6, 0.2);
-                if (jgap < 1.9 && actuallySolidHeight < jd + 0.5) {
-                    if (jgap > 1.2) {
+                if (jgap < 1.9 && actuallySolidHeight < jd + 0.5)
+                {
+                    if (jgap > 1.2)
+                    {
                         this.player.motionY = 0.12;
-                    } else if (jgap > 1.115) {
+                    }
+                    else if (jgap > 1.115)
+                    {
                         this.player.motionY = 0.08;
-                    } else {
+                    }
+                    else
+                    {
                         this.player.motionY = 0.04;
                     }
 
@@ -1032,7 +1316,8 @@ public class ControllerSelf extends Controller
             }
         }
 
-        if (this.isCeilingClimbing && climbCeilingCrawlingStartConflict) {
+        if (this.isCeilingClimbing && climbCeilingCrawlingStartConflict)
+        {
             this.isCrawling = false;
             this.resetHeightOffset();
             this.move(0, 1D, 0, true);
@@ -1050,115 +1335,149 @@ public class ControllerSelf extends Controller
     private void handleExhaustion(double diffX, double diffY, double diffZ)
     {
         float hungerIncrease = 0;
-            boolean isRunning = this.isRunning();
-            boolean isVerticalStill = Math.abs(diffY) < 0.007;
-            boolean isStill = this.isStanding && isVerticalStill;
+        boolean isRunning = this.isRunning();
+        boolean isVerticalStill = Math.abs(diffY) < 0.007;
+        boolean isStill = this.isStanding && isVerticalStill;
 
-            if (!this.player.isRiding()) {
-                float horizontalMovement = MathHelper.sqrt(diffX * diffX + diffZ * diffZ);
-                float movement = MathHelper.sqrt(horizontalMovement * horizontalMovement + diffY * diffY);
+        if (!this.player.isRiding())
+        {
+            float horizontalMovement = MathHelper.sqrt(diffX * diffX + diffZ * diffZ);
+            float movement = MathHelper.sqrt(horizontalMovement * horizontalMovement + diffY * diffY);
 
-                int relevantMovementFactor = Math.round(movement * 100F);
+            int relevantMovementFactor = Math.round(movement * 100F);
 
-                if (SmartMovingConfig.hunger.enable) {
-                    float hungerGainFactor = ConfigHelper.getFactor(true, this.player.onGround, this.isStanding, isStill, this.isSlow, isRunning, this.isFast, this.isClimbing, this.isClimbCrawling, this.isCeilingClimbing, this.isDipping, this.isSwimming, this.isDiving, this.isCrawling, this.isCrawlClimbing);
-                    hungerIncrease += SmartMovingConfig.hunger.perTickGainFactor + relevantMovementFactor * 0.0001F * hungerGainFactor;
+            if (SmartMovingConfig.HUNGER.enable)
+            {
+                float hungerGainFactor = ConfigHelper.getFactor(true, this.player.onGround, this.isStanding, isStill, this.isSlow, isRunning, this.isFast, this.isClimbing, this.isClimbCrawling, this.isCeilingClimbing, this.isDipping, this.isSwimming, this.isDiving, this.isCrawling, this.isCrawlClimbing);
+                hungerIncrease += SmartMovingConfig.HUNGER.perTickGainFactor + relevantMovementFactor * 0.0001F * hungerGainFactor;
+            }
+
+            float additionalExhaustion = 0F;
+            if (this.isClimbing && !isStill && SmartMovingConfig.CLIMB.exhaustion)
+            {
+                float climbingExhaustion = SmartMovingConfig.EXHAUSTION.gainFactor;
+                if (isVerticalStill)
+                {
+                    climbingExhaustion *= SmartMovingConfig.CLIMB.strafeExhaustionGain;
                 }
-
-                float additionalExhaustion = 0F;
-                if (this.isClimbing && !isStill && SmartMovingConfig.climb.exhaustion) {
-                    float climbingExhaustion = SmartMovingConfig.exhaustion.gainFactor;
-                    if (isVerticalStill) {
-                        climbingExhaustion *= SmartMovingConfig.climb.strafeExhaustionGain;
-                    } else {
-                        if (!this.isStanding) {
-                            if (this.wantClimbUp) {
-                                climbingExhaustion *= SmartMovingConfig.climb.strafeUpExhaustionGain;
-                            } else if (this.wantClimbDown) {
-                                climbingExhaustion *= SmartMovingConfig.climb.strafeDownExhaustionGain;
-                            } else {
-                                climbingExhaustion *= 0F;
-                            }
-                        } else {
-                            if (this.wantClimbUp) {
-                                climbingExhaustion *= SmartMovingConfig.climb.upExhaustionGain;
-                            } else if (this.wantClimbDown) {
-                                climbingExhaustion *= SmartMovingConfig.climb.downExhaustionGain;
-                            } else {
-                                climbingExhaustion *= 0F;
-                            }
+                else
+                {
+                    if (!this.isStanding)
+                    {
+                        if (this.wantClimbUp)
+                        {
+                            climbingExhaustion *= SmartMovingConfig.CLIMB.strafeUpExhaustionGain;
+                        }
+                        else if (this.wantClimbDown)
+                        {
+                            climbingExhaustion *= SmartMovingConfig.CLIMB.strafeDownExhaustionGain;
+                        }
+                        else
+                        {
+                            climbingExhaustion *= 0F;
                         }
                     }
-                    additionalExhaustion += climbingExhaustion;
-                }
-
-                if (this.isCeilingClimbing && !this.isStanding && SmartMovingConfig.climb.ceilingExhaustion) {
-                    additionalExhaustion += SmartMovingConfig.exhaustion.gainFactor * SmartMovingConfig.climb.ceilingExhaustionGain;
-                }
-
-                if (this.isFast && SmartMovingConfig.genericSprinting.exhaustion) {
-                    if (additionalExhaustion == 0) {
-                        additionalExhaustion = SmartMovingConfig.exhaustion.gainFactor;
-                    }
-
-                    additionalExhaustion *= SmartMovingConfig.genericSprinting.exhaustionGainFactor;
-                }
-
-                if (this.isRunning() && SmartMovingConfig.standardSprinting.exhaustion) {
-                    if (additionalExhaustion == 0) {
-                        additionalExhaustion = SmartMovingConfig.exhaustion.gainFactor;
-                    }
-
-                    additionalExhaustion *= SmartMovingConfig.standardSprinting.exhaustionGainFactor;
-                }
-
-                if (this.foreignExhaustionFactor > 0) {
-                    additionalExhaustion += this.foreignExhaustionFactor * SmartMovingConfig.exhaustion.gainFactor;
-
-                    if (this.foreignMaxExhaustionForAction == Float.MAX_VALUE) {
-                        this.foreignMaxExhaustionForAction = ConfigHelper.getMaxExhaustion();
-                    }
-                    this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, this.foreignMaxExhaustionForAction);
-
-                    if (this.foreignMaxExhaustionToStartAction == Float.MAX_VALUE) {
-                        this.foreignMaxExhaustionToStartAction = ConfigHelper.getMaxExhaustion();
-                    }
-                    this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, this.foreignMaxExhaustionToStartAction);
-                }
-
-                this.exhaustion += additionalExhaustion;
-            }
-
-            if (this.exhaustion > 0) {
-                boolean exhaustionLossPossible = !ConfigHelper.isExhaustionLossHungerEnabled() || this.player.getFoodStats().getFoodLevel() > SmartMovingConfig.exhaustion.foodMinimum;
-                if (exhaustionLossPossible) {
-                    float exhaustionLossFactor = ConfigHelper.getFactor(false, this.player.onGround, this.isStanding, isStill, this.isSlow, isRunning, this.isFast, this.isClimbing, this.isClimbCrawling, this.isCeilingClimbing, this.isDipping, this.isSwimming, this.isDiving, this.isCrawling, this.isCrawlClimbing);
-                    this.exhaustion -= exhaustionLossFactor;
-                    if (ConfigHelper.isExhaustionLossHungerEnabled()) {
-                        hungerIncrease += SmartMovingConfig.exhaustion.hungerFactor * exhaustionLossFactor;
+                    else
+                    {
+                        if (this.wantClimbUp)
+                        {
+                            climbingExhaustion *= SmartMovingConfig.CLIMB.upExhaustionGain;
+                        }
+                        else if (this.wantClimbDown)
+                        {
+                            climbingExhaustion *= SmartMovingConfig.CLIMB.downExhaustionGain;
+                        }
+                        else
+                        {
+                            climbingExhaustion *= 0F;
+                        }
                     }
                 }
+                additionalExhaustion += climbingExhaustion;
             }
 
-            if (this.exhaustion < 0) {
-                this.exhaustion = 0;
+            if (this.isCeilingClimbing && !this.isStanding && SmartMovingConfig.CLIMB.ceilingExhaustion)
+            {
+                additionalExhaustion += SmartMovingConfig.EXHAUSTION.gainFactor * SmartMovingConfig.CLIMB.ceilingExhaustionGain;
             }
 
-            if (this.exhaustion == 0) {
-                this.maxExhaustionForAction = this.maxExhaustionToStartAction = Float.NaN;
+            if (this.isFast && SmartMovingConfig.GENERIC_SPRINTING.exhaustion)
+            {
+                if (additionalExhaustion == 0)
+                {
+                    additionalExhaustion = SmartMovingConfig.EXHAUSTION.gainFactor;
+                }
+
+                additionalExhaustion *= SmartMovingConfig.GENERIC_SPRINTING.exhaustionGainFactor;
             }
 
-            if (this.maxExhaustionForAction == Float.MAX_VALUE) {
-                this.maxExhaustionForAction = this.prevMaxExhaustionForAction;
+            if (this.isRunning() && SmartMovingConfig.STANDARD_SPRINTING.exhaustion)
+            {
+                if (additionalExhaustion == 0)
+                {
+                    additionalExhaustion = SmartMovingConfig.EXHAUSTION.gainFactor;
+                }
+
+                additionalExhaustion *= SmartMovingConfig.STANDARD_SPRINTING.exhaustionGainFactor;
             }
 
-            if (this.maxExhaustionToStartAction == Float.MAX_VALUE) {
-                this.maxExhaustionToStartAction = this.prevMaxExhaustionToStartAction;
+            if (this.foreignExhaustionFactor > 0)
+            {
+                additionalExhaustion += this.foreignExhaustionFactor * SmartMovingConfig.EXHAUSTION.gainFactor;
+
+                if (this.foreignMaxExhaustionForAction == Float.MAX_VALUE)
+                {
+                    this.foreignMaxExhaustionForAction = ConfigHelper.getMaxExhaustion();
+                }
+                this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, this.foreignMaxExhaustionForAction);
+
+                if (this.foreignMaxExhaustionToStartAction == Float.MAX_VALUE)
+                {
+                    this.foreignMaxExhaustionToStartAction = ConfigHelper.getMaxExhaustion();
+                }
+                this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, this.foreignMaxExhaustionToStartAction);
             }
 
-            this.foreignExhaustionFactor = 0;
-            this.foreignMaxExhaustionForAction = Float.MAX_VALUE;
-            this.foreignMaxExhaustionToStartAction = Float.MAX_VALUE;
+            this.exhaustion += additionalExhaustion;
+        }
+
+        if (this.exhaustion > 0)
+        {
+            boolean exhaustionLossPossible = !ConfigHelper.isExhaustionLossHungerEnabled() || this.player.getFoodStats().getFoodLevel() > SmartMovingConfig.EXHAUSTION.foodMinimum;
+            if (exhaustionLossPossible)
+            {
+                float exhaustionLossFactor = ConfigHelper.getFactor(false, this.player.onGround, this.isStanding, isStill, this.isSlow, isRunning, this.isFast, this.isClimbing, this.isClimbCrawling, this.isCeilingClimbing, this.isDipping, this.isSwimming, this.isDiving, this.isCrawling, this.isCrawlClimbing);
+                this.exhaustion -= exhaustionLossFactor;
+                if (ConfigHelper.isExhaustionLossHungerEnabled())
+                {
+                    hungerIncrease += SmartMovingConfig.EXHAUSTION.hungerFactor * exhaustionLossFactor;
+                }
+            }
+        }
+
+        if (this.exhaustion < 0)
+        {
+            this.exhaustion = 0;
+        }
+
+        if (this.exhaustion == 0)
+        {
+            this.maxExhaustionForAction = this.maxExhaustionToStartAction = Float.NaN;
+        }
+
+        if (this.maxExhaustionForAction == Float.MAX_VALUE)
+        {
+            this.maxExhaustionForAction = this.prevMaxExhaustionForAction;
+        }
+
+        if (this.maxExhaustionToStartAction == Float.MAX_VALUE)
+        {
+            this.maxExhaustionToStartAction = this.prevMaxExhaustionToStartAction;
+        }
+
+        this.foreignExhaustionFactor = 0;
+        this.foreignMaxExhaustionForAction = Float.MAX_VALUE;
+        this.foreignMaxExhaustionToStartAction = Float.MAX_VALUE;
 
         this.player.addExhaustion(hungerIncrease);
         MessageHandler.INSTANCE.sendToServer(new MessageHungerChangeServer(hungerIncrease));
@@ -1166,11 +1485,13 @@ public class ControllerSelf extends Controller
 
     private void landMotionPost(boolean wasShortInWater)
     {
-        if (this.grabButton.isPressed) {
+        if (this.grabButton.isPressed)
+        {
             this.fromSwimmingOrDiving(wasShortInWater);
         }
 
-        if (this.heightOffset != 0 && this.playerBase.getSleepingField()) {
+        if (this.heightOffset != 0 && this.playerBase.getSleepingField())
+        {
             // from swimming/diving to sleeping
             this.resetInternalHeightOffset();
         }
@@ -1179,7 +1500,8 @@ public class ControllerSelf extends Controller
     private void fromSwimmingOrDiving(boolean wasShortInWater)
     {
         boolean isShortInWater = this.isSwimming || this.isDiving;
-        if (wasShortInWater && !isShortInWater && !this.playerBase.getSleepingField()) {
+        if (wasShortInWater && !isShortInWater && !this.playerBase.getSleepingField())
+        {
             // from diving in deep water to walking/sneaking/crawling
             this.setHeightOffset(-1F);
 
@@ -1189,20 +1511,26 @@ public class ControllerSelf extends Controller
 
             this.resetHeightOffset();
 
-            if (crawlStandUpCeiling - crawlStandUpBottom < this.player.height) {
+            if (crawlStandUpCeiling - crawlStandUpBottom < this.player.height)
+            {
                 // from diving in deep water to crawling in small hole
                 this.isCrawling = true;
                 this.isDipping = false;
                 this.setHeightOffset(-1F);
-            } else if (crawlStandUpLiquidCeiling - crawlStandUpBottom < this.player.height) {
+            }
+            else if (crawlStandUpLiquidCeiling - crawlStandUpBottom < this.player.height)
+            {
                 // from diving in deep water to crawling below the water
                 this.isCrawling = true;
                 this.contextContinueCrawl = true;
                 this.isDipping = false;
                 this.setHeightOffset(-1F);
-            } else if (crawlStandUpBottom > this.getBoundingBox().minY) {
+            }
+            else if (crawlStandUpBottom > this.getBoundingBox().minY)
+            {
                 // from diving in deep water to walking/crawling
-                if (this.isSlow && crawlStandUpBottom > this.getBoundingBox().minY + 0.5D) {
+                if (this.isSlow && crawlStandUpBottom > this.getBoundingBox().minY + 0.5D)
+                {
                     // from diving in deep water to crawling
                     this.isCrawling = true;
                     this.isDipping = false;
@@ -1276,8 +1604,8 @@ public class ControllerSelf extends Controller
         this.isVineAnyClimbing = false;
         this.isClimbingStill = false;
         this.isNeighborClimbing = false;
-        this.actualHandsClimbType = HandsClimbing.NoGrab;
-        this.actualFeetClimbType = FeetClimbing.NoStep;
+        this.actualHandsClimbType = HandsClimbing.NO_GRAB;
+        this.actualFeetClimbType = FeetClimbing.NO_STEP;
         this.isCeilingClimbing = false;
     }
 
@@ -1295,7 +1623,7 @@ public class ControllerSelf extends Controller
 
     private void setShouldClimbSpeed(double value)
     {
-        this.setShouldClimbSpeed(value, HandsClimbing.UpGrab, FeetClimbing.DownStep);
+        this.setShouldClimbSpeed(value, HandsClimbing.UP_GRAB, FeetClimbing.DOWN_STEP);
     }
 
     private void setShouldClimbSpeed(double value, int handsClimbType, int feetClimbType)
@@ -1309,41 +1637,53 @@ public class ControllerSelf extends Controller
     {
         this.isClimbing = true;
 
-        if (this.climbIntoCount > 0) {
-            value = HoldMotion;
+        if (this.climbIntoCount > 0)
+        {
+            value = HOLD_MOTION;
         }
 
-        if (value != HoldMotion) {
+        if (value != HOLD_MOTION)
+        {
             float factor = this.getSpeedFactor();
-            if (this.isFast) {
-                factor *= SmartMovingConfig.genericSprinting.factor;
+            if (this.isFast)
+            {
+                factor *= SmartMovingConfig.GENERIC_SPRINTING.factor;
             }
-            if (ConfigHelper.isFreeBaseClimb() && value == MediumUpMotion) {
-                switch (this.getOnLadder(Integer.MAX_VALUE, false, this.isClimbCrawling)) {
+            if (ConfigHelper.isFreeBaseClimb() && value == MEDIUM_UP_MOTION)
+            {
+                switch (this.getOnLadder(Integer.MAX_VALUE, false, this.isClimbCrawling))
+                {
                     case 1:
-                        factor *= SmartMovingConfig.climb.freeLadderOneUpSpeedFactor;
+                        factor *= SmartMovingConfig.CLIMB.freeLadderOneUpSpeedFactor;
                         break;
                     case 2:
-                        factor *= SmartMovingConfig.climb.freeLadderTwoUpSpeedFactor;
+                        factor *= SmartMovingConfig.CLIMB.freeLadderTwoUpSpeedFactor;
                         break;
                 }
             }
 
-            if (value > HoldMotion) {
-                value = ((value - HoldMotion) * SmartMovingConfig.climb.freeUpSpeedFactor * factor + HoldMotion);
-            } else {
-                value = HoldMotion - (HoldMotion - value) * SmartMovingConfig.climb.freeDownSpeedFactor * factor;
+            if (value > HOLD_MOTION)
+            {
+                value = ((value - HOLD_MOTION) * SmartMovingConfig.CLIMB.freeUpSpeedFactor * factor + HOLD_MOTION);
+            }
+            else
+            {
+                value = HOLD_MOTION - (HOLD_MOTION - value) * SmartMovingConfig.CLIMB.freeDownSpeedFactor * factor;
             }
 
-            if (this.hasClimbCrawlGap && this.isClimbCrawling && value > HoldMotion) {
-                value = Math.min(CatchCrawlGapMotion, value); // to avoid climbing over really small gaps (RedPowerWire Cover Top / RedPowerWire Cover Bottom)
+            if (this.hasClimbCrawlGap && this.isClimbCrawling && value > HOLD_MOTION)
+            {
+                value = Math.min(CATCH_CRAWL_GAP_MOTION, value); // to avoid climbing over really small gaps (RedPowerWire Cover Top / RedPowerWire Cover Bottom)
             }
-        } else {
+        }
+        else
+        {
             this.isClimbingStill = true;
         }
 
         boolean relevant = value < 0 || value > this.player.motionY;
-        if (relevant) {
+        if (relevant)
+        {
             this.player.motionY = value;
         }
         this.isClimbJumping = !relevant && !this.isClimbHolding;
@@ -1366,28 +1706,28 @@ public class ControllerSelf extends Controller
         this.beforeMoveEntityPosY = this.player.posZ;
         this.beforeMoveEntityPosZ = this.player.posY;
 
-        if (this.isSliding || this.isCrawling) {
+        if (this.isSliding || this.isCrawling)
+        {
             this.beforeDistanceWalkedModified = this.player.distanceWalkedModified;
             this.player.distanceWalkedModified = Float.MIN_VALUE;
         }
 
-        if (this.wantWallJumping) {
+        if (this.wantWallJumping)
+        {
             int collisions = this.calculateSeparateCollisions(d, d1, d2);
-            this.horizontalCollisionAngle = getHorizontalCollisionangle(
-                    (collisions & CollidedPositiveZ) != 0,
-                    (collisions & CollidedNegativeZ) != 0,
-                    (collisions & CollidedPositiveX) != 0,
-                    (collisions & CollidedNegativeX) != 0);
+            this.horizontalCollisionAngle = getHorizontalCollisionangle((collisions & CollidedPositiveZ) != 0, (collisions & CollidedNegativeZ) != 0, (collisions & CollidedPositiveX) != 0, (collisions & CollidedNegativeX) != 0);
         }
     }
 
     public void afterMoveEntity()
     {
-        if (this.isSliding || this.isCrawling) {
+        if (this.isSliding || this.isCrawling)
+        {
             this.player.distanceWalkedModified = this.beforeDistanceWalkedModified;
         }
 
-        if (this.heightOffset != 0F) {
+        if (this.heightOffset != 0F)
+        {
             this.player.posY = this.player.posY + this.heightOffset;
         }
 
@@ -1399,41 +1739,57 @@ public class ControllerSelf extends Controller
 
         double distance = MathHelper.sqrt(d10 * d10 + d12 * d12 + d13 * d13);
 
-        if (this.isClimbing || this.isCeilingClimbing) {
+        if (this.isClimbing || this.isCeilingClimbing)
+        {
             this.distanceClimbedModified += distance * (this.isClimbing ? 1.2 : 0.9);
-            if (this.distanceClimbedModified > this.nextClimbDistance) {
+            if (this.distanceClimbedModified > this.nextClimbDistance)
+            {
                 Block stepBlock;
-                if (this.isClimbing) {
-                    if (this.handsEdgeBlock == null) {
-                        if (this.feetEdgeBlock == null) {
+                if (this.isClimbing)
+                {
+                    if (this.handsEdgeBlock == null)
+                    {
+                        if (this.feetEdgeBlock == null)
+                        {
                             stepBlock = Block.getBlockFromName("cobblestone");
-                        } else {
+                        }
+                        else
+                        {
                             stepBlock = this.feetEdgeBlock;
                         }
-                    } else if (this.feetEdgeBlock == null) {
+                    }
+                    else if (this.feetEdgeBlock == null)
+                    {
                         stepBlock = this.handsEdgeBlock;
-                    } else {
+                    }
+                    else
+                    {
                         stepBlock = this.nextClimbDistance % 2 != 0 ? this.feetEdgeBlock : this.handsEdgeBlock;
                     }
-                } else {
+                }
+                else
+                {
                     stepBlock = this.handsEdgeBlock;
                 }
 
                 this.nextClimbDistance++;
-                if (stepBlock != null) {
+                if (stepBlock != null)
+                {
                     SoundType stepsound = stepBlock.getSoundType(stepBlock.getDefaultState(), this.player.world, this.player.getPosition(), this.player);
                     this.playSound(stepsound.getStepSound(), stepsound.getVolume() * 0.15F, stepsound.getPitch());
                 }
             }
         }
 
-        if (this.isSwimming) {
+        if (this.isSwimming)
+        {
             this.swimmingDistance += distance;
-            if (this.swimmingDistance > SwimSoundDistance) {
+            if (this.swimmingDistance > SWIM_SOUND_DISTANCE)
+            {
                 Random rand = this.player.getRNG();
                 this.playSound("random.splash", 0.05F, 1.0F + (rand.nextFloat() - rand.nextFloat()) * 0.4F);
 
-                this.swimmingDistance -= SwimSoundDistance;
+                this.swimmingDistance -= SWIM_SOUND_DISTANCE;
             }
         }
     }
@@ -1447,14 +1803,16 @@ public class ControllerSelf extends Controller
     private void playSound(String id, float volume, float pitch)
     {
         SoundEvent soundEvent = SoundEvent.REGISTRY.getObject(new ResourceLocation(id));
-        if (soundEvent != null) {
+        if (soundEvent != null)
+        {
             this.playSound(soundEvent, volume, pitch);
         }
     }
 
     public void beforeSleepInBedAt()
     {
-        if (!this.playerBase.getSleepingField()) {
+        if (!this.playerBase.getSleepingField())
+        {
             this.updateEntityActionState(true);
         }
     }
@@ -1477,7 +1835,8 @@ public class ControllerSelf extends Controller
     private void setHeightOffset(float offset)
     {
         this.resetHeightOffset();
-        if (offset == 0F) {
+        if (offset == 0F)
+        {
             return;
         }
 
@@ -1509,12 +1868,14 @@ public class ControllerSelf extends Controller
 
     public boolean pushOutOfBlocks(double d, double d1, double d2)
     {
-        if (this.multiPlayerInitialized > 0) {
+        if (this.multiPlayerInitialized > 0)
+        {
             return false;
         }
 
         boolean top = false;
-        if (this.heightOffset != 0F) {
+        if (this.heightOffset != 0F)
+        {
             top = this.player.height > 1F;
         }
 
@@ -1540,42 +1901,56 @@ public class ControllerSelf extends Controller
 
         float landMovementFactor = this.getLandMovementFactor();
 
-            float perspectiveFactor = landMovementFactor;
-            if (this.isFast || this.isSprintJump || this.isRunning()) {
-                if (this.player.isSprinting()) {
-                    perspectiveFactor /= 1.3F;
-                }
-
-                if (this.isFast || this.isSprintJump) {
-                    perspectiveFactor *= SmartMovingConfig.viewpointPerspective.sprintFactor;
-                } else if (this.isRunning()) {
-                    perspectiveFactor *= 1.3F * SmartMovingConfig.viewpointPerspective.runFactor;
-                }
+        float perspectiveFactor = landMovementFactor;
+        if (this.isFast || this.isSprintJump || this.isRunning())
+        {
+            if (this.player.isSprinting())
+            {
+                perspectiveFactor /= 1.3F;
             }
 
-            if (this.fadingPerspectiveFactor != -1) {
-                this.fadingPerspectiveFactor += (perspectiveFactor - this.fadingPerspectiveFactor) * SmartMovingConfig.viewpointPerspective.fadeFactor;
-            } else {
-                this.fadingPerspectiveFactor = landMovementFactor;
+            if (this.isFast || this.isSprintJump)
+            {
+                perspectiveFactor *= SmartMovingConfig.VIEWPOINT_PERSPECTIVE.sprintFactor;
             }
+            else if (this.isRunning())
+            {
+                perspectiveFactor *= 1.3F * SmartMovingConfig.VIEWPOINT_PERSPECTIVE.runFactor;
+            }
+        }
 
-        if (this.player.capabilities.disableDamage) {
+        if (this.fadingPerspectiveFactor != -1)
+        {
+            this.fadingPerspectiveFactor += (perspectiveFactor - this.fadingPerspectiveFactor) * SmartMovingConfig.VIEWPOINT_PERSPECTIVE.fadeFactor;
+        }
+        else
+        {
+            this.fadingPerspectiveFactor = landMovementFactor;
+        }
+
+        if (this.player.capabilities.disableDamage)
+        {
             this.exhaustion = 0;
         }
 
-        if (this.player.capabilities.isFlying) {
+        if (this.player.capabilities.isFlying)
+        {
             this.player.fallDistance = 0F;
         }
 
-        if (this.player.collidedHorizontally) {
+        if (this.player.collidedHorizontally)
+        {
             this.collidedHorizontallyTickCount++;
-        } else {
+        }
+        else
+        {
             this.collidedHorizontallyTickCount = 0;
         }
 
         this.addToSendQueue();
 
-        if (this.wasInventory) {
+        if (this.wasInventory)
+        {
             this.player.prevRotationYawHead = this.player.rotationYawHead;
         }
         this.wasInventory = this.playerBase.getMcField().currentScreen instanceof GuiInventory;
@@ -1590,7 +1965,8 @@ public class ControllerSelf extends Controller
 
     public void afterOnLivingUpdate()
     {
-        if (SmartMovingConfig.userInterface.flyGroundCollide && !(this.sneakButton.isPressed && this.grabButton.isPressed) && this.wasCapabilitiesIsFlying && !this.player.capabilities.isFlying && this.player.onGround) {
+        if (SmartMovingConfig.USER_INTERFACE.flyGroundCollide && !(this.sneakButton.isPressed && this.grabButton.isPressed) && this.wasCapabilitiesIsFlying && !this.player.capabilities.isFlying && this.player.onGround)
+        {
             this.player.cameraYaw = 0;
             this.player.prevCameraYaw = 0;
             this.player.capabilities.isFlying = true;
@@ -1605,17 +1981,21 @@ public class ControllerSelf extends Controller
 
     public void handleJumping()
     {
-        if (this.blockJumpTillButtonRelease && !((EntityPlayerSP) this.entityPlayer).movementInput.jump) {
+        if (this.blockJumpTillButtonRelease && !((EntityPlayerSP) this.entityPlayer).movementInput.jump)
+        {
             this.blockJumpTillButtonRelease = false;
         }
 
-        if (this.isSwimming || this.isDiving) {
+        if (this.isSwimming || this.isDiving)
+        {
             return;
         }
 
         boolean jump = this.jumpAvoided && this.player.onGround && this.playerBase.getIsJumpingField() && !this.player.isInWater() && !this.player.isInLava();
-        if (jump) {
-            if (this.getBoundingBox().minY - this.getMaxPlayerSolidBetween(this.getBoundingBox().minY - 0.2D, this.getBoundingBox().minY, 0) >= 0.01D) {
+        if (jump)
+        {
+            if (this.getBoundingBox().minY - this.getMaxPlayerSolidBetween(this.getBoundingBox().minY - 0.2D, this.getBoundingBox().minY, 0) >= 0.01D)
+            {
                 return; // Maybe SPC flying?
             }
         }
@@ -1624,22 +2004,31 @@ public class ControllerSelf extends Controller
         this.jumpMotionZ = this.player.motionZ;
 
         boolean isJumpCharging = false;
-        if (SmartMovingConfig.chargedJumping.enable) {
+        if (SmartMovingConfig.CHARGED_JUMPING.enable)
+        {
             boolean isJumpChargingPossible = this.player.onGround && this.isStanding;
             isJumpCharging = isJumpChargingPossible && this.wouldIsSneaking;
 
-            boolean actualJumpCharging = isJumpChargingPossible && (!SmartMovingConfig.chargedJumping.sneakReleaseCancel || this.wouldIsSneaking);
-            if (actualJumpCharging) {
-                if (((EntityPlayerSP) this.entityPlayer).movementInput.jump && (SmartMovingConfig.chargedJumping.sneakReleaseCancel || this.wouldIsSneaking)) {
+            boolean actualJumpCharging = isJumpChargingPossible && (!SmartMovingConfig.CHARGED_JUMPING.sneakReleaseCancel || this.wouldIsSneaking);
+            if (actualJumpCharging)
+            {
+                if (((EntityPlayerSP) this.entityPlayer).movementInput.jump && (SmartMovingConfig.CHARGED_JUMPING.sneakReleaseCancel || this.wouldIsSneaking))
+                {
                     this.jumpCharge++;
-                } else {
-                    if (this.jumpCharge > 0) {
+                }
+                else
+                {
+                    if (this.jumpCharge > 0)
+                    {
                         this.tryJump(ConfigHelper.ChargeUp, null, null, null);
                     }
                     this.jumpCharge = 0;
                 }
-            } else {
-                if (this.jumpCharge > 0) {
+            }
+            else
+            {
+                if (this.jumpCharge > 0)
+                {
                     this.blockJumpTillButtonRelease = true;
                 }
                 this.jumpCharge = 0;
@@ -1647,30 +2036,43 @@ public class ControllerSelf extends Controller
         }
 
         boolean isHeadJumpCharging = false;
-        if (SmartMovingConfig.headJumping.enable) {
+        if (SmartMovingConfig.HEAD_JUMPING.enable)
+        {
             isHeadJumpCharging = this.grabButton.isPressed && (this.isGroundSprinting || this.isSprintJump || (this.isRunning() && this.player.onGround)) && !this.isCrawling;
-            if (isHeadJumpCharging) {
-                if (((EntityPlayerSP) this.entityPlayer).movementInput.jump) {
+            if (isHeadJumpCharging)
+            {
+                if (((EntityPlayerSP) this.entityPlayer).movementInput.jump)
+                {
                     this.headJumpCharge++;
-                } else {
-                    if (this.headJumpCharge > 0 && this.player.onGround) {
+                }
+                else
+                {
+                    if (this.headJumpCharge > 0 && this.player.onGround)
+                    {
                         this.tryJump(ConfigHelper.HeadUp, null, null, null);
                     }
                     this.headJumpCharge = 0;
                 }
-            } else {
-                if (this.headJumpCharge > 0) {
+            }
+            else
+            {
+                if (this.headJumpCharge > 0)
+                {
                     this.blockJumpTillButtonRelease = true;
                 }
                 this.headJumpCharge = 0;
             }
         }
 
-        if (((EntityPlayerSP) this.entityPlayer).movementInput.jump && this.player.isInWater() && this.isDipping) {
-            if (this.player.posY - MathHelper.floor(this.player.posY) > (this.isSlow ? 0.37 : 0.6)) {
+        if (((EntityPlayerSP) this.entityPlayer).movementInput.jump && this.player.isInWater() && this.isDipping)
+        {
+            if (this.player.posY - MathHelper.floor(this.player.posY) > (this.isSlow ? 0.37 : 0.6))
+            {
                 this.player.motionY -= 0.04D;
-                if (!this.isStillSwimmingJump && this.player.onGround && this.jumpCharge == 0) {
-                    if (this.tryJump(ConfigHelper.Up, true, null, null)) {
+                if (!this.isStillSwimmingJump && this.player.onGround && this.jumpCharge == 0)
+                {
+                    if (this.tryJump(ConfigHelper.Up, true, null, null))
+                    {
                         Random rand = this.player.getRNG();
                         this.playSound("random.splash", 0.05F, 1.0F + (rand.nextFloat() - rand.nextFloat()) * 0.4F);
                     }
@@ -1678,33 +2080,44 @@ public class ControllerSelf extends Controller
             }
         }
 
-        if (jump && !this.blockJumpTillButtonRelease && !isJumpCharging && !isHeadJumpCharging && !this.isVineAnyClimbing) {
+        if (jump && !this.blockJumpTillButtonRelease && !isJumpCharging && !isHeadJumpCharging && !this.isVineAnyClimbing)
+        {
             this.tryJump(ConfigHelper.Up, false, null, null);
         }
 
         int left = 0;
         int back = 0;
-        if (this.leftJumpCount == -1) {
+        if (this.leftJumpCount == -1)
+        {
             left++;
         }
-        if (this.rightJumpCount == -1) {
+        if (this.rightJumpCount == -1)
+        {
             left--;
         }
-        if (this.backJumpCount == -1) {
+        if (this.backJumpCount == -1)
+        {
             back++;
         }
 
-        if (left != 0 || back != 0) {
+        if (left != 0 || back != 0)
+        {
             int angle;
-            if (left > 0) {
+            if (left > 0)
+            {
                 angle = back == 0 ? 270 : 225;
-            } else if (left < 0) {
+            }
+            else if (left < 0)
+            {
                 angle = back == 0 ? 90 : 135;
-            } else {
+            }
+            else
+            {
                 angle = 180;
             }
 
-            if (this.tryJump(ConfigHelper.Angle, null, null, this.player.rotationYaw + angle)) {
+            if (this.tryJump(ConfigHelper.Angle, null, null, this.player.rotationYaw + angle))
+            {
                 this.angleJumpType = ((360 - angle) / 45) % 8;
             }
 
@@ -1716,51 +2129,66 @@ public class ControllerSelf extends Controller
 
     public void handleWallJumping()
     {
-        if (!this.wantWallJumping || Double.isNaN(this.horizontalCollisionAngle)) {
+        if (!this.wantWallJumping || Double.isNaN(this.horizontalCollisionAngle))
+        {
             return;
         }
 
         int jumpType;
-        if (this.grabButton.isPressed) {
-            if (this.player.fallDistance > SmartMovingConfig.wallHeadJumping.fallMaximumDistance) {
+        if (this.grabButton.isPressed)
+        {
+            if (this.player.fallDistance > SmartMovingConfig.WALL_HEAD_JUMPING.fallMaximumDistance)
+            {
                 return;
             }
             jumpType = this.wasCollidedHorizontally ? ConfigHelper.WallHeadSlide : ConfigHelper.WallHead;
-        } else {
-            if (this.player.fallDistance > SmartMovingConfig.wallJumping.fallMaximumDistance) {
+        }
+        else
+        {
+            if (this.player.fallDistance > SmartMovingConfig.WALL_JUMPING.fallMaximumDistance)
+            {
                 return;
             }
             jumpType = this.wasCollidedHorizontally ? ConfigHelper.WallUpSlide : ConfigHelper.WallUp;
         }
 
         float jumpAngle;
-        if (!this.wasCollidedHorizontally) {
+        if (!this.wasCollidedHorizontally)
+        {
             float movementAngle = getAngle(this.jumpMotionZ, -this.jumpMotionX);
-            if (Double.isNaN(movementAngle)) {
+            if (Double.isNaN(movementAngle))
+            {
                 return;
             }
 
             jumpAngle = this.horizontalCollisionAngle * 2 - movementAngle + 180F;
-        } else {
+        }
+        else
+        {
             jumpAngle = this.horizontalCollisionAngle;
         }
 
-        while (jumpAngle > 360F) {
+        while (jumpAngle > 360F)
+        {
             jumpAngle -= 360F;
         }
 
-        if (SmartMovingConfig.wallJumping.orthogonalTolerance != 0.0F) {
+        if (SmartMovingConfig.WALL_JUMPING.orthogonalTolerance != 0.0F)
+        {
             float aligned = jumpAngle;
-            while (aligned > 45F) {
+            while (aligned > 45F)
+            {
                 aligned -= 90F;
             }
 
-            if (Math.abs(aligned) < SmartMovingConfig.wallJumping.orthogonalTolerance) {
+            if (Math.abs(aligned) < SmartMovingConfig.WALL_JUMPING.orthogonalTolerance)
+            {
                 jumpAngle = Math.round(jumpAngle / 90F) * 90F;
             }
         }
 
-        if (this.tryJump(jumpType, null, null, jumpAngle)) {
+        if (this.tryJump(jumpType, null, null, jumpAngle))
+        {
             this.continueWallJumping = !this.isHeadJumping;
             this.player.collidedHorizontally = false;
             this.player.rotationYaw = jumpAngle;
@@ -1771,7 +2199,8 @@ public class ControllerSelf extends Controller
     public boolean tryJump(int type, Boolean inWaterOrNull, Boolean isRunningOrNull, Float angle)
     {
         boolean noVertical = false;
-        if (type == ConfigHelper.WallUpSlide || type == ConfigHelper.WallHeadSlide) {
+        if (type == ConfigHelper.WallUpSlide || type == ConfigHelper.WallHeadSlide)
+        {
             type = type == ConfigHelper.WallUpSlide ? ConfigHelper.WallUp : ConfigHelper.WallHead;
             noVertical = true;
         }
@@ -1784,11 +2213,14 @@ public class ControllerSelf extends Controller
 
         int speed = getJumpSpeed(this.isStanding, this.isSlow, isRunning, this.isFast, angle);
         boolean enabled = ConfigHelper.isJumpingEnabled(speed, type);
-        if (enabled) {
+        if (enabled)
+        {
             boolean exhaustionEnabled = ConfigHelper.isJumpExhaustionEnabled(speed, type);
-            if (exhaustionEnabled) {
+            if (exhaustionEnabled)
+            {
                 float maxExhaustionForJump = ConfigHelper.getJumpExhaustionStop(speed, type, this.jumpCharge);
-                if (this.exhaustion > maxExhaustionForJump) {
+                if (this.exhaustion > maxExhaustionForJump)
+                {
                     return false;
                 }
                 this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, maxExhaustionForJump);
@@ -1796,9 +2228,11 @@ public class ControllerSelf extends Controller
             }
 
             float jumpFactor = 1;
-            if (this.player.isPotionActive(this.jumpBoost)) {
+            if (this.player.isPotionActive(this.jumpBoost))
+            {
                 PotionEffect effect = this.player.getActivePotionEffect(this.jumpBoost);
-                if (effect != null) {
+                if (effect != null)
+                {
                     jumpFactor = 1 + (effect.getAmplifier() + 1) * 0.2F;
                 }
             }
@@ -1807,7 +2241,8 @@ public class ControllerSelf extends Controller
             float verticalJumpFactor = ConfigHelper.getJumpVerticalFactor(speed, type) * jumpFactor;
             float jumpChargeFactor = charged ? ConfigHelper.getJumpChargeFactor(this.jumpCharge) : 1F;
 
-            if (!up) {
+            if (!up)
+            {
                 horizontalJumpFactor = MathHelper.sqrt(horizontalJumpFactor * horizontalJumpFactor + verticalJumpFactor * verticalJumpFactor);
                 verticalJumpFactor = 0;
             }
@@ -1816,11 +2251,13 @@ public class ControllerSelf extends Controller
             double horizontalMotion = MathHelper.sqrt(this.jumpMotionX * this.jumpMotionX + this.jumpMotionZ * this.jumpMotionZ);
             double verticalMotion = -0.078 + 0.498 * verticalJumpFactor * jumpChargeFactor;
 
-            if (horizontalJumpFactor > 1F && !this.player.collidedHorizontally) {
+            if (horizontalJumpFactor > 1F && !this.player.collidedHorizontally)
+            {
                 maxHorizontalMotion = (double) ConfigHelper.getMaxHorizontalMotion(speed, inWater) * this.getSpeedFactor();
             }
 
-            if (head) {
+            if (head)
+            {
                 double normalAngle = Math.atan(verticalMotion / horizontalMotion);
                 double totalMotion = Math.sqrt(verticalMotion * verticalMotion + horizontalMotion * horizontalMotion);
 
@@ -1828,7 +2265,8 @@ public class ControllerSelf extends Controller
                 double newVerticalMotion = totalMotion * Math.sin(newAngle);
                 double newHorizontalMotion = totalMotion * Math.cos(newAngle);
 
-                if (maxHorizontalMotion != null) {
+                if (maxHorizontalMotion != null)
+                {
                     maxHorizontalMotion = maxHorizontalMotion * (newHorizontalMotion / horizontalMotion);
                 }
 
@@ -1836,7 +2274,8 @@ public class ControllerSelf extends Controller
                 horizontalMotion = newHorizontalMotion;
             }
 
-            if (angle != null) {
+            if (angle != null)
+            {
                 float jumpAngle = angle / RadiantToAngle;
                 boolean reset = type == ConfigHelper.WallUp || type == ConfigHelper.WallHead;
 
@@ -1851,11 +2290,13 @@ public class ControllerSelf extends Controller
                 verticalMotion = verticalJumpFactor;
             }
 
-            if (horizontalMotion > 0) {
+            if (horizontalMotion > 0)
+            {
                 double absoluteMotionX = Math.abs(this.player.motionX) * horizontalJumpFactor;
                 double absoluteMotionZ = Math.abs(this.player.motionZ) * horizontalJumpFactor;
 
-                if (maxHorizontalMotion != null) {
+                if (maxHorizontalMotion != null)
+                {
                     absoluteMotionX = Math.min(absoluteMotionX, maxHorizontalMotion * (horizontalJumpFactor * (Math.abs(this.player.motionX) / horizontalMotion)));
                     absoluteMotionZ = Math.min(absoluteMotionZ, maxHorizontalMotion * (horizontalJumpFactor * (Math.abs(this.player.motionZ) / horizontalMotion)));
                 }
@@ -1864,18 +2305,21 @@ public class ControllerSelf extends Controller
                 this.player.motionZ = Math.signum(this.player.motionZ) * absoluteMotionZ;
             }
 
-            if (up && !noVertical) {
+            if (up && !noVertical)
+            {
                 this.player.motionY = verticalMotion;
                 this.player.addStat(StatList.JUMP, 1);
                 this.isSprintJump = this.isFast;
             }
 
-            if (exhaustionEnabled) {
+            if (exhaustionEnabled)
+            {
                 float exhaustionFromJump = ConfigHelper.getJumpExhaustionGain(speed, type, this.jumpCharge);
                 this.exhaustion += exhaustionFromJump;
             }
 
-            if (head) {
+            if (head)
+            {
                 this.isHeadJumping = true;
                 this.setHeightOffset(-1);
             }
@@ -1888,11 +2332,16 @@ public class ControllerSelf extends Controller
 
     private static double getJumpMoving(double actual, double move, boolean reset, double horizontal, float horizontalJumpFactor)
     {
-        if (!reset) {
+        if (!reset)
+        {
             return actual + move * horizontal;
-        } else if (Math.signum(actual) != Math.signum(move)) {
+        }
+        else if (Math.signum(actual) != Math.signum(move))
+        {
             return move * horizontalJumpFactor;
-        } else {
+        }
+        else
+        {
             return Math.max(Math.abs(actual), Math.abs(move) * horizontal) * Math.signum(move);
         }
     }
@@ -1902,34 +2351,50 @@ public class ControllerSelf extends Controller
         isSprinting &= angle == null;
         isRunning &= angle == null;
 
-        if (isSprinting) {
+        if (isSprinting)
+        {
             return ConfigHelper.Sprinting;
-        } else if (isRunning) {
+        }
+        else if (isRunning)
+        {
             return ConfigHelper.Running;
-        } else if (isSlow) {
+        }
+        else if (isSlow)
+        {
             return ConfigHelper.Sneaking;
-        } else if (isStanding) {
+        }
+        else if (isStanding)
+        {
             return ConfigHelper.Standing;
-        } else {
+        }
+        else
+        {
             return ConfigHelper.Walking;
         }
     }
 
     private void standupIfPossible()
     {
-        if (this.heightOffset >= 0) {
+        if (this.heightOffset >= 0)
+        {
             return;
         }
 
         double gapUnderneight = this.getGapUnderneight();
         boolean groundClose = gapUnderneight < 1D;
-        if (!groundClose) {
+        if (!groundClose)
+        {
             this.resetHeightOffset();
-        } else {
+        }
+        else
+        {
             boolean standUpPossible = gapUnderneight + this.getGapOverneight() >= 1D;
-            if (standUpPossible) {
+            if (standUpPossible)
+            {
                 this.standUp(gapUnderneight);
-            } else {
+            }
+            else
+            {
                 this.toSlidingOrCrawling(gapUnderneight);
             }
         }
@@ -1937,7 +2402,8 @@ public class ControllerSelf extends Controller
 
     private void standupIfPossible(boolean tryLanding, boolean restoreFromFlying)
     {
-        if (this.heightOffset >= 0) {
+        if (this.heightOffset >= 0)
+        {
             return;
         }
 
@@ -1946,21 +2412,28 @@ public class ControllerSelf extends Controller
         double gapOverneight = groundClose ? this.getGapOverneight() : -1D;
         boolean standUpPossible = gapUnderneight + gapOverneight >= 1D;
 
-        if (tryLanding && groundClose && standUpPossible) {
+        if (tryLanding && groundClose && standUpPossible)
+        {
             this.isFlying = false;
             this.player.capabilities.isFlying = false;
             restoreFromFlying = true;
         }
 
-        if (!restoreFromFlying) {
+        if (!restoreFromFlying)
+        {
             return;
         }
 
-        if (!groundClose && !this.sneakButton.isPressed) {
+        if (!groundClose && !this.sneakButton.isPressed)
+        {
             this.resetHeightOffset();
-        } else if (standUpPossible && !(this.sneakButton.isPressed && this.grabButton.isPressed)) {
+        }
+        else if (standUpPossible && !(this.sneakButton.isPressed && this.grabButton.isPressed))
+        {
             this.standUp(gapUnderneight);
-        } else {
+        }
+        else
+        {
             this.toSlidingOrCrawling(gapUnderneight);
         }
     }
@@ -1977,20 +2450,25 @@ public class ControllerSelf extends Controller
     {
         this.move(0, (-gapUnderneight), 0, true);
 
-        if (SmartMovingConfig.sliding.enable && (this.grabButton.isPressed || this.wasHeadJumping)) {
+        if (SmartMovingConfig.SLIDING.enable && (this.grabButton.isPressed || this.wasHeadJumping))
+        {
             this.isSliding = true;
-        } else {
+        }
+        else
+        {
             this.wasCrawling = this.toCrawling();
         }
     }
 
     private void handleCrash(float fallDamageStartDistance, float fallDamageFactor)
     {
-        if (this.player.fallDistance >= 2.0F) {
+        if (this.player.fallDistance >= 2.0F)
+        {
             this.player.addStat(StatList.FALL_ONE_CM, (int) Math.round(this.player.fallDistance * 100D));
         }
 
-        if (this.player.fallDistance >= fallDamageStartDistance) {
+        if (this.player.fallDistance >= fallDamageStartDistance)
+        {
             this.player.attackEntityFrom(DamageSource.FALL, (int) Math.ceil((this.player.fallDistance - fallDamageStartDistance) * fallDamageFactor));
             this.distanceClimbedModified = this.nextClimbDistance; // to force step sound
         }
@@ -1999,7 +2477,8 @@ public class ControllerSelf extends Controller
 
     public void beforeSetPositionAndRotation()
     {
-        if (this.player.world.isRemote) {
+        if (this.player.world.isRemote)
+        {
             this.initialized = false;
             this.multiPlayerInitialized = 5;
         }
@@ -2019,8 +2498,10 @@ public class ControllerSelf extends Controller
         boolean isRunning = this.isRunning();
 
         boolean initializeCrawling = false;
-        if (!this.initialized && !(this.player.world.isRemote && this.multiPlayerInitialized != 0) && !this.player.isRiding()) {
-            if (this.getMaxPlayerSolidBetween(this.getBoundingBox().minY, this.getBoundingBox().maxY, 0) > this.getBoundingBox().minY) {
+        if (!this.initialized && !(this.player.world.isRemote && this.multiPlayerInitialized != 0) && !this.player.isRiding())
+        {
+            if (this.getMaxPlayerSolidBetween(this.getBoundingBox().minY, this.getBoundingBox().maxY, 0) > this.getBoundingBox().minY)
+            {
                 initializeCrawling = true;
                 this.toCrawling();
             }
@@ -2028,22 +2509,22 @@ public class ControllerSelf extends Controller
             this.initialized = true;
         }
 
-        if (this.multiPlayerInitialized > 0) {
+        if (this.multiPlayerInitialized > 0)
+        {
             this.multiPlayerInitialized--;
         }
 
-        if (!((EntityPlayerSP) this.entityPlayer).movementInput.jump) {
+        if (!((EntityPlayerSP) this.entityPlayer).movementInput.jump)
+        {
             this.isStillSwimmingJump = false;
         }
 
-        if (!startSleeping) {
+        if (!startSleeping)
+        {
             this.playerBase.localUpdateEntityActionState();
             this.playerBase.setMoveStrafingField(Math.signum(((EntityPlayerSP) this.entityPlayer).movementInput.moveStrafe));
             this.playerBase.setMoveForwardField(Math.signum(((EntityPlayerSP) this.entityPlayer).movementInput.moveForward));
-            this.playerBase.setIsJumpingField(((EntityPlayerSP) this.entityPlayer).movementInput.jump && !this.isCrawling && !this.isSliding &&
-                    !(SmartMovingConfig.headJumping.enable && this.grabButton.isPressed && this.player.isSprinting()) &&
-                    !(SmartMovingConfig.chargedJumping.enable && this.wouldIsSneaking && this.player.onGround && this.isStanding) &&
-                    !this.blockJumpTillButtonRelease);
+            this.playerBase.setIsJumpingField(((EntityPlayerSP) this.entityPlayer).movementInput.jump && !this.isCrawling && !this.isSliding && !(SmartMovingConfig.HEAD_JUMPING.enable && this.grabButton.isPressed && this.player.isSprinting()) && !(SmartMovingConfig.CHARGED_JUMPING.enable && this.wouldIsSneaking && this.player.onGround && this.isStanding) && !this.blockJumpTillButtonRelease);
         }
 
         boolean isSleeping = this.playerBase.getSleepingField();
@@ -2069,140 +2550,134 @@ public class ControllerSelf extends Controller
 
         boolean mustCrawl = false;
         double crawlStandUpBottom = -1;
-        if (this.isCrawling || this.isClimbCrawling) {
-            crawlStandUpBottom = this.getMaxPlayerSolidBetween(this.getBoundingBox().minY - (initializeCrawling ? 0D : 1D), this.getBoundingBox().minY, SmartMovingConfig.crawling.edge ? 0 : -0.05);
+        if (this.isCrawling || this.isClimbCrawling)
+        {
+            crawlStandUpBottom = this.getMaxPlayerSolidBetween(this.getBoundingBox().minY - (initializeCrawling ? 0D : 1D), this.getBoundingBox().minY, SmartMovingConfig.CRAWLING.edge ? 0 : -0.05);
             double crawlStandUpCeiling = this.getMinPlayerSolidBetween(this.getBoundingBox().maxY, this.getBoundingBox().maxY + 1.1D, 0);
             mustCrawl = crawlStandUpCeiling - crawlStandUpBottom < this.player.height - this.heightOffset;
         }
 
-        if (this.entityPlayer.capabilities.isFlying && (SmartMovingConfig.smartFlying.enable || SmartMovingConfig.standardFlying.small)) {
+        if (this.entityPlayer.capabilities.isFlying && (SmartMovingConfig.SMART_FLYING.enable || SmartMovingConfig.STANDARD_FLYING.small))
+        {
             mustCrawl = false;
         }
 
-        boolean inputContinueCrawl = SmartMovingConfig.userInterface.crawlToggle ? this.crawlToggled : this.sneakButton.isPressed || !SmartMovingConfig.climb.enable && this.grabButton.isPressed;
-        if (this.contextContinueCrawl) {
-            if (inputContinueCrawl || this.player.isInWater() || mustCrawl) {
+        boolean inputContinueCrawl = SmartMovingConfig.USER_INTERFACE.crawlToggle ? this.crawlToggled : this.sneakButton.isPressed || !SmartMovingConfig.CLIMB.enable && this.grabButton.isPressed;
+        if (this.contextContinueCrawl)
+        {
+            if (inputContinueCrawl || this.player.isInWater() || mustCrawl)
+            {
                 this.contextContinueCrawl = false;
-            } else if (this.isCrawling) {
+            }
+            else if (this.isCrawling)
+            {
                 double crawlStandUpLiquidCeiling = this.getMinPlayerLiquidBetween(this.getBoundingBox().maxY, this.getBoundingBox().maxY + 1.1D);
-                if (crawlStandUpLiquidCeiling - crawlStandUpBottom >= this.player.height + 1F) {
+                if (crawlStandUpLiquidCeiling - crawlStandUpBottom >= this.player.height + 1F)
+                {
                     this.contextContinueCrawl = false;
                 }
             }
         }
         boolean wouldWantCrawl = !this.entityPlayer.capabilities.isFlying && ((this.isCrawling && (inputContinueCrawl || this.contextContinueCrawl)) || (this.grabButton.startPressed && (this.sneakToggled || this.sneakButton.isPressed) && this.player.onGround));
 
-        boolean wantCrawl = SmartMovingConfig.crawling.enable && wouldWantCrawl;
+        boolean wantCrawl = SmartMovingConfig.CRAWLING.enable && wouldWantCrawl;
 
-        boolean canCrawl = !this.isSwimming
-                && !this.isDiving
-                && (!this.isDipping || (this.dippingDepth + this.heightOffset) < SwimCrawlWaterTopBorder)
-                && !this.isClimbing
-                && this.player.fallDistance < SmartMovingConfig.falling.distanceMinimum;
+        boolean canCrawl = !this.isSwimming && !this.isDiving && (!this.isDipping || (this.dippingDepth + this.heightOffset) < SWIM_CRAWL_WATER_TOP_BORDER) && !this.isClimbing && this.player.fallDistance < SmartMovingConfig.FALLING.distanceMinimum;
 
         this.wasCrawling = this.isCrawling;
         this.isCrawling = canCrawl && (wantCrawl || mustCrawl);
 
-        if (!this.isCrawling) {
+        if (!this.isCrawling)
+        {
             this.contextContinueCrawl = false;
         }
 
-        if (this.wasCrawling && !this.isCrawling && this.entityPlayer.capabilities.isFlying) {
+        if (this.wasCrawling && !this.isCrawling && this.entityPlayer.capabilities.isFlying)
+        {
             this.tryJump(ConfigHelper.Up, null, null, null);
         }
 
-        this.wantCrawlNotClimb = (this.wantCrawlNotClimb || (this.grabButton.startPressed && !this.wasCrawling))
-                && this.grabButton.isPressed
-                && ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward > 0F
-                && this.isCrawling
-                && this.player.collidedHorizontally;
+        this.wantCrawlNotClimb = (this.wantCrawlNotClimb || (this.grabButton.startPressed && !this.wasCrawling)) && this.grabButton.isPressed && ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward > 0F && this.isCrawling && this.player.collidedHorizontally;
 
         boolean isFacedToSolidVine = this.isFacedToSolidVine(this.isClimbCrawling);
 
-        boolean wouldWantClimb = (this.grabButton.isPressed
-                || (this.isClimbHolding && this.sneakButton.isPressed)
-                || (SmartMovingConfig.climb.freeLadderAuto && this.isFacedToLadder(this.isClimbCrawling))
-                || (SmartMovingConfig.climb.freeVineAuto && isFacedToSolidVine))
-                && (!this.isSliding || this.grabButton.isPressed && ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward > 0F)
-                && !this.isHeadJumping
-                && !this.wantCrawlNotClimb
-                && !disabled;
+        boolean wouldWantClimb = (this.grabButton.isPressed || (this.isClimbHolding && this.sneakButton.isPressed) || (SmartMovingConfig.CLIMB.freeLadderAuto && this.isFacedToLadder(this.isClimbCrawling)) || (SmartMovingConfig.CLIMB.freeVineAuto && isFacedToSolidVine)) && (!this.isSliding || this.grabButton.isPressed && ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward > 0F) && !this.isHeadJumping && !this.wantCrawlNotClimb && !disabled;
 
-        boolean wantClimb = SmartMovingConfig.climb.enable && wouldWantClimb;
+        boolean wantClimb = SmartMovingConfig.CLIMB.enable && wouldWantClimb;
 
-        if (!wantClimb || this.player.collidedHorizontally) {
+        if (!wantClimb || this.player.collidedHorizontally)
+        {
             this.isClimbJumping = false;
         }
 
-        if (this.player.collided) {
+        if (this.player.collided)
+        {
             this.isClimbBackJumping = false;
         }
 
-        this.wantClimbUp = wantClimb
-                && ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward > 0F || (this.isVineAnyClimbing && this.jumpButton.isPressed && !(this.sneakButton.isPressed && isFacedToSolidVine))
-                && (!this.isCrawling || this.player.collidedHorizontally)
-                && (!this.isSliding || this.player.collidedHorizontally);
+        this.wantClimbUp = wantClimb && ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward > 0F || (this.isVineAnyClimbing && this.jumpButton.isPressed && !(this.sneakButton.isPressed && isFacedToSolidVine)) && (!this.isCrawling || this.player.collidedHorizontally) && (!this.isSliding || this.player.collidedHorizontally);
 
-        this.wantClimbDown = wantClimb
-                && ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward <= 0F
-                && !wantCrawl;
+        this.wantClimbDown = wantClimb && ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward <= 0F && !wantCrawl;
 
-        this.wantClimbCeiling = SmartMovingConfig.climb.ceiling
-                && this.grabButton.isPressed
-                && !this.wantCrawlNotClimb
-                && !this.isSneaking()
-                && this.player.getItemInUseCount() < 1
-                && !disabled;
+        this.wantClimbCeiling = SmartMovingConfig.CLIMB.ceiling && this.grabButton.isPressed && !this.wantCrawlNotClimb && !this.isSneaking() && this.player.getItemInUseCount() < 1 && !disabled;
 
         boolean restoreFromFlying = false;
 
         boolean wasFlying = this.isFlying;
-        this.isFlying = SmartMovingConfig.smartFlying.enable && this.player.capabilities.isFlying && !this.isSwimming && !this.isDiving;
-        if (this.isFlying && !wasFlying) {
+        this.isFlying = SmartMovingConfig.SMART_FLYING.enable && this.player.capabilities.isFlying && !this.isSwimming && !this.isDiving;
+        if (this.isFlying && !wasFlying)
+        {
             this.setHeightOffset(-1);
-        } else if (!this.isFlying && wasFlying) {
+        }
+        else if (!this.isFlying && wasFlying)
+        {
             restoreFromFlying = true;
         }
 
-        if (!SmartMovingConfig.smartFlying.enable && SmartMovingConfig.standardFlying.small) {
-            if (isLevitating && !this.wasLevitating) {
+        if (!SmartMovingConfig.SMART_FLYING.enable && SmartMovingConfig.STANDARD_FLYING.small)
+        {
+            if (isLevitating && !this.wasLevitating)
+            {
                 this.setHeightOffset(-1);
-            } else if (!isLevitating && this.wasLevitating) {
+            }
+            else if (!isLevitating && this.wasLevitating)
+            {
                 restoreFromFlying = true;
             }
         }
 
         this.wasHeadJumping = this.isHeadJumping;
-        this.isHeadJumping = this.isHeadJumping
-                && !this.player.onGround
-                && !(this.isSwimming || this.isDiving)
-                && !(this.isFlying || this.player.capabilities.isFlying)
-                && !(this.player.handleWaterMovement() && this.player.motionY < 0)
-                && !this.player.isInLava();
+        this.isHeadJumping = this.isHeadJumping && !this.player.onGround && !(this.isSwimming || this.isDiving) && !(this.isFlying || this.player.capabilities.isFlying) && !(this.player.handleWaterMovement() && this.player.motionY < 0) && !this.player.isInLava();
 
-        if (!this.isHeadJumping) {
+        if (!this.isHeadJumping)
+        {
             this.isAerodynamic = false;
         }
 
-        if (this.wasHeadJumping && !this.isHeadJumping) {
-            if (this.player.onGround) {
-                this.handleCrash(SmartMovingConfig.headJumping.damageStartDistance, SmartMovingConfig.headJumping.damageFactor);
+        if (this.wasHeadJumping && !this.isHeadJumping)
+        {
+            if (this.player.onGround)
+            {
+                this.handleCrash(SmartMovingConfig.HEAD_JUMPING.damageStartDistance, SmartMovingConfig.HEAD_JUMPING.damageFactor);
                 restoreFromFlying = true;
             }
         }
 
-        boolean tryLanding = this.isFlying && !SmartMovingConfig.userInterface.flyGroundClose && horizontalSpeedSquare < 0.003D && this.player.motionY > -0.03D;
-        if (restoreFromFlying || tryLanding) {
+        boolean tryLanding = this.isFlying && !SmartMovingConfig.USER_INTERFACE.flyGroundClose && horizontalSpeedSquare < 0.003D && this.player.motionY > -0.03D;
+        if (restoreFromFlying || tryLanding)
+        {
             this.standupIfPossible(tryLanding, restoreFromFlying);
         }
 
-        if (this.isSliding && this.player.fallDistance > SlideToHeadJumpingFallDistance) {
+        if (this.isSliding && this.player.fallDistance > SLIDE_TO_HEAD_JUMPING_FALL_DISTANCE)
+        {
             this.isSliding = false;
             this.isHeadJumping = true;
             this.isAerodynamic = true;
         }
 
-        if (SmartMovingConfig.sliding.enable && this.grabButton.isPressed && (this.isGroundSprinting || (this.wasRunning && !isRunning && this.player.onGround)) && !this.isCrawling && this.sneakButton.startPressed && !this.isDipping) {
+        if (SmartMovingConfig.SLIDING.enable && this.grabButton.isPressed && (this.isGroundSprinting || (this.wasRunning && !isRunning && this.player.onGround)) && !this.isCrawling && this.sneakButton.startPressed && !this.isDipping)
+        {
             this.setHeightOffset(-1);
             this.move(0, (-1D), 0, true);
             this.tryJump(ConfigHelper.SlideDown, false, this.wasRunning, null);
@@ -2211,93 +2686,90 @@ public class ControllerSelf extends Controller
             this.isAerodynamic = false;
         }
 
-        if (this.isSliding && (!this.sneakButton.isPressed || horizontalSpeedSquare < SmartMovingConfig.sliding.speedStopFactor * 0.01)) {
+        if (this.isSliding && (!this.sneakButton.isPressed || horizontalSpeedSquare < SmartMovingConfig.SLIDING.speedStopFactor * 0.01))
+        {
             this.isSliding = false;
             this.wasCrawling = this.toCrawling();
         }
 
-        if (this.isSliding && this.player.fallDistance > SmartMovingConfig.falling.distanceMinimum) {
+        if (this.isSliding && this.player.fallDistance > SmartMovingConfig.FALLING.distanceMinimum)
+        {
             this.isSliding = false;
             this.wasCrawling = true;
             this.isCrawling = false;
         }
 
-        boolean sneakContinueInput = SmartMovingConfig.userInterface.sneakToggle ? this.sneakToggled || this.sneakButton.startPressed : this.sneakButton.isPressed;
-        boolean wouldWantSneak = !this.isFlying
-                && !this.isSliding
-                && !this.isHeadJumping
-                && !(this.isDiving && SmartMovingConfig.diving.downSneak)
-                && !(this.isSwimming && SmartMovingConfig.swimming.downSneak && !this.isFakeShallowWaterSneaking)
-                && sneakContinueInput
-                && !wantCrawl
-                && !mustCrawl
-                && (!SmartMovingConfig.crawling.enable || !this.grabButton.isPressed);
+        boolean sneakContinueInput = SmartMovingConfig.USER_INTERFACE.sneakToggle ? this.sneakToggled || this.sneakButton.startPressed : this.sneakButton.isPressed;
+        boolean wouldWantSneak = !this.isFlying && !this.isSliding && !this.isHeadJumping && !(this.isDiving && SmartMovingConfig.DIVING.downSneak) && !(this.isSwimming && SmartMovingConfig.SWIMMING.downSneak && !this.isFakeShallowWaterSneaking) && sneakContinueInput && !wantCrawl && !mustCrawl && (!SmartMovingConfig.CRAWLING.enable || !this.grabButton.isPressed);
 
-        boolean wantSneak = SmartMovingConfig.genericSneaking.enable && wouldWantSneak;
+        boolean wantSneak = SmartMovingConfig.GENERIC_SNEAKING.enable && wouldWantSneak;
 
         boolean moveButtonPressed = ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward != 0F || ((EntityPlayerSP) this.entityPlayer).movementInput.moveStrafe != 0F;
         boolean moveForwardButtonPressed = ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward > 0F;
 
-        this.wantSprint = SmartMovingConfig.genericSprinting.enable
-                && !this.isSliding
-                && this.sprintButton.isPressed
-                && (moveForwardButtonPressed
-                || this.isClimbing
-                || (this.isSwimming && (moveButtonPressed || (this.sneakButton.isPressed && SmartMovingConfig.swimming.downSneak)))
-                || (this.isDiving && (moveButtonPressed || this.jumpButton.isPressed || (this.sneakButton.isPressed && SmartMovingConfig.diving.downSneak)))
-                || (this.isFlying && (moveButtonPressed || this.jumpButton.isPressed || this.sneakButton.isPressed)))
-                && !disabled;
+        this.wantSprint = SmartMovingConfig.GENERIC_SPRINTING.enable && !this.isSliding && this.sprintButton.isPressed && (moveForwardButtonPressed || this.isClimbing || (this.isSwimming && (moveButtonPressed || (this.sneakButton.isPressed && SmartMovingConfig.SWIMMING.downSneak))) || (this.isDiving && (moveButtonPressed || this.jumpButton.isPressed || (this.sneakButton.isPressed && SmartMovingConfig.DIVING.downSneak))) || (this.isFlying && (moveButtonPressed || this.jumpButton.isPressed || this.sneakButton.isPressed))) && !disabled;
 
-        boolean exhaustionAllowsRunning = !SmartMovingConfig.standardSprinting.exhaustion || (this.exhaustion < SmartMovingConfig.standardSprinting.exhaustionStop && (this.wasRunning || this.exhaustion < SmartMovingConfig.standardSprinting.exhaustionStart));
+        boolean exhaustionAllowsRunning = !SmartMovingConfig.STANDARD_SPRINTING.exhaustion || (this.exhaustion < SmartMovingConfig.STANDARD_SPRINTING.exhaustionStop && (this.wasRunning || this.exhaustion < SmartMovingConfig.STANDARD_SPRINTING.exhaustionStart));
 
-        if (isRunning && this.player.onGround && SmartMovingConfig.standardSprinting.exhaustion) {
-            this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, SmartMovingConfig.standardSprinting.exhaustionStop);
-            this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, SmartMovingConfig.standardSprinting.exhaustionStart);
+        if (isRunning && this.player.onGround && SmartMovingConfig.STANDARD_SPRINTING.exhaustion)
+        {
+            this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, SmartMovingConfig.STANDARD_SPRINTING.exhaustionStop);
+            this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, SmartMovingConfig.STANDARD_SPRINTING.exhaustionStart);
         }
 
-        if (!exhaustionAllowsRunning && isRunning) {
+        if (!exhaustionAllowsRunning && isRunning)
+        {
             this.player.setSprinting(isRunning = false);
         }
 
-        if (!this.player.onGround && this.isFast && !this.isClimbing && !this.isCeilingClimbing && !this.isDiving && !this.isSwimming) {
+        if (!this.player.onGround && this.isFast && !this.isClimbing && !this.isCeilingClimbing && !this.isDiving && !this.isSwimming)
+        {
             this.isSprintJump = true;
         }
 
-        boolean exhaustionAllowsSprinting = !SmartMovingConfig.genericSprinting.exhaustion
-                || (this.exhaustion <= SmartMovingConfig.genericSprinting.exhaustionStop
-                && (this.isFast || this.isSprintJump || this.exhaustion <= SmartMovingConfig.genericSprinting.exhaustionStart));
+        boolean exhaustionAllowsSprinting = !SmartMovingConfig.GENERIC_SPRINTING.exhaustion || (this.exhaustion <= SmartMovingConfig.GENERIC_SPRINTING.exhaustionStop && (this.isFast || this.isSprintJump || this.exhaustion <= SmartMovingConfig.GENERIC_SPRINTING.exhaustionStart));
 
-        if (this.player.onGround || this.isFlying || this.isSwimming || this.isDiving || this.player.isInLava()) {
+        if (this.player.onGround || this.isFlying || this.isSwimming || this.isDiving || this.player.isInLava())
+        {
             this.isSprintJump = false;
         }
 
         boolean preferSprint = false;
-        if (this.wantSprint && !wantSneak) {
-            if (!this.isSprintJump && SmartMovingConfig.genericSprinting.exhaustion) {
-                this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, SmartMovingConfig.genericSprinting.exhaustionStop);
-                this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, SmartMovingConfig.genericSprinting.exhaustionStart);
+        if (this.wantSprint && !wantSneak)
+        {
+            if (!this.isSprintJump && SmartMovingConfig.GENERIC_SPRINTING.exhaustion)
+            {
+                this.maxExhaustionForAction = Math.min(this.maxExhaustionForAction, SmartMovingConfig.GENERIC_SPRINTING.exhaustionStop);
+                this.maxExhaustionToStartAction = Math.min(this.maxExhaustionToStartAction, SmartMovingConfig.GENERIC_SPRINTING.exhaustionStart);
             }
 
-            if (exhaustionAllowsSprinting) {
+            if (exhaustionAllowsSprinting)
+            {
                 preferSprint = true;
             }
         }
 
         boolean isClimbSprintSpeed = true;
-        if (this.isClimbing && preferSprint) {
+        if (this.isClimbing && preferSprint)
+        {
             double minTickDistance;
-            if (this.wantClimbUp) {
-                minTickDistance = 0.07 * SmartMovingConfig.climb.freeUpSpeedFactor;
-            } else if (this.wantClimbDown) {
-                minTickDistance = 0.11 * SmartMovingConfig.climb.freeDownSpeedFactor;
-            } else {
+            if (this.wantClimbUp)
+            {
+                minTickDistance = 0.07 * SmartMovingConfig.CLIMB.freeUpSpeedFactor;
+            }
+            else if (this.wantClimbDown)
+            {
+                minTickDistance = 0.11 * SmartMovingConfig.CLIMB.freeDownSpeedFactor;
+            }
+            else
+            {
                 minTickDistance = 0.07;
             }
 
             isClimbSprintSpeed = net.smart.render.statistics.SmartStatisticsFactory.getInstance(this.player).getTickDistance() >= minTickDistance;
         }
 
-        boolean canAnySprint = preferSprint && !this.player.isBurning() && (SmartMovingConfig.itemUsage.sprint || this.player.getItemInUseCount() < 1);
+        boolean canAnySprint = preferSprint && !this.player.isBurning() && (SmartMovingConfig.ITEM_USAGE.sprint || this.player.getItemInUseCount() < 1);
         boolean canVerticallySprint = canAnySprint && !this.player.collidedHorizontally;
         boolean canHorizontallySprint = canAnySprint && this.collidedHorizontallyTickCount < 3;
         boolean canAllSprint = canHorizontallySprint && canVerticallySprint;
@@ -2310,17 +2782,15 @@ public class ControllerSelf extends Controller
         boolean isFlyingSprinting = canAllSprint && this.isFlying;
         boolean isClimbSprinting = canAnySprint && this.isClimbing && isClimbSprintSpeed;
 
-        this.isFast = this.isGroundSprinting
-                || isSwimSprinting
-                || isDiveSprinting
-                || isCeilingSprinting
-                || isFlyingSprinting
-                || isClimbSprinting;
+        this.isFast = this.isGroundSprinting || isSwimSprinting || isDiveSprinting || isCeilingSprinting || isFlyingSprinting || isClimbSprinting;
 
-        if (this.isGroundSprinting && !wasGroundSprinting) {
+        if (this.isGroundSprinting && !wasGroundSprinting)
+        {
             this.wasRunningWhenSprintStarted = this.player.isSprinting();
             this.player.setSprinting(this.isStandupSprintingOrRunning());
-        } else if (wasGroundSprinting && !this.isGroundSprinting) {
+        }
+        else if (wasGroundSprinting && !this.isGroundSprinting)
+        {
             this.player.setSprinting(this.wasRunningWhenSprintStarted);
         }
 
@@ -2329,13 +2799,7 @@ public class ControllerSelf extends Controller
         boolean wasSneaking = this.isSlow;
         this.isSlow = wantSneak && this.wouldIsSneaking;
 
-        boolean wantClimbHolding = (this.isClimbHolding && this.sneakButton.isPressed)
-                || (this.isClimbing && blocked)
-                || (wantClimb
-                && !this.isSwimming
-                && !this.isDiving
-                && !this.isCrawling
-                && (this.sneakButton.isPressed || this.crawlToggled));
+        boolean wantClimbHolding = (this.isClimbHolding && this.sneakButton.isPressed) || (this.isClimbing && blocked) || (wantClimb && !this.isSwimming && !this.isDiving && !this.isCrawling && (this.sneakButton.isPressed || this.crawlToggled));
 
         this.isClimbHolding = wantClimbHolding && this.isClimbing;
 
@@ -2343,40 +2807,52 @@ public class ControllerSelf extends Controller
 
         boolean wasCrawlClimbing = this.isCrawlClimbing;
         this.isCrawlClimbing = (this.wasCrawling || this.isCrawlClimbing) && this.isClimbing && this.isNeighborClimbing && (this.sneakButton.isPressed || this.crawlToggled) && ((EntityPlayerSP) this.entityPlayer).movementInput.moveForward > 0F;
-        if (this.isCrawlClimbing) {
+        if (this.isCrawlClimbing)
+        {
             boolean canStandUp = !this.isPlayerInSolidBetween(this.getBoundingBox().minY - (this.isClimbCrawling ? 0.95D : 1D), this.getBoundingBox().minY);
-            if (canStandUp) {
+            if (canStandUp)
+            {
                 wasCrawlClimbing = false;
                 this.isCrawlClimbing = false;
-                if (!this.isClimbCrawling) {
+                if (!this.isClimbCrawling)
+                {
                     this.resetHeightOffset();
                 }
             }
 
-            if (!wasCrawlClimbing) {
+            if (!wasCrawlClimbing)
+            {
                 this.wasCrawling = false;
                 this.isCrawling = false;
             }
-        } else if (wasCrawlClimbing) {
+        }
+        else if (wasCrawlClimbing)
+        {
             boolean toCrawling = this.sneakButton.isPressed || this.crawlToggled;
-            if (!this.isClimbing) {
+            if (!this.isClimbing)
+            {
                 this.wasCrawling = this.toCrawling();
 
                 double minY = this.getBoundingBox().minY;
                 this.move(0, (-minY + Math.floor(minY)), 0, true);
-            } else if (((EntityPlayerSP) this.entityPlayer).movementInput.moveForward <= 0F) {
+            }
+            else if (((EntityPlayerSP) this.entityPlayer).movementInput.moveForward <= 0F)
+            {
                 this.wasCrawling = toCrawling;
                 this.isCrawling = toCrawling;
 
                 this.wantClimbUp = false;
                 this.wantClimbDown = false;
 
-                if (!toCrawling) {
+                if (!toCrawling)
+                {
                     this.resetHeightOffset();
                 }
                 double minY = this.getBoundingBox().minY;
                 this.move(0, (-minY + Math.floor(minY) + (toCrawling ? 0F : 1F)), 0, true);
-            } else if (!toCrawling) {
+            }
+            else if (!toCrawling)
+            {
                 this.resetHeightOffset();
                 double minY = this.getBoundingBox().minY;
                 this.move(0, (Math.ceil(minY) - minY), 0, true);
@@ -2387,64 +2863,89 @@ public class ControllerSelf extends Controller
         boolean needClimbCrawling = this.hasClimbCrawlGap || (this.hasClimbGap && this.isClimbHolding);
         boolean canClimbCrawling = wantClimbHolding && this.wantClimbUp;
 
-        if (this.climbIntoCount > 1) {
+        if (this.climbIntoCount > 1)
+        {
             this.climbIntoCount--;
-        } else if (this.isClimbCrawling && !needClimbCrawling && this.climbIntoCount == 0) {
+        }
+        else if (this.isClimbCrawling && !needClimbCrawling && this.climbIntoCount == 0)
+        {
             this.climbIntoCount = 6;
         }
 
         this.isClimbCrawling = canClimbCrawling && ((needClimbCrawling && this.climbIntoCount == 0) || this.climbIntoCount > 1);
-        if (this.isClimbCrawling && !wasClimbCrawling) {
+        if (this.isClimbCrawling && !wasClimbCrawling)
+        {
             this.setHeightOffset(-1F);
 
             boolean wasCollidedHorizontally = this.player.collidedHorizontally; // preserve the horizontal collision state
             this.move(0, 0.05, 0, true); // to avoid climb crawling into solid when standing with solid above head (SMP: Illegal Stance)
             this.player.collidedHorizontally = wasCollidedHorizontally; // to avoid climb crawling out of water bug
-        } else if (!this.isClimbCrawling && wasClimbCrawling) {
+        }
+        else if (!this.isClimbCrawling && wasClimbCrawling)
+        {
             this.climbIntoCount = 0;
-            if (mustCrawl || this.sneakButton.isPressed || this.crawlToggled) {
+            if (mustCrawl || this.sneakButton.isPressed || this.crawlToggled)
+            {
                 double gapUnderneight = this.getBoundingBox().minY - this.getMaxPlayerSolidBetween(this.getBoundingBox().minY - 1D, this.getBoundingBox().minY, 0);
-                if (gapUnderneight >= 0D && gapUnderneight < 1D) {
+                if (gapUnderneight >= 0D && gapUnderneight < 1D)
+                {
                     this.wasCrawling = this.toCrawling();
                     this.move(0, (-gapUnderneight), 0, true);
-                } else {
+                }
+                else
+                {
                     this.resetHeightOffset();
                 }
-            } else {
+            }
+            else
+            {
                 this.resetHeightOffset();
             }
         }
 
-        if ((this.wasCrawling && !this.isCrawling) && !initializeCrawling && !this.entityPlayer.capabilities.isFlying) {
+        if ((this.wasCrawling && !this.isCrawling) && !initializeCrawling && !this.entityPlayer.capabilities.isFlying)
+        {
             this.resetHeightOffset();
             this.move(0, (crawlStandUpBottom - this.getBoundingBox().minY), 0, true);
-        } else if ((this.isCrawling && !this.wasCrawling) || initializeCrawling) {
+        }
+        else if ((this.isCrawling && !this.wasCrawling) || initializeCrawling)
+        {
             this.setHeightOffset(-1F);
 
-            if (!initializeCrawling || this.player.world.isRemote) {
+            if (!initializeCrawling || this.player.world.isRemote)
+            {
                 this.move(0, (-1D), 0, true);
             }
 
-            if (initializeCrawling) {
+            if (initializeCrawling)
+            {
                 this.wasCrawling = this.toCrawling();
             }
         }
 
-        if (this.grabButton.startPressed) {
-            if (this.isShallowDiveOrSwim && wouldWantClimb) {
+        if (this.grabButton.startPressed)
+        {
+            if (this.isShallowDiveOrSwim && wouldWantClimb)
+            {
                 // from swimming/diving in shallow water to walking in shallow water
                 this.resetHeightOffset();
                 this.move(0, (this.getMaxPlayerSolidBetween(this.getBoundingBox().minY, this.getBoundingBox().maxY, 0) - this.getBoundingBox().minY), 0, true);
-                if (this.jumpButton.isPressed) {
+                if (this.jumpButton.isPressed)
+                {
                     this.isStillSwimmingJump = true;
                 }
-            } else if (this.isDipping && wouldWantCrawl && this.dippingDepth >= SwimCrawlWaterBottomBorder) {
-                if (this.dippingDepth >= SwimCrawlWaterMediumBorder) {
+            }
+            else if (this.isDipping && wouldWantCrawl && this.dippingDepth >= SWIM_CRAWL_WATER_BOTTOM_BORDER)
+            {
+                if (this.dippingDepth >= SWIM_CRAWL_WATER_MEDIUM_BORDER)
+                {
                     // from sneaking in shallow water to swimming/diving in shallow water
                     this.setHeightOffset(-1F);
                     this.move(0, (-1.6F + this.dippingDepth), 0, true);
                     this.isCrawling = false;
-                } else {
+                }
+                else
+                {
                     // from sneaking in shallow water to crawling in shallow water
                     this.setHeightOffset(-1F);
                     this.move(0, (-1D), 0, true);
@@ -2455,121 +2956,170 @@ public class ControllerSelf extends Controller
 
         this.isWallJumping = false;
 
-        if (this.continueWallJumping && (this.player.onGround || this.isClimbing || !this.jumpButton.isPressed)) {
+        if (this.continueWallJumping && (this.player.onGround || this.isClimbing || !this.jumpButton.isPressed))
+        {
             this.continueWallJumping = false;
         }
 
-        boolean canWallJumping = SmartMovingConfig.wallJumping.enable && !this.isHeadJumping && !this.player.onGround && !this.isClimbing && !this.isSwimming && !this.isDiving && !isLevitating && !this.isFlying;
+        boolean canWallJumping = SmartMovingConfig.WALL_JUMPING.enable && !this.isHeadJumping && !this.player.onGround && !this.isClimbing && !this.isSwimming && !this.isDiving && !isLevitating && !this.isFlying;
         boolean triggerWallJumping = false;
 
-        if (SmartMovingConfig.userInterface.jumpWallDoubleClick) {
-            if (canWallJumping) {
-                if (this.jumpButton.startPressed) {
-                    if (this.wallJumpCount == 0) {
-                        this.wallJumpCount = SmartMovingConfig.userInterface.jumpWallDoubleClickTicks;
-                    } else {
+        if (SmartMovingConfig.USER_INTERFACE.jumpWallDoubleClick)
+        {
+            if (canWallJumping)
+            {
+                if (this.jumpButton.startPressed)
+                {
+                    if (this.wallJumpCount == 0)
+                    {
+                        this.wallJumpCount = SmartMovingConfig.USER_INTERFACE.jumpWallDoubleClickTicks;
+                    }
+                    else
+                    {
                         triggerWallJumping = true;
                         this.wallJumpCount = 0;
                     }
-                } else if (this.wallJumpCount > 0) {
+                }
+                else if (this.wallJumpCount > 0)
+                {
                     this.wallJumpCount--;
                 }
-            } else {
+            }
+            else
+            {
                 this.wallJumpCount = 0;
             }
-        } else {
+        }
+        else
+        {
             triggerWallJumping = this.jumpButton.startPressed;
         }
 
-        this.wantWallJumping = canWallJumping &&
-                (triggerWallJumping || this.continueWallJumping ||
-                        (this.wantWallJumping && this.jumpButton.isPressed && !this.player.collidedHorizontally));
+        this.wantWallJumping = canWallJumping && (triggerWallJumping || this.continueWallJumping || (this.wantWallJumping && this.jumpButton.isPressed && !this.player.collidedHorizontally));
 
         boolean canAngleJump = !isSleeping && this.player.onGround && !this.isCrawling && !this.isClimbing && !this.isClimbCrawling && !this.isSwimming && !this.isDiving;
-        boolean canSideJump = SmartMovingConfig.sideAndBackJumping.side && canAngleJump;
+        boolean canSideJump = SmartMovingConfig.SIDE_AND_BACK_JUMPING.side && canAngleJump;
         boolean canLeftJump = canSideJump && !this.rightButton.isPressed;
         boolean canRightJump = canSideJump && !this.leftButton.isPressed;
-        boolean canBackJump = SmartMovingConfig.sideAndBackJumping.back && canAngleJump && !this.forwardButton.isPressed && !this.isStandupSprintingOrRunning();
+        boolean canBackJump = SmartMovingConfig.SIDE_AND_BACK_JUMPING.back && canAngleJump && !this.forwardButton.isPressed && !this.isStandupSprintingOrRunning();
 
-        if (canLeftJump) {
-            if (this.leftButton.startPressed) {
-                if (this.leftJumpCount == 0) {
-                    this.leftJumpCount = SmartMovingConfig.userInterface.jumpAngleDoubleClickTicks;
-                } else {
+        if (canLeftJump)
+        {
+            if (this.leftButton.startPressed)
+            {
+                if (this.leftJumpCount == 0)
+                {
+                    this.leftJumpCount = SmartMovingConfig.USER_INTERFACE.jumpAngleDoubleClickTicks;
+                }
+                else
+                {
                     this.leftJumpCount = -1;
                 }
-            } else if (this.leftJumpCount > 0) {
+            }
+            else if (this.leftJumpCount > 0)
+            {
                 this.leftJumpCount--;
             }
-        } else {
+        }
+        else
+        {
             this.leftJumpCount = 0;
         }
 
-        if (canRightJump) {
-            if (this.rightButton.startPressed) {
-                if (this.rightJumpCount == 0) {
-                    this.rightJumpCount = SmartMovingConfig.userInterface.jumpAngleDoubleClickTicks;
-                } else {
+        if (canRightJump)
+        {
+            if (this.rightButton.startPressed)
+            {
+                if (this.rightJumpCount == 0)
+                {
+                    this.rightJumpCount = SmartMovingConfig.USER_INTERFACE.jumpAngleDoubleClickTicks;
+                }
+                else
+                {
                     this.rightJumpCount = -1;
                 }
-            } else if (this.rightJumpCount > 0) {
+            }
+            else if (this.rightJumpCount > 0)
+            {
                 this.rightJumpCount--;
             }
-        } else {
+        }
+        else
+        {
             this.rightJumpCount = 0;
         }
 
-        if (canBackJump) {
-            if (this.backButton.startPressed) {
-                if (this.backJumpCount == 0) {
-                    this.backJumpCount = SmartMovingConfig.userInterface.jumpAngleDoubleClickTicks;
-                } else {
+        if (canBackJump)
+        {
+            if (this.backButton.startPressed)
+            {
+                if (this.backJumpCount == 0)
+                {
+                    this.backJumpCount = SmartMovingConfig.USER_INTERFACE.jumpAngleDoubleClickTicks;
+                }
+                else
+                {
                     this.backJumpCount = -1;
                 }
-            } else if (this.backJumpCount > 0) {
+            }
+            else if (this.backJumpCount > 0)
+            {
                 this.backJumpCount--;
             }
-        } else {
+        }
+        else
+        {
             this.backJumpCount = 0;
         }
 
-        if (this.rightJumpCount == -2 && this.backJumpCount <= 0) {
+        if (this.rightJumpCount == -2 && this.backJumpCount <= 0)
+        {
             this.rightJumpCount = -1;
         }
-        if (this.leftJumpCount == -2 && this.backJumpCount <= 0) {
+        if (this.leftJumpCount == -2 && this.backJumpCount <= 0)
+        {
             this.leftJumpCount = -1;
         }
-        if (this.backJumpCount == -2 && (this.leftJumpCount <= 0 || this.rightJumpCount <= 0)) {
+        if (this.backJumpCount == -2 && (this.leftJumpCount <= 0 || this.rightJumpCount <= 0))
+        {
             this.backJumpCount = -1;
         }
 
-        if (this.rightJumpCount == -1 && this.backJumpCount > 0) {
+        if (this.rightJumpCount == -1 && this.backJumpCount > 0)
+        {
             this.rightJumpCount = -2;
         }
-        if (this.leftJumpCount == -1 && this.backJumpCount > 0) {
+        if (this.leftJumpCount == -1 && this.backJumpCount > 0)
+        {
             this.leftJumpCount = -2;
         }
-        if (this.backJumpCount == -1 && (this.leftJumpCount > 0 || this.rightJumpCount > 0)) {
+        if (this.backJumpCount == -1 && (this.leftJumpCount > 0 || this.rightJumpCount > 0))
+        {
             this.backJumpCount = -2;
         }
 
-        if (this.player.onGround || this.player.collidedHorizontally) {
+        if (this.player.onGround || this.player.collidedHorizontally)
+        {
             this.angleJumpType = 0;
         }
 
-        boolean isSneakToggleEnabled = SmartMovingConfig.userInterface.sneakToggle;
-        boolean isCrawlToggleEnabled = SmartMovingConfig.userInterface.crawlToggle;
+        boolean isSneakToggleEnabled = SmartMovingConfig.USER_INTERFACE.sneakToggle;
+        boolean isCrawlToggleEnabled = SmartMovingConfig.USER_INTERFACE.crawlToggle;
 
         boolean willStopCrawl = false;
         boolean willStopCrawlStartSneak = false;
-        if (isSneakToggleEnabled || isCrawlToggleEnabled) {
-            if (this.isCrawling && this.jumpButton.stopPressed) {
+        if (isSneakToggleEnabled || isCrawlToggleEnabled)
+        {
+            if (this.isCrawling && this.jumpButton.stopPressed)
+            {
                 willStopCrawlStartSneak = true;
             }
-            if (this.isCrawling && this.sneakButton.stopPressed && !this.ignoreNextStopSneakButtonPressed) {
+            if (this.isCrawling && this.sneakButton.stopPressed && !this.ignoreNextStopSneakButtonPressed)
+            {
                 willStopCrawlStartSneak = true;
             }
-            if (!this.isCrawling && !this.isCrawlClimbing && !this.isClimbCrawling) {
+            if (!this.isCrawling && !this.isCrawlClimbing && !this.isClimbCrawling)
+            {
                 willStopCrawl = true;
             }
 
@@ -2577,65 +3127,84 @@ public class ControllerSelf extends Controller
         }
 
         boolean willStopSneak = false;
-        if (isSneakToggleEnabled) {
-            if (this.isCrawling && !willStopCrawlStartSneak) {
+        if (isSneakToggleEnabled)
+        {
+            if (this.isCrawling && !willStopCrawlStartSneak)
+            {
                 willStopSneak = true;
             }
-            if (wantSneak && this.wantSprint && this.sneakButton.startPressed && this.sneakToggled) {
+            if (wantSneak && this.wantSprint && this.sneakButton.startPressed && this.sneakToggled)
+            {
                 willStopSneak = true;
                 this.ignoreNextStopSneakButtonPressed = true;
             }
-            if (wasSneaking && this.sneakButton.startPressed) {
+            if (wasSneaking && this.sneakButton.startPressed)
+            {
                 willStopSneak = true;
             }
-            if (!this.isSwimming && !this.isDiving && this.jumpButton.stopPressed) {
+            if (!this.isSwimming && !this.isDiving && this.jumpButton.stopPressed)
+            {
                 willStopSneak = true;
             }
         }
 
         boolean willStartSneak = false;
-        if (isSneakToggleEnabled) {
-            if (willStopCrawlStartSneak && this.sneakButton.stopPressed) {
+        if (isSneakToggleEnabled)
+        {
+            if (willStopCrawlStartSneak && this.sneakButton.stopPressed)
+            {
                 willStartSneak = true;
             }
-            if (this.isFast && this.sneakButton.stopPressed && !this.ignoreNextStopSneakButtonPressed) {
+            if (this.isFast && this.sneakButton.stopPressed && !this.ignoreNextStopSneakButtonPressed)
+            {
                 willStartSneak = true;
             }
-            if (this.isSlow && !wasSneaking) {
+            if (this.isSlow && !wasSneaking)
+            {
                 willStartSneak = true;
             }
         }
 
         boolean willStartCrawl = false;
-        if (isCrawlToggleEnabled) {
-            if (this.isCrawling && !this.wasCrawling) {
+        if (isCrawlToggleEnabled)
+        {
+            if (this.isCrawling && !this.wasCrawling)
+            {
                 willStartCrawl = true;
             }
-            if (this.isClimbCrawling && !wasClimbCrawling) {
+            if (this.isClimbCrawling && !wasClimbCrawling)
+            {
                 willStartCrawl = true;
             }
         }
 
-        if (isSneakToggleEnabled) {
-            if (willStartSneak) {
+        if (isSneakToggleEnabled)
+        {
+            if (willStartSneak)
+            {
                 this.sneakToggled = true;
             }
-            if (willStopSneak) {
+            if (willStopSneak)
+            {
                 this.sneakToggled = false;
             }
         }
 
-        if (isCrawlToggleEnabled) {
-            if (willStartCrawl) {
+        if (isCrawlToggleEnabled)
+        {
+            if (willStartCrawl)
+            {
                 this.crawlToggled = true;
                 this.ignoreNextStopSneakButtonPressed = this.sneakButton.isPressed;
             }
-            if (willStopCrawl) {
+            if (willStopCrawl)
+            {
                 this.crawlToggled = false;
             }
         }
 
-        if (this.sneakButton.stopPressed) {
+        if (this.sneakButton.stopPressed)
+        {
             this.ignoreNextStopSneakButtonPressed = false;
         }
 
@@ -2646,7 +3215,8 @@ public class ControllerSelf extends Controller
     private boolean toCrawling()
     {
         this.isCrawling = true;
-        if (SmartMovingConfig.userInterface.crawlToggle) {
+        if (SmartMovingConfig.USER_INTERFACE.crawlToggle)
+        {
             this.crawlToggled = true;
         }
         this.ignoreNextStopSneakButtonPressed = true;
@@ -2690,126 +3260,80 @@ public class ControllerSelf extends Controller
 
     public void addToSendQueue()
     {
-        if (!this.player.world.isRemote) {
+        if (!this.player.world.isRemote)
+        {
             return;
         }
 
-        boolean isSmall = this.player.height < 1;
+        NBTTagCompound state = new NBTTagCompound();
 
-        long state = 0;
-        state |= this.playerBase.localIsSneaking() ? 1 : 0;
+        state.setInteger("actual_feet_climb_type", this.actualFeetClimbType);
+        state.setInteger("actual_hands_climb_type", this.actualHandsClimbType);
+        state.setBoolean("is_jumping", this.playerBase.getIsJumpingField());
+        state.setBoolean("is_diving", this.isDiving);
+        state.setBoolean("is_dipping", this.isDipping);
+        state.setBoolean("is_swimming", this.isSwimming);
+        state.setBoolean("is_crawl_climbing", this.isCrawlClimbing);
+        state.setBoolean("is_crawling", this.isCrawling);
+        state.setBoolean("is_climbing", this.isClimbing);
+        state.setBoolean("is_small", this.player.height < 1);
+        state.setBoolean("is_falling", this.doFallingAnimation());
+        state.setBoolean("is_flying", this.doFlyingAnimation());
+        state.setBoolean("is_ceiling_climbing", this.isCeilingClimbing);
+        state.setBoolean("is_levitating", this.isLevitating);
+        state.setBoolean("is_head_jumping", this.isHeadJumping);
+        state.setBoolean("is_sliding", this.isSliding);
+        state.setInteger("angle_jump_type", this.angleJumpType);
+        state.setBoolean("is_feet_vine_climbing", this.isFeetVineClimbing);
+        state.setBoolean("is_hands_vine_climbing", this.isHandsVineClimbing);
+        state.setBoolean("is_climb_jumping", this.isClimbJumping);
+        state.setBoolean("is_climb_back_jumping", this.isClimbBackJumping);
+        state.setBoolean("is_slow", this.isSlow);
+        state.setBoolean("is_fast", this.isFast);
+        state.setBoolean("is_wall_jumping", this.isWallJumping);
+        state.setBoolean("is_rope_sliding", this.isRopeSliding);
 
-        state <<= 1;
-        state |= this.isRopeSliding ? 1 : 0;
-
-        state <<= 1;
-        state |= this.isWallJumping ? 1 : 0;
-
-        state <<= 1;
-        state |= this.isFast ? 1 : 0;
-
-        state <<= 1;
-        state |= this.isSlow ? 1 : 0;
-
-        state <<= 1;
-        state |= this.isClimbBackJumping ? 1 : 0;
-
-        state <<= 1;
-        state |= this.isClimbJumping ? 1 : 0;
-
-        state <<= 1;
-        state |= this.isHandsVineClimbing ? 1 : 0;
-
-        state <<= 1;
-        state |= this.isFeetVineClimbing ? 1 : 0;
-
-        state <<= 3;
-        state |= this.angleJumpType;
-
-        state <<= 1;
-        state |= this.isSliding ? 1 : 0;
-
-        state <<= 1;
-        state |= this.isHeadJumping ? 1 : 0;
-
-        state <<= 1;
-        state |= this.isLevitating ? 1 : 0;
-
-        state <<= 1;
-        state |= this.isCeilingClimbing ? 1 : 0;
-
-        state <<= 1;
-        state |= this.doFlyingAnimation() ? 1 : 0;
-
-        state <<= 1;
-        state |= this.doFallingAnimation() ? 1 : 0;
-
-        state <<= 1;
-        state |= isSmall ? 1 : 0;
-
-        state <<= 1;
-        state |= this.isClimbing ? 1 : 0;
-
-        state <<= 1;
-        state |= this.isCrawling ? 1 : 0;
-
-        state <<= 1;
-        state |= this.isCrawlClimbing ? 1 : 0;
-
-        state <<= 1;
-        state |= this.isSwimming ? 1 : 0;
-
-        state <<= 1;
-        state |= this.isDipping ? 1 : 0;
-
-        state <<= 1;
-        state |= this.isDiving ? 1 : 0;
-
-        state <<= 1;
-        state |= this.playerBase.getIsJumpingField() ? 1 : 0;
-
-        state <<= 4;
-        state |= this.actualHandsClimbType;
-
-        state <<= 4;
-        state |= this.actualFeetClimbType;
-
-        boolean sendStatePacket = state != this.prevPacketState;
+        boolean sendStatePacket = this.prevPacketState == null || state.hashCode() != this.prevPacketState.hashCode();
 
         int currentWorldPlayerEntitiesSize = this.player.world.playerEntities.size();
-        if (currentWorldPlayerEntitiesSize == 0) {
+        if (currentWorldPlayerEntitiesSize == 0)
+        {
             sendStatePacket = false;
             this.lastWorldPlayerEntitiesSize = currentWorldPlayerEntitiesSize;
             this.lastWorldPlayerLastEnttyId = -1;
-        } else {
+        }
+        else
+        {
             int currentWorldPlayerLastEnttyId = this.player.world.playerEntities.get(currentWorldPlayerEntitiesSize - 1).getEntityId();
-            if (currentWorldPlayerEntitiesSize != this.lastWorldPlayerEntitiesSize) {
-                if (currentWorldPlayerEntitiesSize > this.lastWorldPlayerEntitiesSize) {
+            if (currentWorldPlayerEntitiesSize != this.lastWorldPlayerEntitiesSize)
+            {
+                if (currentWorldPlayerEntitiesSize > this.lastWorldPlayerEntitiesSize)
+                {
                     sendStatePacket = true;
                 }
                 this.lastWorldPlayerEntitiesSize = currentWorldPlayerEntitiesSize;
                 this.lastWorldPlayerLastEnttyId = currentWorldPlayerLastEnttyId;
-            } else if (currentWorldPlayerLastEnttyId != this.lastWorldPlayerLastEnttyId) {
+            }
+            else if (currentWorldPlayerLastEnttyId != this.lastWorldPlayerLastEnttyId)
+            {
                 sendStatePacket = true;
                 this.lastWorldPlayerLastEnttyId = currentWorldPlayerLastEnttyId;
             }
         }
 
-        if (sendStatePacket) {
-            MessageHandler.INSTANCE.sendToServer(new MessageStateServer(this.player.getEntityId(), (int) state));
+        if (sendStatePacket)
+        {
+            MessageHandler.INSTANCE.sendToServer(new MessageStateServer(this.player.getEntityId(), state));
             this.prevPacketState = state;
         }
     }
 
-    private long prevPacketState;
+    private NBTTagCompound prevPacketState;
 
     @Override
     public boolean isSneaking()
     {
-        return (this.isSlow && (this.player.onGround || this.playerBase.getIsInWebField()))
-                || (!SmartMovingConfig.genericSneaking.enable && this.wouldIsSneaking && this.jumpCharge > 0)
-                || (this.player.isRiding() && this.playerBase.localIsSneaking())
-                || (!SmartMovingConfig.crawling.edge && this.isCrawling && !this.isClimbing);
+        return (this.isSlow && (this.player.onGround || this.playerBase.getIsInWebField())) || (!SmartMovingConfig.GENERIC_SNEAKING.enable && this.wouldIsSneaking && this.jumpCharge > 0) || (this.player.isRiding() && this.playerBase.localIsSneaking()) || (!SmartMovingConfig.CRAWLING.edge && this.isCrawling && !this.isClimbing);
     }
 
     public boolean isStandupSprintingOrRunning()
@@ -2831,7 +3355,8 @@ public class ControllerSelf extends Controller
     {
         this.playerBase.localWriteEntityToNBT(nBTTagCompound);
         NBTTagCompound abilities = nBTTagCompound.getCompoundTag("abilities");
-        if (abilities.hasKey("flying")) {
+        if (abilities.hasKey("flying"))
+        {
             abilities.setBoolean("flying", this.player.capabilities.isFlying);
         }
     }
@@ -2845,7 +3370,8 @@ public class ControllerSelf extends Controller
     @Override
     public boolean doFlyingAnimation()
     {
-        if (SmartMovingConfig.smartFlying.enable || SmartMovingConfig.standardFlying.animation) {
+        if (SmartMovingConfig.SMART_FLYING.enable || SmartMovingConfig.STANDARD_FLYING.animation)
+        {
             return this.player.capabilities.isFlying;
         }
         return false;
@@ -2854,8 +3380,9 @@ public class ControllerSelf extends Controller
     @Override
     public boolean doFallingAnimation()
     {
-        if (SmartMovingConfig.falling.animation) {
-            return !this.player.onGround && this.player.fallDistance > SmartMovingConfig.falling.animationDistanceMinimum;
+        if (SmartMovingConfig.FALLING.animation)
+        {
+            return !this.player.onGround && this.player.fallDistance > SmartMovingConfig.FALLING.animationDistanceMinimum;
         }
         return false;
     }

@@ -27,6 +27,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.smart.moving.SmartMovingMod;
 import net.smart.moving.SmartMovingServer;
+import net.smart.moving.asm.interfaces.IEntity;
 import net.smart.moving.asm.interfaces.INetHandlerPlayServer;
 
 import java.util.List;
@@ -57,27 +58,38 @@ public class CustomServerPlayerEntityBase extends ServerPlayerEntityBase
         float width = 0.6F;
         float height = 1.8F;
 
-        if (this.controller.isCrawling || this.controller.isSmall) {
+        if (this.controller.isCrawling || this.controller.isSmall)
+        {
             height = 0.8F;
-        } else if (this.playerEntity.isElytraFlying()) {
+        }
+        else if (this.playerEntity.isElytraFlying())
+        {
             height = 0.6F;
-        } else if (this.playerEntity.isPlayerSleeping()) {
+        }
+        else if (this.playerEntity.isPlayerSleeping())
+        {
             width = 0.2F;
             height = 0.2F;
-        } else if (this.playerEntity.isSneaking()) {
+        }
+        else if (this.playerEntity.isSneaking())
+        {
             height = 1.65F;
         }
 
-        if (width != this.playerEntity.width || height != this.playerEntity.height) {
+        if (width != this.playerEntity.width || height != this.playerEntity.height)
+        {
             AxisAlignedBB axisalignedbb = this.playerEntity.getEntityBoundingBox();
             axisalignedbb = new AxisAlignedBB(axisalignedbb.minX, axisalignedbb.minY, axisalignedbb.minZ, axisalignedbb.minX + (double) width, axisalignedbb.minY + (double) height, axisalignedbb.minZ + (double) width);
-            if (!this.playerEntity.world.collidesWithAnyBlock(axisalignedbb)) {
-                if (width != this.playerEntity.width || height != this.playerEntity.height) {
+            if (!this.playerEntity.world.collidesWithAnyBlock(axisalignedbb))
+            {
+                if (width != this.playerEntity.width || height != this.playerEntity.height)
+                {
                     float previousWidth = this.playerEntity.width;
                     this.playerEntity.width = width;
                     this.playerEntity.height = height;
 
-                    if (this.playerEntity.width < previousWidth) {
+                    if (this.playerEntity.width < previousWidth)
+                    {
                         double d0 = (double) width / 2.0D;
                         this.playerEntity.setEntityBoundingBox(new AxisAlignedBB(this.playerEntity.posX - d0, this.playerEntity.posY, this.playerEntity.posZ - d0, this.playerEntity.posX + d0, this.playerEntity.posY + (double) this.playerEntity.height, this.playerEntity.posZ + d0));
                         return;
@@ -170,7 +182,25 @@ public class CustomServerPlayerEntityBase extends ServerPlayerEntityBase
     @Override
     public float getEyeHeight()
     {
-        return this.playerEntity.height - 0.18F;
+        float eyeHeight = this.playerEntity.getDefaultEyeHeight();
+
+        if (this.playerEntity.isPlayerSleeping())
+        {
+            eyeHeight = 0.2F;
+        }
+        else if (!this.playerEntity.isSneaking() && this.playerEntity.height != 1.65F)
+        {
+            if (this.playerEntity.isElytraFlying() || this.playerEntity.height == 0.6F)
+            {
+                eyeHeight = 0.4F;
+            }
+        }
+        else
+        {
+            eyeHeight -= 0.08F;
+        }
+
+        return eyeHeight;
     }
 
     @Override
@@ -209,7 +239,8 @@ public class CustomServerPlayerEntityBase extends ServerPlayerEntityBase
     public void localPlaySound(String soundId, float volume, float pitch)
     {
         SoundEvent soundEvent = SoundEvent.REGISTRY.getObject(new ResourceLocation(soundId));
-        if (soundEvent != null) {
+        if (soundEvent != null)
+        {
             this.playerEntity.playSound(soundEvent, volume, pitch);
         }
     }
@@ -227,7 +258,7 @@ public class CustomServerPlayerEntityBase extends ServerPlayerEntityBase
 
     public void setHeight(float height)
     {
-        this.playerEntity.height = height;
+        ((IEntity) this.playerEntity).publicSetSize(this.playerEntity.width, height);
     }
 
     public EntityPlayerMP getPlayer()

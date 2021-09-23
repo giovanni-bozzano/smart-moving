@@ -1,5 +1,6 @@
 package net.smart.moving;
 
+import net.minecraft.nbt.NBTTagCompound;
 import net.smart.moving.network.MessageHandler;
 import net.smart.moving.playerapi.CustomServerPlayerEntityBase;
 
@@ -15,7 +16,7 @@ public class Proxy
         MessageHandler.registerPackets();
     }
 
-    public void processStatePacket(CustomServerPlayerEntityBase player, int entityId, long state)
+    public void processStatePacket(CustomServerPlayerEntityBase player, int entityId, NBTTagCompound state)
     {
         player.getController().processStatePacket(entityId, state);
     }

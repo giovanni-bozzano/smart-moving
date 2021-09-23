@@ -1,6 +1,7 @@
 package net.smart.moving.network.packets;
 
 import io.netty.buffer.ByteBuf;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -11,13 +12,13 @@ import net.smart.moving.playerapi.PlayerAPIBridge;
 public class MessageStateServer implements IMessage
 {
     private int entityId;
-    private long state;
+    private NBTTagCompound state;
 
     public MessageStateServer()
     {
     }
 
-    public MessageStateServer(int entityId, long state)
+    public MessageStateServer(int entityId, NBTTagCompound state)
     {
         this.entityId = entityId;
         this.state = state;
@@ -27,14 +28,14 @@ public class MessageStateServer implements IMessage
     public void fromBytes(ByteBuf buffer)
     {
         this.entityId = ByteBufUtils.readVarInt(buffer, 4);
-        this.state = Long.parseLong(ByteBufUtils.readUTF8String(buffer));
+        this.state = ByteBufUtils.readTag(buffer);
     }
 
     @Override
     public void toBytes(ByteBuf buf)
     {
         ByteBufUtils.writeVarInt(buf, this.entityId, 4);
-        ByteBufUtils.writeUTF8String(buf, Long.toString(this.state));
+        ByteBufUtils.writeTag(buf, this.state);
     }
 
     public int getEntityId()
@@ -42,7 +43,7 @@ public class MessageStateServer implements IMessage
         return this.entityId;
     }
 
-    public long getState()
+    public NBTTagCompound getState()
     {
         return this.state;
     }

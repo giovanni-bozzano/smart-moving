@@ -44,7 +44,8 @@ public class Button extends ContextBase
     private static boolean isKeyDown(KeyBinding keyBinding, boolean wasDown)
     {
         GuiScreen currentScreen = Minecraft.getMinecraft().currentScreen;
-        if (currentScreen == null || currentScreen.allowUserInput) {
+        if (currentScreen == null || currentScreen.allowUserInput)
+        {
             return GameSettings.isKeyDown(keyBinding);
         }
         return wasDown;

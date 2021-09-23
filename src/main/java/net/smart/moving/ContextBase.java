@@ -30,43 +30,48 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.smart.moving.playerapi.Factory;
 import net.smart.moving.render.ContextRender;
+import net.smart.render.statistics.SmartStatisticsContext;
 
 public abstract class ContextBase extends ContextRender
 {
-    public static final double FastUpMotion = 0.2D;
-    public static final double MediumUpMotion = 0.14D;
-    public static final double SlowUpMotion = 0.1D;
-    public static final double HoldMotion = 0.08D;
-    public static final double SinkDownMotion = 0.05D;
-    public static final double ClimbDownMotion = 0.01D;
-    public static final double CatchCrawlGapMotion = 0.17D;
-    public static final float SwimCrawlWaterMaxBorder = 1F;
-    public static final float SwimCrawlWaterTopBorder = 0.65F;
-    public static final float SwimCrawlWaterMediumBorder = 0.6F;
-    public static final float SwimCrawlWaterBottomBorder = 0.55F;
-    public static final float HorizontalGroundDamping = 0.546F;
-    public static final float HorizontalAirDamping = 0.91F;
-    public static final float HorizontalAerodynamicDamping = 0.999F;
-    public static final float SwimSoundDistance = 1F / 0.7F;
-    public static final float SlideToHeadJumpingFallDistance = 0.05F;
+    public static final double FAST_UP_MOTION = 0.2D;
+    public static final double MEDIUM_UP_MOTION = 0.14D;
+    public static final double SLOW_UP_MOTION = 0.1D;
+    public static final double HOLD_MOTION = 0.08D;
+    public static final double SINK_DOWN_MOTION = 0.05D;
+    public static final double CLIMB_DOWN_MOTION = 0.01D;
+    public static final double CATCH_CRAWL_GAP_MOTION = 0.17D;
+    public static final float SWIM_CRAWL_WATER_MAX_BORDER = 1F;
+    public static final float SWIM_CRAWL_WATER_TOP_BORDER = 0.65F;
+    public static final float SWIM_CRAWL_WATER_MEDIUM_BORDER = 0.6F;
+    public static final float SWIM_CRAWL_WATER_BOTTOM_BORDER = 0.55F;
+    public static final float HORIZONTAL_GROUND_DAMPING = 0.546F;
+    public static final float HORIZONTAL_AIR_DAMPING = 0.91F;
+    public static final float HORIZONTAL_AERODYNAMIC_DAMPING = 0.999F;
+    public static final float SWIM_SOUND_DISTANCE = 1F / 0.7F;
+    public static final float SLIDE_TO_HEAD_JUMPING_FALL_DISTANCE = 0.05F;
+
     private static boolean wasInitialized;
 
     public static void onTickInGame()
     {
         Minecraft minecraft = Minecraft.getMinecraft();
 
-        if (minecraft.world != null && minecraft.world.isRemote) {
+        if (minecraft.world != null && minecraft.world.isRemote)
+        {
             Factory.getInstance().handleMultiPlayerTick(minecraft);
         }
     }
 
     public static void initialize()
     {
-        if (!wasInitialized) {
-            net.smart.render.statistics.SmartStatisticsContext.setCalculateHorizontalStats(true);
+        if (!wasInitialized)
+        {
+            SmartStatisticsContext.setCalculateHorizontalStats(true);
         }
 
-        if (wasInitialized) {
+        if (wasInitialized)
+        {
             return;
         }
 

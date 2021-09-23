@@ -3,6 +3,7 @@ package net.smart.moving;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.entity.Entity;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.smart.moving.playerapi.CustomClientPlayerEntityBase;
@@ -30,14 +31,16 @@ public class ProxyClient extends Proxy
     }
 
     @Override
-    public void processStatePacket(CustomServerPlayerEntityBase player, int entityId, long state)
+    public void processStatePacket(CustomServerPlayerEntityBase player, int entityId, NBTTagCompound state)
     {
         Entity entity = Minecraft.getMinecraft().world.getEntityByID(entityId);
-        if (!(entity instanceof EntityOtherPlayerMP)) {
+        if (!(entity instanceof EntityOtherPlayerMP))
+        {
             return;
         }
         ControllerOther moving = Factory.getInstance().getOtherSmartMoving((EntityOtherPlayerMP) entity);
-        if (moving != null) {
+        if (moving != null)
+        {
             moving.processStatePacket(state);
         }
     }
